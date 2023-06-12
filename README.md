@@ -1,6 +1,6 @@
 # MagicFeedbackAI SDK
 
-TMagicFeedbackAI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)
+MagicFeedbackAI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)
 
 ## Install
 
