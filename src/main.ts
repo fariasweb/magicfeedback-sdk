@@ -1,20 +1,11 @@
-import fetch from "cross-fetch";
-import modulePackage from "../package.json";
-import { InitOptions, NativeFeedback } from "./types";
+import { InitOptions, NativeFeedback, NativeQuestion } from "./types";
 import { API_URL } from "./config";
+import { requestPOST, requestGET } from "./request";
 
-async function request(url: string, body: any) {
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      "Magicfeedback-Sdk-Version": modulePackage.version,
-    },
-    body: JSON.stringify(body),
-  });
-}
-
+/**
+ *
+ * @returns
+ */
 export default function main() {
   //===============================================
   // Attributes
@@ -56,6 +47,101 @@ export default function main() {
     throw new Error(...args);
   }
 
+  /**
+   *
+   * @param json
+   * @param selector
+   * @param options
+   * @returns
+   */
+  function createFormFromJSON(
+    appId:string,
+    json: any[],
+    selector: string,
+    options: { addButton?: boolean; submitEvent?: Function } = {}
+  ) {
+    const formContainer = document.querySelector(selector);
+    if (!formContainer) {
+      console.error(`Selector "${selector}" not found.`);
+      return;
+    }
+
+    const form = document.createElement("form");
+    form.id = "magicfeedback-native-" + appId;
+
+    json.forEach((field: NativeQuestion) => {
+      const { id, title, type, ref, require, value, defaultValue } = field;
+
+      let inputElement: HTMLElement;
+
+      console.log(field)
+      console.log(id, title, type, ref, require, value, defaultValue)
+
+      if (type === "RADIO") {
+        // Create radio buttons for the options
+        const radioContainer = document.createElement("div");
+        value.forEach((radioOption: string) => {
+          const radioLabel = document.createElement("label");
+          const radioInput = document.createElement("input");
+          radioInput.type = "radio";
+          radioInput.name = ref;
+          radioInput.value = radioOption;
+          radioInput.required = require;
+          radioLabel.textContent = radioOption;
+          radioLabel.appendChild(radioInput);
+          radioContainer.appendChild(radioLabel);
+        });
+
+        inputElement = radioContainer;
+      } else if (type === "TEXT") {
+        // Create a text input field
+        const textField = document.createElement("input");
+        textField.type = "text";
+        textField.name = ref;
+        textField.required = require;
+        textField.value = defaultValue;
+
+        inputElement = textField;
+      } else {
+        console.error(`Invalid field type: ${type}`);
+        return;
+      }
+
+      // Create a label for the field
+      const label = document.createElement("label");
+      label.textContent = title;
+      label.htmlFor = id;
+
+      // Add the label and input element to the form
+      form.appendChild(label);
+      form.appendChild(inputElement);
+    });
+
+    if (options.addButton) {
+      // Create a submit button if specified in options
+      const submitButton = document.createElement("button");
+      submitButton.type = "submit";
+      submitButton.textContent = "Submit";
+
+      form.appendChild(submitButton);
+    }
+
+    // Add the form to the specified container
+    formContainer.appendChild(form);
+
+    if (options.submitEvent) {
+      // Add a submit event listener if specified in options
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        //options.submitEvent();
+
+        //TODO: Add default submit button
+      });
+    } else {
+      //TODO: Add default submit button
+    }
+  }
+
   //===============================================
   // Public
   //===============================================
@@ -94,9 +180,9 @@ export default function main() {
 
     if (profile) payload.profile = profile;
 
-    let res = {}
+    let res = {};
     try {
-      res = await request(`${getUrl()}/feedback/apps`, payload);
+      res = await requestPOST(`${getUrl()}/feedback/apps`, payload);
       log(`sent native feedback`, res);
     } catch (e: any) {
       err(`error native feedback`, e);
@@ -104,10 +190,49 @@ export default function main() {
     return res;
   }
 
+  /**
+   *
+   */
+  type FormOptions = {
+    addButton?: boolean;
+    submitEvent?: Function;
+  };
+
+  /**
+   *
+   * @param appId
+   * @param selector
+   * @param options
+   */
+  async function form(
+    appId: NativeFeedback["appId"],
+    selector: string,
+    options: FormOptions = {}
+  ) {
+    // Params control
+    if (!appId) err("No appID provided");
+
+    // Request question from the app
+    requestGET(`${getUrl()}/apps/${appId}/questions`, {}).then(
+      (appQuestions) => {
+        if (appQuestions === undefined || !appQuestions) {
+          err(`No questions for app ${appId}`);
+        }
+        // Create the from from the JSON
+        createFormFromJSON(appId, appQuestions, selector, options);
+      }
+    );
+  }
+
+  //===============================================
+  // Return
+  //===============================================
+
   return {
     // lifecycle
     init,
     // requests
     send,
+    form,
   };
 }

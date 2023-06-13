@@ -1,1 +1,1 @@
-export const API_URL = "https://api.magicfeedback.io/";
+export const API_URL = "https://api.magicfeedback.io";

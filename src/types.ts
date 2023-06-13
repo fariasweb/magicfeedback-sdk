@@ -30,3 +30,15 @@ export enum FEEDBACKAPPANSWERTYPE {
   DATE = 'DATE',
   BOOLEAN = 'BOOLEAN'
 }
+
+export  type NativeQuestion = {
+  id: string;
+  title: string;
+  type: FEEDBACKAPPANSWERTYPE;
+  ref: string;
+  require: boolean;
+  external_id: string;
+  value: string[];
+  defaultValue: string;
+  appId: string;
+};
