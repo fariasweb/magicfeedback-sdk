@@ -1,40 +1,32 @@
 export type Key = string;
 
-export type Options = {
-  persistUser?: boolean;
-  host?: string;
+export type InitOptions = {
+  url?: string;
   debug?: boolean;
 };
 
-export type User = {
-  userId: string;
-  attributes?: {
-    name?: string;
-    [key: string]: any;
-  };
+export type NativeFeedback = {
+  appId: string;
+  answers: NativeFeedbackAnswer[];
+  profile?: NativeFeedbackProfile;
 };
 
-export type Company = {
-  userId: string;
-  companyId: string;
-  attributes?: {
-    name?: string;
-    [key: string]: any;
-  };
-};
+export type NativeFeedbackAnswer = {
+  id: string,
+  type?: FEEDBACKAPPANSWERTYPE
+  value: string[]
+}
 
-export type TrackedEvent = {
-  event: string;
-  userId: string;
-  attributes?: {
-    [key: string]: any;
-  };
-};
+export type NativeFeedbackProfile = {
+  [key: string]: string;
+}
 
-export type Feedback = {
-  featureId: string;
-  userId: string;
-  companyId?: string;
-  score?: number;
-  comment?: string;
-};
+export enum FEEDBACKAPPANSWERTYPE {
+  TEXT = 'TEXT',
+  LONGTEXT = 'LONGTEXT',
+  NUMBER = 'NUMBER',
+  RADIO = 'RADIO',
+  MULTIPLECHOICE = 'MULTIPLECHOICE',
+  DATE = 'DATE',
+  BOOLEAN = 'BOOLEAN'
+}

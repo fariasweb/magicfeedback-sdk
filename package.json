@@ -1,12 +1,12 @@
 {
-  "name": "magicfeedback",
+  "name": "@magicfeedback/native",
   "version": "1.0.0",
   "main": "./dist/magicfeedback-sdk.node.js",
   "browser": "./dist/magicfeedback-sdk.browser.js",
   "types": "./dist/types/src/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git@github.com:fariasweb/magicfeedback-sdk.git"
+    "url": "git+ssh://git@github.com/MagicFeedback/magicfeedback-sdk.git"
   },
   "author": "farias@magicfeedback.io",
   "license": "MIT",
@@ -40,5 +40,14 @@
   "dependencies": {
     "cross-fetch": "^3.1.5",
     "is-bundling-for-browser-or-node": "^1.1.1"
+  },
+  "description": "MagicFeedbackAI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)",
+  "bugs": {
+    "url": "https://github.com/MagicFeedback/magicfeedback-sdk/issues"
+  },
+  "homepage": "https://github.com/MagicFeedback/magicfeedback-sdk#readme",
+  "directories": {
+    "example": "examples",
+    "test": "test"
   }
 }
