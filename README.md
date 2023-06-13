@@ -57,7 +57,7 @@ answers.push({ id: "improve", value: ["Maybe the interface is a bit slow on my O
 
 // Create a profile object to store additional information
 // You can include any information you want in this object
-const profile = { name: "Fran" };
+const profile = { email: "farias@magicfeedback.io" };
 
 // Send the user feedback data to the server
 // Make sure to provide the required App Id as a parameter
