@@ -35,7 +35,7 @@ magicfeedback.init({
 ## How to use
 This guide provides instructions for utilizing various features and functionalities of the application. Each section below highlights a specific use case and provides a code snippet to demonstrate its implementation.
 
-### Send feedback
+### A. Send feedback
 This code snippet demonstrates how to collect and send user feedback to the server. Before executing the code, make sure to follow the instructions below:
 
 1. Set up the necessary dependencies, including the magicfeedback library.
