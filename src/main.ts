@@ -55,8 +55,8 @@ export default function main() {
    * @returns
    */
   function createFormFromJSON(
-    appId:string,
-    json: any[],
+    appId: string,
+    json: NativeQuestion[],
     selector: string,
     options: { addButton?: boolean; submitEvent?: Function } = {}
   ) {
@@ -74,8 +74,8 @@ export default function main() {
 
       let inputElement: HTMLElement;
 
-      console.log(field)
-      console.log(id, title, type, ref, require, value, defaultValue)
+      console.log(field);
+      console.log(id, title, type, ref, require, value, defaultValue);
 
       if (type === "RADIO") {
         // Create radio buttons for the options

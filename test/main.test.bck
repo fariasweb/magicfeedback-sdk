@@ -1,0 +1,129 @@
+import main from "../src";
+import { requestPOST, requestGET } from "../src/request";
+import {jest} from '@jest/globals';
+import { describe, expect, test, it, beforeEach } from "vitest";
+
+jest.mock("../src/request", () => ({
+  requestPOST: jest.fn(),
+  requestGET: jest.fn(),
+}));
+
+describe("MagicFeedback", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("init", () => {
+    it("should initialize Magicfeedback with the provided options", () => {
+      const options = { url: "https://example.com/api", debug: true };
+      const magicfeedback = main();
+      magicfeedback.init(options);
+      expect(magicfeedback.init).toBeInstanceOf(Function);
+      expect(magicfeedback.init).toHaveBeenCalledWith(options);
+    });
+  });
+
+  describe("send", () => {
+    it("should send feedback using requestPOST with the correct payload", async () => {
+      const appId = "app123";
+      const answers = [{ question: "Q1", answer: "A1" }];
+      const profile = { name: "John Doe", email: "john@example.com" };
+      const payload = {
+        appId: appId,
+        answers: answers,
+        profile: profile,
+      };
+
+      (requestPOST as jest.Mock).mockResolvedValue({});
+
+      const magicfeedback = main();
+      const response = await magicfeedback.send(appId, answers, profile);
+
+      expect(requestPOST).toHaveBeenCalledWith(
+        expect.stringContaining("/feedback/apps"),
+        payload
+      );
+      expect(response).toEqual({});
+    });
+
+    it("should throw an error if no appId is provided", async () => {
+      const magicfeedback = main();
+      await expect(magicfeedback.send("", [])).rejects.toThrow(
+        "No appID provided"
+      );
+      expect(requestPOST).not.toHaveBeenCalled();
+    });
+
+    it("should throw an error if no answers are provided", async () => {
+      const appId = "app123";
+      const magicfeedback = main();
+      await expect(magicfeedback.send(appId, [])).rejects.toThrow(
+        "No answers provided"
+      );
+      expect(requestPOST).not.toHaveBeenCalled();
+    });
+
+    it("should throw an error if answers array is empty", async () => {
+      const appId = "app123";
+      const magicfeedback = main();
+      await expect(magicfeedback.send(appId, [])).rejects.toThrow(
+        "Answers are empty"
+      );
+      expect(requestPOST).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("form", () => {
+    it("should create a form by calling requestGET and createFormFromJSON with the correct parameters", async () => {
+      const appId = "app123";
+      const selector = "#formContainer";
+      const options = { addButton: true };
+
+      const appQuestions = [{ question: "Q1", type: "TEXT" }];
+
+      (requestGET as jest.Mock).mockResolvedValue(appQuestions);
+
+      const magicfeedback = main();
+      await magicfeedback.form(appId, selector, options);
+
+      expect(requestGET).toHaveBeenCalledWith(
+        expect.stringContaining(`/apps/${appId}/questions`),
+        {}
+      );
+      expect(requestGET).toHaveBeenCalledTimes(1);
+
+      expect(magicfeedback.createFormFromJSON).toHaveBeenCalledWith(
+        appId,
+        appQuestions,
+        selector,
+        options
+      );
+    });
+
+    it("should throw an error if no appId is provided", async () => {
+      const selector = "#formContainer";
+      const options = { addButton: true };
+
+      const magicfeedback = main();
+      await expect(magicfeedback.form("", selector, options)).rejects.toThrow(
+        "No appID provided"
+      );
+      expect(requestGET).not.toHaveBeenCalled();
+    });
+
+    it("should throw an error if no questions are returned", async () => {
+      const appId = "app123";
+      const selector = "#formContainer";
+      const options = { addButton: true };
+
+      (requestGET as jest.Mock).mockResolvedValue(undefined);
+
+      const magicfeedback = main();
+      await expect(magicfeedback.form(appId, selector, options)).rejects.toThrow(
+        `No questions for app ${appId}`
+      );
+      expect(requestGET).toHaveBeenCalledTimes(1);
+      expect(magicfeedback.createFormFromJSON).not.toHaveBeenCalled();
+    });
+  });
+});

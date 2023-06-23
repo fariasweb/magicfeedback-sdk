@@ -1,0 +1,82 @@
+import { describe, expect, test, it } from "vitest";
+import {requestPOST, requestGET} from "../src/request";
+import {jest} from '@jest/globals';
+import fetch from "cross-fetch";
+
+jest.mock("cross-fetch", () => jest.fn());
+
+describe("requestPOST", () => {
+  it("should send a POST request with the correct headers and body", async () => {
+    const mockFetch = jest.fn().mockResolvedValue({});
+
+    (fetch as jest.Mock).mockImplementation(mockFetch);
+
+    const url = "https://example.com/api";
+    const body = { message: "Hello, world!" };
+
+    await requestPOST(url, body);
+
+    expect(mockFetch).toHaveBeenCalledWith(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Magicfeedback-Sdk-Version": expect.any(String),
+      },
+      body: JSON.stringify(body),
+    });
+  });
+});
+
+describe("requestGET", () => {
+  it("should send a GET request with the correct headers and URL parameters", async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      status: 200,
+      json: jest.fn().mockResolvedValue({ success: true }),
+    });
+
+    (fetch as jest.Mock).mockImplementation(mockFetch);
+
+    const url = "https://example.com/api";
+    const params = { id: 123, category: "books" };
+    const serializedParams = `id=123&category=books`;
+    const requestUrl = `${url}?${serializedParams}`;
+
+    const response = await requestGET(url, params);
+
+    expect(mockFetch).toHaveBeenCalledWith(requestUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Magicfeedback-Sdk-Version": expect.any(String),
+      },
+    });
+    expect(response).toEqual({ success: true });
+  });
+
+  it("should throw an error for a bad response status", async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      status: 404,
+      json: jest.fn().mockResolvedValue({ error: "Not found" }),
+    });
+
+    (fetch as jest.Mock).mockImplementation(mockFetch);
+
+    const url = "https://example.com/api";
+    const params = { id: 123, category: "books" };
+    const serializedParams = `id=123&category=books`;
+    const requestUrl = `${url}?${serializedParams}`;
+
+    await expect(requestGET(url, params)).rejects.toThrow(
+      "[MagicFeedback] Bad response from server"
+    );
+
+    expect(mockFetch).toHaveBeenCalledWith(requestUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Magicfeedback-Sdk-Version": expect.any(String),
+      },
+    });
+  });
+});
