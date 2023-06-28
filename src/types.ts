@@ -12,26 +12,27 @@ export type NativeFeedback = {
 };
 
 export type NativeFeedbackAnswer = {
-  id: string,
-  type?: FEEDBACKAPPANSWERTYPE
-  value: string[]
-}
+  id: string;
+  type?: FEEDBACKAPPANSWERTYPE;
+  value: string[];
+};
 
 export type NativeFeedbackProfile = {
   [key: string]: string;
-}
+};
 
 export enum FEEDBACKAPPANSWERTYPE {
-  TEXT = 'TEXT',
-  LONGTEXT = 'LONGTEXT',
-  NUMBER = 'NUMBER',
-  RADIO = 'RADIO',
-  MULTIPLECHOICE = 'MULTIPLECHOICE',
-  DATE = 'DATE',
-  BOOLEAN = 'BOOLEAN'
+  TEXT = "TEXT",
+  LONGTEXT = "LONGTEXT",
+  NUMBER = "NUMBER",
+  RADIO = "RADIO",
+  MULTIPLECHOICE = "MULTIPLECHOICE",
+  DATE = "DATE",
+  BOOLEAN = "BOOLEAN",
+  SELECT = "SELECT",
 }
 
-export  type NativeQuestion = {
+export type NativeQuestion = {
   id: string;
   title: string;
   type: FEEDBACKAPPANSWERTYPE;
@@ -41,4 +42,17 @@ export  type NativeQuestion = {
   value: string[];
   defaultValue: string;
   appId: string;
+};
+
+export type NativeAnswer = {
+  id: string;
+  type: string;
+  value: string[]
+}
+
+
+export type generateFormOptions = {
+  addButton?: boolean;
+  afterSubmitEvent?: Function;
+  beforeSubmitEvent?: Function;
 };

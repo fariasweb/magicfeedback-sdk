@@ -5,65 +5,9 @@
   margin-bottom: 20px;
 }
 
-/* Textarea styles */
-.magicfeedback-text {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-
-/* Input styles */
-.magicfeedback-number {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-
-/* Select styles */
-.magicfeedback-select {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-
-/* Date input styles */
-.magicfeedback-date {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-
-/* Checkbox styles */
-.magicfeedback-boolean {
-  margin-top: 8px;
+/* Container styles */
+.magicfeedback-div {
+  margin-bottom: 20px;
 }
 
 /* Label styles */
@@ -71,4 +15,204 @@
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
+}
+
+/* Textarea styles */
+.magicfeedback-text,
+.magicfeedback-longtext {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Input styles */
+.magicfeedback-number {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Select styles */
+.magicfeedback-select {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Boolean styles */
+.magicfeedback-boolean {
+  margin-top: 8px;
+}
+
+/* Date input styles */
+.magicfeedback-date {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Submit button styles */
+.magicfeedback-submit {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  color: #ffffff;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Submit button */
+.magicfeedback-submit:hover,
+.magicfeedback-submit:focus {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.magicfeedback-submit:active,
+.magicfeedback-submit.active,
+.open > .dropdown-toggle.magicfeedback-submit {
+  background-color: #005cbf;
+  border-color: #0056b3;
+}
+
+.magicfeedback-submit:active:hover,
+.magicfeedback-submit.active:hover,
+.open > .dropdown-toggle.magicfeedback-submit:hover,
+.magicfeedback-submit:active:focus,
+.magicfeedback-submit.active:focus,
+.open > .dropdown-toggle.magicfeedback-submit:focus,
+.magicfeedback-submit:active.focus,
+.magicfeedback-submit.active.focus,
+.open > .dropdown-toggle.magicfeedback-submit.focus {
+  background-color: #004e98;
+  border-color: #0047b0;
+}
+
+.magicfeedback-submit.disabled,
+.magicfeedback-submit[disabled],
+fieldset[disabled] .magicfeedback-submit,
+.magicfeedback-submit.disabled:hover,
+.magicfeedback-submit[disabled]:hover,
+fieldset[disabled] .magicfeedback-submit:hover,
+.magicfeedback-submit.disabled:focus,
+.magicfeedback-submit[disabled]:focus,
+fieldset[disabled] .magicfeedback-submit:focus,
+.magicfeedback-submit.disabled.focus,
+.magicfeedback-submit[disabled].focus,
+fieldset[disabled] .magicfeedback-submit.focus {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.magicfeedback-submit .badge {
+  color: #007bff;
+  background-color: #ffffff;
+}
+
+/* magicfeedback.css */
+
+/* Radio input styles */
+.magicfeedback-radio input[type="radio"] {
+  position: relative;
+  margin-top: 0.3rem;
+  margin-right: 0.25rem;
+  margin-left: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: #ffffff;
+  outline: none;
+  cursor: pointer;
+}
+
+.magicfeedback-radio input[type="radio"]:checked:before {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  content: "";
+  border-radius: 50%;
+  background-color: #007bff;
+  border: 1px solid #ced4da;
+}
+
+/* Checkbox input styles */
+.magicfeedback-checkbox input[type="checkbox"] {
+  position: relative;
+  margin-top: 0.3rem;
+  margin-right: 0.25rem;
+  margin-left: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  outline: none;
+  cursor: pointer;
+}
+
+.magicfeedback-checkbox input[type="checkbox"]:checked:before {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  content: "";
+  border-radius: 0.25rem;
+  background-color: #007bff;
+  border: 1px solid #ced4da;
+}
+
+/* Label styles */
+.magicfeedback-radio label,
+.magicfeedback-checkbox label {
+  margin-right: 0.5rem;
+  display: inline-block;
+  margin-bottom: 0;
+  font-weight: normal;
 }
