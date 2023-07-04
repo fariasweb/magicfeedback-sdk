@@ -29,10 +29,7 @@ export class Log {
    *
    * @param args
    */
-  public err(...args: any[]): never {
-    if (this.config.get("debug")) {
-      console.error("[MagicFeedback]:", ...args);
-    }
-    throw new Error(...args);
+  public err(...args: any[]) {
+    console.error("[MagicFeedback]:", ...args);
   }
 }

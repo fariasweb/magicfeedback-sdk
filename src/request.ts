@@ -6,10 +6,18 @@ export class Request {
    * Attributes
    */
 
+  private headers = {}
+
   /**
    *
    */
-  constructor() {}
+  constructor() {
+    this.headers = {
+      Accept: "application/json",
+      "Magicfeedback-Sdk-Version": modulePackage.version,
+    }
+
+  }
 
   /**
    *
@@ -18,13 +26,11 @@ export class Request {
    * @returns
    */
   public async post(url: string, body: any) {
+
+    
     return fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Magicfeedback-Sdk-Version": modulePackage.version,
-      },
+      headers: {...{"Content-Type": "application/json"}, ...this.headers},
       body: JSON.stringify(body),
     });
   }
@@ -47,10 +53,7 @@ export class Request {
 
     return fetch(requestUrl, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Magicfeedback-Sdk-Version": modulePackage.version,
-      },
+      headers: this.headers,
     }).then((res) => {
       if (res.status >= 400) {
         throw new Error("[MagicFeedback] Bad response from server");

@@ -51,11 +51,24 @@
     <script src="../dist/magicfeedback-sdk.browser.js"></script>
     <script>
       window.magicfeedback.init({debug:true, url:"http://localhost:3000"});
-      window.magicfeedback.form(
-        //"66f1d080-0a02-11ee-97ea-499b24e1474e", //SIMPLE
-        "7a7ffc60-1355-11ee-b901-65eb20f18aaa", //ALL
-      ).generate(
-        "demo_form_div", {"addButton": true}
+
+      // Create the form
+      let form = window.magicfeedback.form(
+        "66f1d080-0a02-11ee-97ea-499b24e1474e", //SIMPLE
+        //"7a7ffc60-1355-11ee-b901-65eb20f18aaa", //ALL
+      );
+
+      // Generate form
+      form.generate(
+        "demo_form_div", {
+          addButton: true,
+          beforeSubmitEvent: function(){
+            console.log("BEFORE")
+          },
+          afterSubmitEvent: function(response){
+            console.log("AFTER")
+          }
+        }
       );
     </script>
   </body>

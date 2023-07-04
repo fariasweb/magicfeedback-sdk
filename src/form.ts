@@ -12,7 +12,6 @@ export class Form {
   private log: Log;
 
   private appId: string;
-  
 
   /**
    *
@@ -31,10 +30,10 @@ export class Form {
 
   /**
    * Generate
+   * TODO: Check if is inside of a <form>
    * @param appId
    */
   public generate(selector: string, options: generateFormOptions = {}) {
-
     //TODO: Check if already exist the form
 
     // Request question from the app
@@ -43,6 +42,7 @@ export class Form {
       .then((appQuestions) => {
         if (appQuestions === undefined || !appQuestions) {
           this.log.err(`No questions for app ${this.appId}`);
+          return;
         }
         // Create the from from the JSON
         this.generateForm(this.appId, appQuestions, selector, options);
@@ -55,6 +55,8 @@ export class Form {
    * @param appQuestions
    * @param selector
    * @param options
+   *
+   * TODO: Add option to generate in <form> or in other <tag>
    */
   private generateForm(
     appId: string,
@@ -65,7 +67,7 @@ export class Form {
     // Select the container
     const container: HTMLElement | null = document.getElementById(selector);
     if (!container) {
-      console.error(`Selector "${selector}" not found.`);
+      this.log.err(`Element with ID '${selector}' not found.`);
       return;
     }
     container.classList.add("magicfeedback-container");
@@ -82,7 +84,7 @@ export class Form {
         title,
         type,
         ref,
-        //require,
+        require,
         //external_id,
         value,
         defaultValue,
@@ -136,10 +138,16 @@ export class Form {
             input.type = type === "RADIO" ? "radio" : "checkbox";
             input.name = ref;
             input.value = option;
+            input.required = require;
+            input.classList.add(elementTypeClass);
+            input.classList.add("magicfeedback-input");
+
             if (option === defaultValue) {
               input.checked = true;
             }
+
             label.textContent = option;
+
             element.appendChild(input);
             element.appendChild(label);
           });
@@ -175,7 +183,6 @@ export class Form {
 
       element.id = `magicfeedback-${id}`;
       element.setAttribute("name", ref);
-      //element.required = require === "true";
 
       if (defaultValue !== undefined) {
         (element as HTMLInputElement).value = defaultValue;
@@ -187,11 +194,14 @@ export class Form {
       label.textContent = title;
       label.classList.add("magicfeedback-label");
       elementContainer.appendChild(label);
-
       element.classList.add(elementTypeClass);
-      element.classList.add("magicfeedback-input");
-      elementContainer.appendChild(element);
 
+      if (type != "RADIO" && type != "MULTIPLECHOICE") {
+        element.classList.add("magicfeedback-input");
+        (element as HTMLInputElement).required = require;
+      }
+
+      elementContainer.appendChild(element);
       form.appendChild(elementContainer);
     });
 
@@ -210,23 +220,39 @@ export class Form {
     container.appendChild(form);
 
     // Submit event
-    /*if (options.submitEvent) {
-      // Add a submit event listener if specified in options
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        //options.submitEvent();
-  
-        //TODO: Add default submit button
-      });
-    } else {
-      //TODO: Add default submit button
-    }*/
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      try {
+        // BEFORE
+        if (options.beforeSubmitEvent) {
+          await options.beforeSubmitEvent();
+        }
+
+        // SEND
+        const response = await this.send();
+
+        // AFTER
+        if (options.afterSubmitEvent) {
+          await options.afterSubmitEvent(response);
+        }
+      } catch (error) {
+        // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
+        this.log.err(
+          `An error occurred while submitting the form ${this.appId}:`,
+          error
+        );
+        // You can perform error handling logic here if needed
+        return error;
+      }
+    });
   }
 
   /**
    * Answer
    * @param appId
    * @returns
+   * TODO: Required
    */
   public answer(): NativeAnswer[] {
     const form: HTMLElement | null = document.getElementById(
@@ -234,15 +260,18 @@ export class Form {
     );
 
     if (!form) {
-      console.error(`Form "${form}" not found.`);
+      this.log.err(`Form "${form}" not found.`);
       return [];
     }
 
     const surveyAnswers: NativeAnswer[] = [];
+    let hasError = false; // Flag to track if an error has occurred
 
     const inputs = form.querySelectorAll(".magicfeedback-input");
+
     inputs.forEach((input) => {
       const inputType = (input as HTMLInputElement).type;
+      //const required = (input as HTMLInputElement).required;
 
       const ans: NativeAnswer = {
         id: (input as HTMLInputElement).name,
@@ -250,23 +279,69 @@ export class Form {
         value: [],
       };
 
+      const value = (input as HTMLInputElement).value;
       if (inputType === "radio" || inputType === "checkbox") {
         if ((input as HTMLInputElement).checked) {
-          ans.value.push((input as HTMLInputElement).value);
+          ans.value.push(value);
           surveyAnswers.push(ans);
         }
       } else {
-        ans.value.push((input as HTMLInputElement).value);
+        ans.value.push(value);
         surveyAnswers.push(ans);
       }
     });
 
+    if (hasError) {
+      return []; // Stop the process if there's an error
+    }
+
     return surveyAnswers;
   }
 
-
   /**
-   * Send -> Pre / Post function
+   * Send
+   * @returns
    */
-  public send() {}
+  public async send() {
+    // Define the URL and request payload
+    const url = `${this.config.get("url")}/feedback/apps`;
+
+    try {
+      // Get the survey answers from the answer() function
+      const surveyAnswers = this.answer();
+      if (surveyAnswers.length === 0) {
+        throw new Error("No answers provided");
+      }
+
+      // Make the AJAX POST request
+      const response = await this.request.post(url, {
+        appId: this.appId,
+        answers: surveyAnswers,
+      });
+
+      if (response.ok) {
+        // Handle success response
+        this.log.log(`Form ${this.appId} submitted successfully!`);
+        // You can perform additional actions here if needed
+      } else {
+        // Handle error response
+        this.log.err(
+          `Failed to submit form ${this.appId}:`,
+          response.status,
+          response.statusText
+        );
+        throw new Error(response.statusText);
+      }
+
+      return response;
+    } catch (error) {
+      // Handle network or request error
+      this.log.err(
+        `An error occurred while submitting the form ${this.appId}:`,
+        error
+      );
+      // You can perform error handling logic here if needed
+      throw error;
+    }
+  }
 }
