@@ -238,7 +238,6 @@ export class Form {
         }
 
         return response;
-        
       } catch (error) {
         // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
         this.log.err(

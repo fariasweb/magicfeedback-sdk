@@ -47,12 +47,17 @@ export type NativeQuestion = {
 export type NativeAnswer = {
   id: string;
   type: string;
-  value: string[]
-}
-
+  value: string[];
+};
 
 export type generateFormOptions = {
   addButton?: boolean;
+  tag?: generateFormOptionsTag;
   afterSubmitEvent?: Function;
   beforeSubmitEvent?: Function;
 };
+
+enum generateFormOptionsTag {
+  FORM = "form",
+  DIV = "div",
+}
