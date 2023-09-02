@@ -138,7 +138,7 @@ export class Form {
             input.type = type === "RADIO" ? "radio" : "checkbox";
             input.name = ref;
             input.value = option;
-            input.required = require;
+            input.required = (require.toLocaleLowerCase() === "true") ? true : false;
             input.classList.add(elementTypeClass);
             input.classList.add("magicfeedback-input");
 
@@ -198,7 +198,7 @@ export class Form {
 
       if (type != "RADIO" && type != "MULTIPLECHOICE") {
         element.classList.add("magicfeedback-input");
-        (element as HTMLInputElement).required = require;
+        (element as HTMLInputElement).required = (require.toLocaleLowerCase() === "true") ? true : false;
       }
 
       elementContainer.appendChild(element);
