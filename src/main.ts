@@ -36,7 +36,7 @@ export default function main() {
 
     log = new Log(config);
 
-    log.log("Initialized Magicfeedback", options);
+    log.log("Initialized Magicfeedback", config);
   }
 
   /**

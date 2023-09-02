@@ -91,16 +91,6 @@ export class Form {
       } = question;
 
       this.log.log("Question", question);
-      this.log.log(
-        id,
-        title,
-        type,
-        ref,
-        require,
-        //external_id,
-        value,
-        defaultValue
-      );
 
       let element: HTMLElement;
       let elementTypeClass: string;
