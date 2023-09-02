@@ -90,6 +90,18 @@ export class Form {
         defaultValue,
       } = question;
 
+      this.log.log("Question", question);
+      this.log.log(
+        id,
+        title,
+        type,
+        ref,
+        require,
+        //external_id,
+        value,
+        defaultValue
+      );
+
       let element: HTMLElement;
       let elementTypeClass: string;
 
@@ -138,7 +150,8 @@ export class Form {
             input.type = type === "RADIO" ? "radio" : "checkbox";
             input.name = ref;
             input.value = option;
-            input.required = (require.toLocaleLowerCase() === "true") ? true : false;
+            input.required =
+              require.toLocaleLowerCase() === "true" ? true : false;
             input.classList.add(elementTypeClass);
             input.classList.add("magicfeedback-input");
 
@@ -198,7 +211,8 @@ export class Form {
 
       if (type != "RADIO" && type != "MULTIPLECHOICE") {
         element.classList.add("magicfeedback-input");
-        (element as HTMLInputElement).required = (require.toLocaleLowerCase() === "true") ? true : false;
+        (element as HTMLInputElement).required =
+          require.toLocaleLowerCase() === "true" ? true : false;
       }
 
       elementContainer.appendChild(element);
