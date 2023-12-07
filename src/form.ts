@@ -12,13 +12,15 @@ export class Form {
   private log: Log;
 
   private appId: string;
+  private publicKey: string;
 
   /**
    *
    * @param config
    * @param appId
+   * @param publicKey
    */
-  constructor(config: Config, appId: string) {
+  constructor(config: Config, appId: string, publicKey: string) {
     // Config
     this.config = config;
     this.request = new Request();
@@ -26,6 +28,7 @@ export class Form {
 
     // Attributes
     this.appId = appId;
+    this.publicKey = publicKey;
   }
 
   /**
@@ -36,9 +39,11 @@ export class Form {
   public generate(selector: string, options: generateFormOptions = {}) {
     //TODO: Check if already exist the form
 
+    this.log.log("Generating form for app", this.appId);
+
     // Request question from the app
     this.request
-      .get(`${this.config.get("url")}/apps/${this.appId}/questions`, {})
+      .get(`${this.config.get("url")}/sdk/app/${this.appId}/${this.publicKey}`, {})
       .then((appQuestions) => {
         if (appQuestions === undefined || !appQuestions) {
           this.log.err(`No questions for app ${this.appId}`);
@@ -140,8 +145,7 @@ export class Form {
             input.type = type === "RADIO" ? "radio" : "checkbox";
             input.name = ref;
             input.value = option;
-            input.required =
-              require.toLocaleLowerCase() === "true" ? true : false;
+            input.required = require;
             input.classList.add(elementTypeClass);
             input.classList.add("magicfeedback-input");
 
@@ -201,8 +205,7 @@ export class Form {
 
       if (type != "RADIO" && type != "MULTIPLECHOICE") {
         element.classList.add("magicfeedback-input");
-        (element as HTMLInputElement).required =
-          require.toLocaleLowerCase() === "true" ? true : false;
+        (element as HTMLInputElement).required = require;
       }
 
       elementContainer.appendChild(element);
@@ -219,6 +222,8 @@ export class Form {
 
       form.appendChild(submitButton);
     }
+
+    console.log("Form", form)
 
     // Add the form to the specified container
     container.appendChild(form);
@@ -280,8 +285,7 @@ export class Form {
       //const required = (input as HTMLInputElement).required;
 
       const ans: NativeAnswer = {
-        id: (input as HTMLInputElement).name,
-        type: inputType,
+        key: (input as HTMLInputElement).name,
         value: [],
       };
 
@@ -310,7 +314,7 @@ export class Form {
    */
   public async send() {
     // Define the URL and request payload
-    const url = `${this.config.get("url")}/feedback/apps`;
+    const url = `${this.config.get("url")}sdk/feedback`;
 
     try {
       // Get the survey answers from the answer() function
@@ -321,8 +325,12 @@ export class Form {
 
       // Make the AJAX POST request
       const response = await this.request.post(url, {
-        appId: this.appId,
-        answers: surveyAnswers,
+        integration: this.appId,
+        publicKey: this.publicKey,
+        feedback: {
+          answers: surveyAnswers,
+        }
+
       });
 
       if (response.ok) {

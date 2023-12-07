@@ -20,7 +20,7 @@ export default function main() {
   //===============================================
   // Private
   //===============================================
-  
+
 
   //===============================================
   // Public
@@ -73,13 +73,15 @@ export default function main() {
   }
 
   /**
-   * 
-   * @param appId 
-   * @returns 
+   *
+   * @param appId
+   * @param publicKey
+   * @returns
    */
-  function form(appId: string) {
-    if (!appId) log.err("No appID provided"); 
-    return new Form(config, appId);
+  function form(appId: string, publicKey: string) {
+    if (!appId) log.err("No appID provided");
+    if (!publicKey) log.err("No publicKey provided");
+    return new Form(config, appId, publicKey);
   }
 
   //===============================================

@@ -37,7 +37,7 @@ export type NativeQuestion = {
   title: string;
   type: FEEDBACKAPPANSWERTYPE;
   ref: string;
-  require: string;
+  require: boolean;
   external_id: string;
   value: string[];
   defaultValue: string;
@@ -45,8 +45,7 @@ export type NativeQuestion = {
 };
 
 export type NativeAnswer = {
-  id: string;
-  type: string;
+  key: string;
   value: string[];
 };
 
