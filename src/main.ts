@@ -46,7 +46,7 @@ export default function main() {
    * @param profile
    * @returns
    */
-  async function send(
+  /*async function send(
     appId: NativeFeedback["appId"],
     answers: NativeFeedback["answers"],
     profile?: NativeFeedback["profile"]
@@ -70,7 +70,7 @@ export default function main() {
       log.err(`error native feedback`, e);
     }
     return res;
-  }
+  }*/
 
   /**
    *
@@ -92,7 +92,7 @@ export default function main() {
     // lifecycle
     init,
     // requests
-    send,
+    //send,
     form,
   };
 }
