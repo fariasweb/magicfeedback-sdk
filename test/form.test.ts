@@ -10,10 +10,10 @@ import {
   NativeQuestion,
   FEEDBACKAPPANSWERTYPE,
   generateFormOptions,
-} from "../src/types";
+} from "../src/models/types";
 
-import { Form } from "../src/form";
-import { Config } from "../src/config";
+import { Form } from "../src/models/form";
+import { Config } from "../src/models/config";
 
 /**
  * Form.generate
@@ -355,7 +355,7 @@ describe("Form.generate", () => {
   });
 
   /**
-   * 
+   *
    */
   test("should log an error message when the specified selector is not found", () => {
     const questions: NativeQuestion[] = [

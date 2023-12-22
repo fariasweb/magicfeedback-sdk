@@ -1,4 +1,4 @@
-import { Config } from "./config";
+import { Config } from "../models/config";
 
 export class Log {
   /**
@@ -7,8 +7,8 @@ export class Log {
   private config: Config;
 
   /**
-   * 
-   * @param config 
+   *
+   * @param config
    */
   constructor(config: Config) {
     // Config

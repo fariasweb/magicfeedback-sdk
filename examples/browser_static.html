@@ -14,9 +14,8 @@
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="cover.css" rel="stylesheet">
-    <link href="../public/style.css" rel="stylesheet"></link>
-
+    <link href="cover.css" rel="stylesheet"/>
+    <link href="../public/style.css" rel="stylesheet"/>
 </head>
 
 <!-- BODY -->
@@ -26,28 +25,28 @@
     <!-- HEADER -->
     <header class="masthead mb-auto">
         <div class="inner">
-            <h3 class="masthead-brand">MagicFeedback AI</h3>
             <nav class="nav nav-masthead justify-content-center">
-                <a class="nav-link active" href="browser_static.html">Form</a>
+                <!-- LOGO -->
+                <img src="./assets/logo-dark-long.png" alt="MagicFeedbackAI" width="250px" height="auto">
             </nav>
         </div>
     </header>
 
     <!-- FORM -->
     <main role="main" class="inner cover">
-        <div id="demo_form_div"></div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="mastfoot mt-auto">
-        <div class="inner">
-            <p>Demo for <a href="https://magicfeedback.io/">MagicFeedback SDK</a>, by <a
-                    href="https://magicfeedback.io/">@magicfeedbackAI</a>.</p>
+        <div class="card">
+            <div id="demo_form_div" style="padding: 15px"></div>
         </div>
-    </footer>
+    </main>
 </div>
-
-
+<!-- FOOTER -->
+<footer class="mastfoot mt-auto">
+    <div class="inner">
+        <p>Demo for <a href="https://magicfeedback.io/">MagicFeedback SDK</a>, by <a
+                href="https://magicfeedback.io/">@magicfeedbackAI</a>.</p>
+    </div>
+</footer>
+</body>
 <!-- JavaScript
 ================================================== -->
 <script src="../dist/magicfeedback-sdk.browser.js"></script>
@@ -81,6 +80,75 @@
             }
         }
     );
+
+    /*
+    magicfeedback.send(
+        'f221a0d0-8d34-11ee-81e3-81ea6836afa4',
+        '596ce70871d352da65701709248fd687',
+        [
+            {
+                "key": "email",
+                "value": [
+                    "demo@minimals.cc"
+                ]
+            },
+            {
+                "key": "exp",
+                "value": [
+                    "Good"
+                ]
+            },
+            {
+                "key": "hours",
+                "value": [
+                    "3"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "Performance and speed"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "User interface and design"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "Additional functionality or features"
+                ]
+            },
+            {
+                "key": "renew",
+                "value": [
+                    "Neutral"
+                ]
+            },
+            {
+                "key": "started",
+                "value": [
+                    "2023-12-23"
+                ]
+            },
+            {
+                "key": "compare_product",
+                "value": [
+                    "a lot of use"
+                ]
+            },
+            {
+                "key": "name",
+                "value": [
+                    "Demo a"
+                ]
+            }
+        ]
+    )
+     */
 </script>
 </body>
 </html>
