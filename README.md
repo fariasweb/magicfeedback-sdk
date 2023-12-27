@@ -96,3 +96,30 @@ This function triggers the submission of the generated feedback form.
 
 By following these steps and including the appropriate HTML and JavaScript code snippets, you can easily generate and
 display feedback forms on your website using the magicfeedback service.
+
+### B. Send feedback directly
+With this option you can send feedback directly without generate a form. 
+This section provides an overview of how to use this feature and the necessary code snippets.
+
+To send feedback directly, you need to include the following JavaScript code snippet in your application:
+
+```js 
+window.magicfeedback.send(
+        "$_APP_ID",
+        "$_PUBLIC_KEY",
+        [
+            {
+                "key": 'string',
+                "value": ["string"]
+            },
+        ]
+    )
+```
+
+In this code snippet, you need to replace $_APP_ID with the actual ID of your feedback application and the $_PUBLIC_KEY with the public key of your feedback application. This ID and key is provided
+by the magicfeedback service. Next, can include the feedback data in the array of objects. Each object must have the following structure:
+
+* **key**: This setting determines the key of the feedback data.
+* **value**: This setting determines the value of the feedback data.
+
+Finally, to send the feedback, you can use the magicfeedback.send() function.
