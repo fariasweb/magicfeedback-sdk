@@ -68,7 +68,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const formSelect = container.querySelector("form");
@@ -89,7 +89,7 @@ describe("Form.generate", () => {
     const questions: NativeQuestion[] = [];
 
     let options: generateFormOptions = { addButton: true };
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container", options);
 
     const formSelect = container.querySelector("form");
@@ -115,7 +115,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const textarea = container.querySelector('textarea[name="feedback"]');
@@ -139,7 +139,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const numberInput = container.querySelector('input[name="age"]');
@@ -166,7 +166,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const radioButtons = container.querySelectorAll('input[name="gender"]');
@@ -200,7 +200,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const checkboxes = container.querySelectorAll('input[name="hobbies"]');
@@ -244,7 +244,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const select = container.querySelector('select[name="country"]');
@@ -276,7 +276,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const dateInput = container.querySelector('input[name="dob"]');
@@ -303,7 +303,7 @@ describe("Form.generate", () => {
       },
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container");
 
     const checkbox = container.querySelector('input[name="agree"]');
@@ -320,7 +320,7 @@ describe("Form.generate", () => {
       // Define your questions here
     ];
 
-    const form = new Form(new Config(), "app-id");
+    const form = new Form(new Config(), "app-id", 'public-key');
     form["generateForm"]("app-id", questions, "form-container", {
       addButton: false,
     });
@@ -365,7 +365,7 @@ describe("Form.generate", () => {
     console.error = jest.fn(); // Mock console.error method
 
     const appId = "nonexistent-app-id";
-    const form = new Form(new Config(), appId);
+    const form = new Form(new Config(), appId, 'public-key');
     form["generateForm"]("app-id", questions, "nonexistent-container");
 
     expect(console.error).toHaveBeenCalledWith(
@@ -395,12 +395,12 @@ describe("Form.answer", () => {
 
     const appId = "app-id";
     const expectedAnswers = [
-      { id: "input1", type: "text", value: ["Answer 1"] },
-      { id: "input2", type: "radio", value: ["Option 2"] },
-      { id: "input3", type: "checkbox", value: ["Option A"] },
+      { key: "input1", value: ["Answer 1"] },
+      { key: "input2", value: ["Option 2"] },
+      { key: "input3", value: ["Option A"] },
     ];
 
-    const form = new Form(new Config(), appId);
+    const form = new Form(new Config(), appId, 'public-key');
     const answers = form.answer();
     expect(answers).toEqual(expectedAnswers);
   });
@@ -413,7 +413,7 @@ describe("Form.answer", () => {
 
     const appId = "nonexistent-app-id";
 
-    const form = new Form(new Config(), appId);
+    const form = new Form(new Config(), appId, 'public-key');
     const answers = form.answer();
 
     expect(answers).toEqual([]);
@@ -429,7 +429,7 @@ describe("Form.answer", () => {
 
     const appId = "app-id";
 
-    const form = new Form(new Config(), appId);
+    const form = new Form(new Config(), appId, 'public-key');
     const answers = form.answer();
 
     expect(answers).toEqual([]);
@@ -449,11 +449,11 @@ describe("Form.answer", () => {
 
     const appId = "app-id";
     const expectedAnswers = [
-      { id: "input1", type: "checkbox", value: ["Option A"] },
-      { id: "input1", type: "checkbox", value: ["Option B"] },
+      { key: "input1", value: ["Option A"] },
+      { key: "input1", value: ["Option B"] },
     ];
 
-    const form = new Form(new Config(), appId);
+    const form = new Form(new Config(), appId, 'public-key');
     const answers = form.answer();
 
     expect(answers).toEqual(expectedAnswers);

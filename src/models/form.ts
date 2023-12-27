@@ -43,7 +43,7 @@ export class Form {
 
         // Request question from the app
         const url = this.config.get("url");
-        getQuestions(url as string, this.appId, this.publicKey, this.log).then((appQuestions) => {
+        getQuestions(url as string, this.appId, this.publicKey, this.log).then((appQuestions: NativeQuestion[]) => {
             if (appQuestions === undefined || !appQuestions) {
                 this.log.err(`No questions for app ${this.appId}`);
                 return;

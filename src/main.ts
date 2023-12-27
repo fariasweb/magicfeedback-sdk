@@ -60,7 +60,7 @@ export default function main() {
 
         try {
             const res = await sendFeedback(url as string, body, log);
-            log.log(`sent native feedback`, res);
+            log.log(`sent native feedback`);
             return res;
         } catch (e: any) {
             log.err(`error native feedback`, e);
