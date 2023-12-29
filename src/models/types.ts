@@ -5,12 +5,6 @@ export type InitOptions = {
   debug?: boolean;
 };
 
-export type NativeFeedback = {
-  appId: string;
-  answers: NativeFeedbackAnswer[];
-  profile?: NativeFeedbackProfile;
-};
-
 export type NativeFeedbackAnswer = {
   id: string;
   type?: FEEDBACKAPPANSWERTYPE;
@@ -48,6 +42,14 @@ export type NativeAnswer = {
   key: string;
   value: string[];
 };
+
+export type NativeFeedback = {
+  text: string,
+  answers: NativeAnswer[],
+  profile: NativeAnswer[],
+  metrics: NativeAnswer[],
+  metadata: NativeAnswer[],
+}
 
 export type generateFormOptions = {
   addButton?: boolean;

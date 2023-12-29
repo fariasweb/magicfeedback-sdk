@@ -1,4 +1,4 @@
-import {InitOptions, NativeAnswer} from "./models/types";
+import {InitOptions, NativeFeedback} from "./models/types";
 import {Form} from "./models/form";
 import {Config} from "./models/config";
 import {Log} from "./utils/log";
@@ -33,29 +33,38 @@ export default function main() {
      *
      * @param appId
      * @param publicKey
-     * @param answers
-     * @param profile
+     * @param feedback
+     * @param id
+     * @param completed
+     * @param privateKey
      * @returns
      */
     async function send(
         appId: string,
         publicKey: string,
-        answers: NativeAnswer[],
-        profile?: any
+        feedback: NativeFeedback,
+        completed: boolean = true,
+        id?: string,
+        privateKey?: string
     ) {
         if (!appId) log.err("No appID provided");
         if (!publicKey) log.err("No publicKey provided");
-        if (!answers) log.err("No answers provided");
-        if (answers.length == 0) log.err("Answers are empty");
+        if (!feedback) log.err("No feedback provided");
+
+        if (!feedback.answers &&
+            !feedback.profile &&
+            !feedback.metrics &&
+            !feedback.metadata
+        ) log.err("No feedback data provided");
 
         const url = config.get("url");
         const body = {
             integration: appId,
             publicKey: publicKey,
-            feedback: {
-                answers: answers,
-                profile: profile
-            },
+            privateKey: privateKey,
+            completed: completed,
+            id: id,
+            feedback: feedback,
         }
 
         try {
