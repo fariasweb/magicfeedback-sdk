@@ -19,7 +19,9 @@ export class Form {
 
     private formData: FormData | null;
     private questions: NativeQuestion[];
-    private progress: number;
+    private elementQuestions: HTMLElement[];
+    public progress: number;
+    public total: number;
 
 
     /**
@@ -41,7 +43,9 @@ export class Form {
         // Data
         this.formData = null;
         this.questions = [];
+        this.elementQuestions = [];
         this.progress = 0;
+        this.total = 0;
     }
 
     /**
@@ -68,6 +72,7 @@ export class Form {
             }
 
             this.questions = appQuestions;
+            this.total = appQuestions.length;
             // Create the form from the JSON
             this.generateForm(this.appId, appQuestions, selector, options);
         });
@@ -104,14 +109,14 @@ export class Form {
         // If the form is identity like survey
 
         // Process questions and create in the form
-        const elementQuestions = renderQuestions(appQuestions);
+        this.elementQuestions = renderQuestions(appQuestions);
 
         switch (this.formData?.identity) {
             case 'MAGICSURVEY':
-                form.appendChild(elementQuestions[0]);
+                form.appendChild(this.elementQuestions[0]);
                 break;
             default:
-                elementQuestions.forEach((element) =>
+                this.elementQuestions.forEach((element) =>
                     form.appendChild(element));
                 break;
         }
@@ -137,12 +142,37 @@ export class Form {
                     await options.beforeSubmitEvent();
                 }
 
+                let response;
+
                 // SEND
-                const response = await this.send();
+                if (this.formData?.identity === 'MAGICSURVEY') {
+                    // response = await this.send();
+                    response = true;
+
+                    if (response) {
+                        this.progress++;
+
+                        if (this.progress < this.total) {
+                            form.removeChild(this.elementQuestions[this.progress - 1]);
+                            form.appendChild(this.elementQuestions[this.progress]);
+                        } else {
+                            this.progress = 100;
+                        }
+
+                    }
+                } else {
+                    response = await this.send();
+                    if (response) this.progress = 100;
+                }
+
 
                 // AFTER
                 if (options.afterSubmitEvent) {
-                    await options.afterSubmitEvent(response);
+                    await options.afterSubmitEvent({
+                        response,
+                        progress: this.progress,
+                        total: this.questions.length,
+                    });
                 }
 
                 return response;
