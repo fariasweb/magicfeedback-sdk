@@ -39,11 +39,18 @@ body {
  * Header
  */
 .masthead {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 
 .masthead-brand {
     margin-bottom: 0;
+}
+
+.nav-masthead {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .nav-masthead .nav-link {
@@ -78,6 +85,10 @@ body {
 /*
  * Cover
  */
+.cover-container {
+    min-height: calc(100vh - 100px);
+}
+
 .cover {
     padding: 1.5rem 1.5rem;
 }

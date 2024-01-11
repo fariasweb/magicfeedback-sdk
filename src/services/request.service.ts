@@ -3,6 +3,7 @@ import modulePackage from "../../package.json";
 import {Log} from "../utils/log";
 import {endpoints} from "./paths";
 import {NativeQuestion} from "../models/types";
+import {FormData} from "../models/formData";
 
 const header = {
     Accept: "application/json",
@@ -13,6 +14,33 @@ const header = {
 const serializedParams = (params: any) => Object.entries(params).map(
     ([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
 ).join("&");
+
+export async function getForm(url: string, appId: string, publicKey: string, log: Log): Promise<FormData | null> {
+    try {
+        const response = await fetch(url + endpoints.sdk.app_info(appId, publicKey), {
+            method: "GET",
+            headers: header
+        });
+
+        if (response.ok) {
+            // Handle success response
+            const json = await response.json();
+            log.log(`Received form for app ${appId}`, json);
+            return json;
+        } else {
+            // Handle error response
+            log.err(
+                `Failed to get questions for app ${appId}:`,
+                response.status,
+                response.statusText
+            );
+            throw new Error("[MagicFeedback] Bad response from server");
+        }
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
 
 export async function getQuestions(url: string, appId: string, publicKey: string, log: Log): Promise<NativeQuestion[]> {
     try {
