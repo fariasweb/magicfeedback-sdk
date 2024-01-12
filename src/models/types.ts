@@ -36,6 +36,7 @@ export type NativeQuestion = {
   value: string[];
   defaultValue: string;
   appId: string;
+  followup: boolean;
 };
 
 export type NativeAnswer = {

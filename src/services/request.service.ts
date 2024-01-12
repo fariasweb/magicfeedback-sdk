@@ -37,7 +37,7 @@ export async function getForm(url: string, appId: string, publicKey: string, log
             throw new Error("[MagicFeedback] Bad response from server");
         }
     } catch (e) {
-        console.error(e);
+        log.err(e);
         return null;
     }
 }
@@ -64,12 +64,12 @@ export async function getQuestions(url: string, appId: string, publicKey: string
             throw new Error("[MagicFeedback] Bad response from server");
         }
     } catch (e) {
-        console.error(e);
+        log.err(e);
         return [];
     }
 }
 
-export async function sendFeedback(url: string, body: any, log: Log): Promise<boolean> {
+export async function sendFeedback(url: string, body: any, log: Log): Promise<string> {
     try {
         const response = await fetch(url + endpoints.sdk.feedback, {
             method: "POST",
@@ -81,7 +81,8 @@ export async function sendFeedback(url: string, body: any, log: Log): Promise<bo
             // Handle success response
             log.log(`Form ${body.integration} submitted successfully!`);
             // You can perform additional actions here if needed
-            return true;
+            const responseJson = await response.json();
+            return responseJson.id;
         } else {
             // Handle error response
             log.err(
@@ -92,7 +93,36 @@ export async function sendFeedback(url: string, body: any, log: Log): Promise<bo
             throw new Error(response.statusText);
         }
     } catch (e) {
-        console.error(e);
-        return false;
+        log.err(e);
+        return '';
+    }
+}
+
+export async function getFollowUpQuestion(url: string, body: any, log: Log): Promise<any> {
+    try {
+        const response = await fetch(url + endpoints.sdk.followUpQuestion, {
+            method: "POST",
+            headers: {...{"Content-Type": "application/json"}, ...header},
+            body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+            // Handle success response
+            log.log(`Received follow up question for form ${body.integration}`);
+            // You can perform additional actions here if needed
+            const responseJson = await response.json();
+            return responseJson.id;
+        } else {
+            // Handle error response
+            log.err(
+                `Failed to get follow up question for form ${body.integration}:`,
+                response.status,
+                response.statusText
+            );
+            throw new Error(response.statusText);
+        }
+    } catch (e) {
+        log.err(e);
+        return '';
     }
 }
