@@ -135,7 +135,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
     return questions;
 }
 
-export function renderActions(identity: string = ''): HTMLElement {
+export function renderActions(identity: string = '', backAction: () => void): HTMLElement {
 
     const actionContainer = document.createElement("div");
     actionContainer.classList.add("magicfeedback-action-container");
@@ -153,6 +153,7 @@ export function renderActions(identity: string = ''): HTMLElement {
     backButton.type = "button";
     backButton.classList.add("magicfeedback-back");
     backButton.textContent = "Back";
+    backButton.addEventListener("click", backAction);
 
     if (identity === 'MAGICSURVEY') {
         actionContainer.appendChild(backButton);
@@ -161,4 +162,18 @@ export function renderActions(identity: string = ''): HTMLElement {
     actionContainer.appendChild(submitButton);
 
     return actionContainer;
+}
+
+export function renderError(error: string): HTMLElement {
+    const errorElement = document.createElement("div");
+    errorElement.classList.add("magicfeedback-error");
+    errorElement.textContent = error;
+    return errorElement;
+}
+
+export function renderSuccess(success: string): HTMLElement {
+    const successElement = document.createElement("div");
+    successElement.classList.add("magicfeedback-success");
+    successElement.textContent = success;
+    return successElement;
 }

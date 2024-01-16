@@ -80,7 +80,7 @@
 }
 
 /* Submit button styles */
-.magicfeedback-submit {
+.magicfeedback-submit, .magicfeedback-back {
   display: inline-block;
   padding: 6px 12px;
   margin-bottom: 0;
@@ -102,13 +102,17 @@
 
 /* Submit button */
 .magicfeedback-submit:hover,
-.magicfeedback-submit:focus {
+.magicfeedback-back:hover,
+.magicfeedback-submit:focus,
+.magicfeedback-back:focus {
   background-color: #0069d9;
   border-color: #0062cc;
 }
 
 .magicfeedback-submit:active,
 .magicfeedback-submit.active,
+.magicfeedback-back:active,
+.magicfeedback-back.active,
 .open > .dropdown-toggle.magicfeedback-submit {
   background-color: #005cbf;
   border-color: #0056b3;
@@ -143,7 +147,24 @@ fieldset[disabled] .magicfeedback-submit.focus {
   border-color: #007bff;
 }
 
-.magicfeedback-submit .badge {
+.magicfeedback-back.disabled,
+.magicfeedback-back[disabled],
+fieldset[disabled] .magicfeedback-back,
+.magicfeedback-back.disabled:hover,
+.magicfeedback-back[disabled]:hover,
+fieldset[disabled] .magicfeedback-back:hover,
+.magicfeedback-back.disabled:focus,
+.magicfeedback-back[disabled]:focus,
+fieldset[disabled] .magicfeedback-back:focus,
+.magicfeedback-back.disabled.focus,
+.magicfeedback-back[disabled].focus,
+fieldset[disabled] .magicfeedback-back.focus {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.magicfeedback-submit .badge,
+.magicfeedback-back .badge {
   color: #007bff;
   background-color: #ffffff;
 }

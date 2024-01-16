@@ -99,13 +99,56 @@ body {
 }
 
 /*
-* Card
- */
+    Card
+*/
 .card {
     background-color: #ffffff;
     border: 0;
     border-radius: .75rem;
     box-shadow: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #212529;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+/*
+     Loading
+*/
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, .5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading.show {
+    opacity: 1;
+}
+
+.loading .spin {
+    width: 65px;
+    height: 65px;
+    border: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .magicfeedback-label {
@@ -156,6 +199,29 @@ body {
     margin-bottom: 10px;
     margin-left: 5px;
 }
+
+.magicfeedback-action-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    min-width: 450px;
+}
+
+.magicfeedback-submit, .magicfeedback-back {
+    margin: auto;
+    background: #007bff;
+    font-weight: inherit;
+    font-size: 12px;
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+    width: 200px;
+    height: auto;
+}
+
+
 
 /*
  * Footer

@@ -35,9 +35,15 @@
     <!-- FORM -->
     <main role="main" class="inner cover">
         <div class="card">
+            <div class="card-header">
+                <h6 class="card-title" id="count-questions">Demo</h6>
+            </div>
             <div id="demo_form_div" style="padding: 15px"></div>
         </div>
     </main>
+    <div class="loading">
+        <div class="spin"></div>
+    </div>
 </div>
 <!-- FOOTER -->
 <footer class="mastfoot mt-auto">
@@ -51,6 +57,7 @@
 ================================================== -->
 <script src="../dist/magicfeedback-sdk.browser.js"></script>
 <script>
+    const countQuestions = document.getElementById('count-questions');
     window.magicfeedback.init({
         /*
         * LOCAL
@@ -74,12 +81,21 @@
             addButton: true,
             beforeSubmitEvent: function () {
                 console.log("BEFORE")
+                document.querySelector(".loading").style.visibility = "visible";
             },
             afterSubmitEvent: function (response) {
-                console.log("AFTER")
+                console.log("AFTER", response);
+                document.querySelector(".loading").style.visibility = "hidden";
+                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                if (response.error) alert(response.error);
+
             }
         }
     );
+
+    // Update count questions
+    countQuestions.innerHTML = `${form.progress} of ${form.total} answered`;
+    document.querySelector(".loading").style.visibility = "hidden";
 
     /*
     magicfeedback.send(
