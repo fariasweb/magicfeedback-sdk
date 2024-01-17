@@ -7,7 +7,7 @@ import {
 } from "@jest/globals";
 
 import main from "../src/main";
-import {NativeAnswer} from "../src/models/types";
+import {NativeAnswer, NativeFeedback} from "../src/models/types";
 
 
 jest.mock("../src/models/config");
@@ -36,12 +36,17 @@ describe("Main Function Tests", () => {
         const appId = 'yourAppId';
         const publicKey = 'yourPublicKey';
         const answers: NativeAnswer[] = [{key: 'Q1', value: ['A1']}];
+        // Partial<NativeFeedback> is used to make the test easier
+        const fakeFeedback: Partial<NativeFeedback> = {
+            text: 'test',
+            answers: answers,
+        }
 
         const sendFeedbackMock = jest.spyOn(requestService, "sendFeedback");
 
         sendFeedbackMock.mockResolvedValueOnce(true);
 
-        const result = await mainInstance.send(appId, publicKey, answers);
+        const result = await mainInstance.send(appId, publicKey, fakeFeedback as NativeFeedback);
         // You can add assertions based on your application logic
         expect(result).toBe(true);
     });

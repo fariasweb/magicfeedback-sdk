@@ -104,7 +104,7 @@ describe('request.service', () => {
             });
 
             expect(logMock.log).toHaveBeenCalledWith(`Form ${body.integration} submitted successfully!`);
-            expect(result).toEqual(true);
+            expect(result).toEqual("");
         });
 
         test('should handle error while sending feedback', async () => {
@@ -119,7 +119,7 @@ describe('request.service', () => {
 
             const result = await sendFeedback(url, body, logMock);
 
-            expect(result).toEqual(false);
+            expect(result).toEqual("");
 
             expect(mockedFetch).toHaveBeenCalledWith(`${url}${endpoints.sdk.feedback}`, {
                 method: 'POST',

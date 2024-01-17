@@ -17,10 +17,18 @@ export class Form {
     private readonly publicKey: string;
     private readonly url: string;
 
-    private id: string;
+    // Form completed data
     private formData: FormData | null;
-    private questions: NativeQuestion[];
+
+    // Questions
+    public questions: NativeQuestion[];
+    private questionInProcess: NativeQuestion | null;
+
+    // History of questions diccionary
+    private history: Record<number, HTMLElement[]>;
     private elementQuestions: HTMLElement[];
+
+    // Count variables
     public progress: number;
     public total: number;
 
@@ -42,10 +50,13 @@ export class Form {
         this.url = config.get("url") as string;
 
         // Data
-        this.id = '';
         this.formData = null;
         this.questions = [];
         this.elementQuestions = [];
+        this.questionInProcess = null;
+        this.history = {};
+
+        // Count variables
         this.progress = 0;
         this.total = 0;
     }
@@ -57,27 +68,34 @@ export class Form {
      * @param options
      */
     public async generate(selector: string, options: generateFormOptions = {}) {
-        this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
+        try {
+            this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
 
-        if (this.formData === undefined || !this.formData) {
-            this.log.err(`No form for app ${this.appId}`);
-            return;
-        }
+            if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
 
-        this.log.log("Generating form for app", this.appId);
+            this.log.log("Generating form for app", this.appId);
 
-        // Request question from the app
-        getQuestions(this.url, this.appId, this.publicKey, this.log).then((appQuestions: NativeQuestion[]) => {
-            if (appQuestions === undefined || !appQuestions) {
-                this.log.err(`No questions for app ${this.appId}`);
-                return;
+            this.questions = await getQuestions(this.url, this.appId, this.publicKey, this.log);
+
+            if (this.questions === undefined || !this.questions) throw new Error(`No questions for app ${this.appId}`);
+
+            this.total = this.questions.length;
+
+            // Send the data to manage loadings and progress
+            if (options.onLoadedEvent) {
+                await options.onLoadedEvent({
+                    loading: false,
+                    progress: this.progress,
+                    total: this.total,
+                });
             }
 
-            this.questions = appQuestions;
-            this.total = appQuestions.length;
             // Create the form from the JSON
-            this.generateForm(this.appId, appQuestions, selector, options);
-        });
+            this.generateForm(selector, options);
+        } catch (e) {
+            this.log.err(e);
+            return;
+        }
     }
 
     /**
@@ -90,139 +108,132 @@ export class Form {
      * TODO: Add option to generate in <form> or in other <tag>
      */
     private generateForm(
-        appId: string,
-        appQuestions: NativeQuestion[],
         selector: string,
         options: generateFormOptions = {}
     ) {
-        // Select the container
-        const container: HTMLElement | null = document.getElementById(selector);
-        if (!container) {
-            this.log.err(`Element with ID '${selector}' not found.`);
+        try {
+            // Select and prepare the container
+            const container: HTMLElement | null = document.getElementById(selector);
+            if (!container) throw new Error(`Element with ID '${selector}' not found.`);
+            container.classList.add("magicfeedback-container");
+            container.innerHTML = "";
+
+            // Create the form
+            const form = document.createElement("form");
+            form.classList.add("magicfeedback-form");
+            form.id = "magicfeedback-" + this.appId;
+
+            // Create the questions container
+            const questionContainer = document.createElement("div");
+            questionContainer.classList.add("magicfeedback-questions");
+            questionContainer.id = "magicfeedback-questions-" + this.appId;
+
+            // Process questions and create in the form
+            this.elementQuestions = renderQuestions(this.questions);
+
+            switch (this.formData?.identity) {
+                case 'MAGICSURVEY':
+                    this.elementQuestions.forEach((element, index) =>
+                        this.history[index] = [element]
+                    );
+                    this.questionInProcess = this.questions[0];
+                    questionContainer.appendChild(this.history[0][0]);
+                    break;
+                default:
+                    this.elementQuestions.forEach((element) =>
+                        questionContainer.appendChild(element));
+                    break;
+            }
+
+            form.appendChild(questionContainer);
+
+            // Add the form to the specified container
+            container.appendChild(form);
+
+            // Submit button
+            if (options.addButton) {
+                // Create a container for the buttons
+                const actionContainer = renderActions(
+                    this.formData?.identity,
+                    () => this.renderBack(questionContainer)
+                );
+
+                form.appendChild(actionContainer);
+            }
+
+
+            // Submit event
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                this.sendProcess(options, container, questionContainer)
+            });
+        } catch (e) {
+            this.log.err(e);
             return;
         }
-        container.classList.add("magicfeedback-container");
-
-        // Create the form
-        const form = document.createElement("form");
-        form.classList.add("magicfeedback-form");
-        form.id = "magicfeedback-" + appId;
-
-        const questionContainer = document.createElement("div");
-        questionContainer.classList.add("magicfeedback-questions");
-        questionContainer.id = "magicfeedback-questions-" + appId;
-
-        // Process questions and create in the form
-        this.elementQuestions = renderQuestions(appQuestions);
-
-        switch (this.formData?.identity) {
-            case 'MAGICSURVEY':
-                questionContainer.appendChild(this.elementQuestions[0]);
-                break;
-            default:
-                this.elementQuestions.forEach((element) =>
-                    questionContainer.appendChild(element));
-                break;
-        }
-
-        form.appendChild(questionContainer);
-
-        // Add the form to the specified container
-        container.appendChild(form);
-
-        // Submit button
-        if (options.addButton) {
-            // Create a container for the buttons
-            const actionContainer = renderActions(this.formData?.identity, () => {
-                if (this.progress === 0) return;
-                form.removeChild(this.elementQuestions[this.progress]);
-                form.appendChild(this.elementQuestions[this.progress - 1]);
-                this.progress--;
-            });
-
-            form.appendChild(actionContainer);
-        }
-
-
-        // Submit event
-        form.addEventListener("submit", async (event) => {
-            console.log("Submit event", event);
-            event.preventDefault();
-
-            try {
-                // BEFORE
-                if (options.beforeSubmitEvent) {
-                    await options.beforeSubmitEvent({
-                        loading: true,
-                        progress: this.progress,
-                        total: this.total
-                    });
-                }
-
-                // SEND
-                const response = await this.send(
-                    this.formData?.identity !== 'MAGICSURVEY'
-                );
-
-                if (!response) throw new Error("An error occurred while submitting the form.");
-
-                this.id = response;
-                await this.processNextQuestion(container, questionContainer);
-
-                // AFTER
-                if (options.afterSubmitEvent) {
-                    await options.afterSubmitEvent({
-                        response,
-                        loading: false,
-                        progress: this.progress,
-                        total: this.questions.length,
-                    });
-                }
-
-                return response;
-            } catch (error) {
-                // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
-                this.log.err(
-                    `An error occurred while submitting the form ${this.appId}:`,
-                    error
-                );
-
-                if (options.afterSubmitEvent) {
-                    await options.afterSubmitEvent({
-                        loading: false,
-                        progress: this.progress,
-                        total: this.questions.length,
-                        error
-                    });
-                }
-
-                // You can perform error handling logic here if needed
-                return error;
-            }
-        });
-
-        form.addEventListener("magicfeedback-back", async (event) => {
-            console.log("Back event", event);
-            event.preventDefault();
-
-            try {
-                if (this.progress === 0) return;
-                form.removeChild(this.elementQuestions[this.progress]);
-                form.appendChild(this.elementQuestions[this.progress - 1]);
-                this.progress--;
-                return;
-            } catch (error) {
-                // Handle error in beforeBackEvent, send(), or afterBackEvent
-                this.log.err(
-                    `An error occurred while submitting the form ${this.appId}:`,
-                    error
-                );
-
-                // You can perform error handling logic here if needed
-                return error;
-            }
-        });
     }
+
+
+    /**
+     *
+     * @private
+     */
+    private async sendProcess(
+        options: generateFormOptions,
+        container: HTMLElement,
+        questionContainer: HTMLElement
+    ) {
+        try {
+            // BEFORE
+            if (options.beforeSubmitEvent) {
+                await options.beforeSubmitEvent({
+                    loading: true,
+                    progress: this.progress,
+                    total: this.total
+                });
+            }
+
+            // SEND
+            const response = await this.send(
+                this.formData?.identity !== 'MAGICSURVEY'
+            );
+
+            if (this.formData) this.formData.id = response;
+
+            await this.processNextQuestion(container, questionContainer);
+
+            // AFTER
+            if (options.afterSubmitEvent) {
+                await options.afterSubmitEvent({
+                    response,
+                    loading: false,
+                    progress: this.progress,
+                    total: this.total,
+                });
+            }
+
+            return response;
+        } catch (error) {
+            // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
+            this.log.err(
+                `An error occurred while submitting the form ${this.appId}:`,
+                error
+            );
+
+            if (options.afterSubmitEvent) {
+                await options.afterSubmitEvent({
+                    loading: false,
+                    progress: this.progress,
+                    total: this.total,
+                    error
+                });
+            }
+
+            // You can perform error handling logic here if needed
+            return error;
+        }
+    }
+
 
     /**
      * Answer
@@ -282,7 +293,7 @@ export class Form {
             // Get the survey answers from the answer() function
             const surveyAnswers = this.answer();
 
-            if (surveyAnswers.length === 0) throw new Error("No answers provided");
+            if (surveyAnswers.length === 0 && !completed) throw new Error("No answers provided");
 
             // Define the URL and request payload
             const url = this.config.get("url");
@@ -298,11 +309,12 @@ export class Form {
             // Make the AJAX POST request
             return await sendFeedback(
                 url as string,
-                this.id ? {...body, sessionId: this.id} : body,
+                this.formData?.id ? {...body, sessionId: this.formData?.id} : body,
                 this.log
             );
 
-        } catch (error) {
+        } catch
+            (error) {
             // Handle network or request error
             this.log.err(
                 `An error occurred while submitting the form ${this.appId}:`,
@@ -319,10 +331,9 @@ export class Form {
      * @private
      */
 
-    private async callFollowUpQuestion(question: NativeQuestion): Promise<NativeQuestion | null> {
+    private async callFollowUpQuestion(question: NativeQuestion | null): Promise<NativeQuestion | null> {
+        if (!question?.followup) return null;
         try {
-            if (!question.followup) throw new Error("No follow up question");
-
             // Get the survey answers from the answer() function
             const surveyAnswers = this.answer();
 
@@ -333,7 +344,7 @@ export class Form {
             const body = {
                 answer: surveyAnswers[0].value[0],
                 publicKey: this.publicKey,
-                sessionId: this.id,
+                sessionId: this.formData?.id,
                 question
             }
 
@@ -350,7 +361,6 @@ export class Form {
             );
             // You can perform error handling logic here if needed
             throw error;
-            return null;
         }
     }
 
@@ -368,23 +378,30 @@ export class Form {
                 this.progress = this.questions.length;
                 break;
             case 'MAGICSURVEY':
-                if (this.questions[this.progress].followup) {
-                    const followUp = await this.callFollowUpQuestion(this.questions[this.progress]);
+                if (!this.questionInProcess?.followup) {
+                    this.renderNext(form, container);
+                } else {
+                    const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
+                        this.questionInProcess = followUp;
+                        if (!this.questions[this.progress].followupQuestion) {
+                            this.questions[this.progress].followupQuestion = [followUp];
+                        } else {
+                            this.questions[this.progress].followupQuestion.push(followUp);
+                        }
                         const question = renderQuestions([followUp])[0];
-                        console.log(question);
-                        form.removeChild(this.elementQuestions[this.progress]);
+                        this.history[this.progress].push(question);
+
+                        form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
                         this.renderNext(form, container);
                     }
-                } else {
-                    this.renderNext(form, container);
                 }
                 break;
             default:
                 // Remove the form
-                container.removeChild(form);
+                container.removeChild(container.childNodes[0]);
 
                 // Show the success message
                 const successMessage = renderSuccess("Thank you for your feedback!");
@@ -404,15 +421,39 @@ export class Form {
     private renderNext(form: HTMLElement, container: HTMLElement) {
         this.progress++;
         if (this.progress < this.total) {
-            form.removeChild(this.elementQuestions[this.progress - 1]);
-            form.appendChild(this.elementQuestions[this.progress]);
+            this.questionInProcess = this.questions[this.progress];
+            form.removeChild(form.childNodes[0]);
+            form.appendChild(this.history[this.progress][0]);
         } else {
             // Remove the form
-            container.removeChild(form);
+            container.removeChild(container.childNodes[0]);
 
             // Show the success message - Remove in the future
             const successMessage = renderSuccess("Thank you for your feedback!");
             container.appendChild(successMessage);
+            this.send(true)
+        }
+    }
+
+    /**
+     * Render back question
+     * @param form
+     * @private
+     */
+    private renderBack(form: HTMLElement) {
+        if (this.progress === 0) return;
+        form.removeChild(form.childNodes[0]);
+        if (this.history[this.progress].length > 1) {
+            // Delete the last question in the history array and load the previous one
+            this.history[this.progress].pop();
+            this.questions[this.progress].followupQuestion.pop()
+            this.questionInProcess = this.questions[this.progress].followupQuestion[this.questions[this.progress].followupQuestion.length - 1];
+            form.appendChild(this.history[this.progress][this.history[this.progress].length - 1]);
+        } else {
+            // Use the previous question in the history array
+            this.progress--;
+            this.questionInProcess = this.questions[this.progress];
+            form.appendChild(this.history[this.progress][0]);
         }
     }
 }

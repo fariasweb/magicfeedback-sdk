@@ -36,7 +36,9 @@
     <main role="main" class="inner cover">
         <div class="card">
             <div class="card-header">
-                <h6 class="card-title" id="count-questions">Demo</h6>
+                <h6 class="card-title" id="count-questions"></h6>
+            </div>
+            <div class="breadcrumb">
             </div>
             <div id="demo_form_div" style="padding: 15px"></div>
         </div>
@@ -88,14 +90,14 @@
                 document.querySelector(".loading").style.visibility = "hidden";
                 countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
                 if (response.error) alert(response.error);
-
-            }
+            },
+            onLoadedEvent: function (response) {
+                console.log("LOADED", response);
+                document.querySelector(".loading").style.visibility = "hidden";
+                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+            },
         }
     );
-
-    // Update count questions
-    countQuestions.innerHTML = `${form.progress} of ${form.total} answered`;
-    document.querySelector(".loading").style.visibility = "hidden";
 
     /*
     magicfeedback.send(

@@ -64,9 +64,27 @@ let form = window.magicfeedback.form(
 form.generate(
     "demo_form_div",
     {
-        addButton: true | false // Default false
-        beforeSubmitEvent: function (), //Function to execute before send the form
-        afterSubmitEvent: function (response), //Function to execute after send the form with the response
+        addButton: true | false, // Default false
+        beforeSubmitEvent: ({
+                                loading: boolean,
+                                progress: number,
+                                total: number
+                            }) => {
+        }, //Function to execute before send the form
+        afterSubmitEvent: ({
+                               loading: boolean,
+                               progress: number,
+                               total: number,
+                               response: string, // Response of the server if everything is ok
+                               error: string, // Error of the server if something is wrong
+                           }) => {
+        }, //Function to execute after send the form with the response
+        onLoadedEvent: ({
+                            loading: boolean,
+                            progress: number,
+                            total: number,
+                        }) => {
+        } //Function to execute after load the form
     }
 )
 ```
@@ -83,6 +101,7 @@ this example). You can customize the form generation by including the optional p
   is submitted.
 * **afterSubmitEvent**: An optional function that you can define to execute actions after the form is submitted. This
   function receives the server response as a parameter.
+* **onLoadedEvent**: An optional function that you can define to execute actions after the form is loaded.
 
 Finally, to send the form, you can use the form.send() function.
 
@@ -116,9 +135,10 @@ window.magicfeedback.send(
 ```
 
 In this code snippet, you need to replace $_APP_ID with the actual ID of your feedback application and the $_PUBLIC_KEY
-with the public key of your feedback application. This ID and key is provided by the magicfeedback service. 
+with the public key of your feedback application. This ID and key is provided by the magicfeedback service.
 
 ###### FeedbackData
+
 Then, you can include the feedback data in an object with the following structure:
 
     {
