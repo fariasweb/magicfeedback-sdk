@@ -19,6 +19,7 @@ export class Form {
 
     // Form completed data
     private formData: FormData | null;
+    private id: string;
 
     // Questions
     public questions: NativeQuestion[];
@@ -50,6 +51,7 @@ export class Form {
         this.url = config.get("url") as string;
 
         // Data
+        this.id = "";
         this.formData = null;
         this.questions = [];
         this.elementQuestions = [];
@@ -115,6 +117,7 @@ export class Form {
             // Select and prepare the container
             const container: HTMLElement | null = document.getElementById(selector);
             if (!container) throw new Error(`Element with ID '${selector}' not found.`);
+            container.id = "magicfeedback-container-" + this.appId;
             container.classList.add("magicfeedback-container");
             container.innerHTML = "";
 
@@ -155,7 +158,7 @@ export class Form {
                 // Create a container for the buttons
                 const actionContainer = renderActions(
                     this.formData?.identity,
-                    () => this.renderBack(questionContainer)
+                    () => this.renderBack()
                 );
 
                 form.appendChild(actionContainer);
@@ -165,7 +168,7 @@ export class Form {
             // Submit event
             form.addEventListener("submit", async (event) => {
                 event.preventDefault();
-                this.sendProcess(options, container, questionContainer)
+                this.sendProcess(options)
             });
         } catch (e) {
             this.log.err(e);
@@ -175,14 +178,17 @@ export class Form {
 
 
     /**
-     *
-     * @private
+     * Process the next question
+     * @param options
+     * @param container
+     * @pubilc
      */
-    private async sendProcess(
+    public async sendProcess(
         options: generateFormOptions,
-        container: HTMLElement,
-        questionContainer: HTMLElement
     ) {
+        const container =document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
+        const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
+
         try {
             // BEFORE
             if (options.beforeSubmitEvent) {
@@ -198,7 +204,7 @@ export class Form {
                 this.formData?.identity !== 'MAGICSURVEY'
             );
 
-            if (this.formData) this.formData.id = response;
+            this.id = response;
 
             await this.processNextQuestion(container, questionContainer);
 
@@ -286,14 +292,16 @@ export class Form {
 
     /**
      * Send
+     * @param completed
+     * @param skipValidation
      * @returns
      */
-    public async send(completed: boolean = false): Promise<string> {
+    private async send(completed: boolean = false, skipValidation = false): Promise<string> {
         try {
             // Get the survey answers from the answer() function
             const surveyAnswers = this.answer();
 
-            if (surveyAnswers.length === 0 && !completed) throw new Error("No answers provided");
+            if (!skipValidation && surveyAnswers.length === 0) throw new Error("No answers provided");
 
             // Define the URL and request payload
             const url = this.config.get("url");
@@ -302,6 +310,9 @@ export class Form {
                 publicKey: this.publicKey,
                 feedback: {
                     answers: surveyAnswers,
+                    metadata: [
+                        { 'key': 'url', 'value': window.location.href },
+                    ],
                 },
                 completed,
             }
@@ -309,7 +320,7 @@ export class Form {
             // Make the AJAX POST request
             return await sendFeedback(
                 url as string,
-                this.formData?.id ? {...body, sessionId: this.formData?.id} : body,
+                this.id ? {...body, sessionId: this.id} : body,
                 this.log
             );
 
@@ -431,16 +442,17 @@ export class Form {
             // Show the success message - Remove in the future
             const successMessage = renderSuccess("Thank you for your feedback!");
             container.appendChild(successMessage);
-            this.send(true)
+            this.send(true, true);
         }
     }
 
     /**
      * Render back question
-     * @param form
      * @private
      */
-    private renderBack(form: HTMLElement) {
+    public renderBack() {
+        const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
+
         if (this.progress === 0) return;
         form.removeChild(form.childNodes[0]);
         if (this.history[this.progress].length > 1) {
