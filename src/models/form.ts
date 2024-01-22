@@ -96,6 +96,14 @@ export class Form {
             this.generateForm(selector, options);
         } catch (e) {
             this.log.err(e);
+
+            if (options.onLoadedEvent) {
+                await options.onLoadedEvent({
+                    loading: false,
+                    error: e,
+                });
+            }
+
             return;
         }
     }
@@ -170,8 +178,18 @@ export class Form {
                 event.preventDefault();
                 this.sendProcess(options)
             });
+
+
         } catch (e) {
             this.log.err(e);
+
+            if (options.onLoadedEvent) {
+                options.onLoadedEvent({
+                    loading: false,
+                    error: e,
+                });
+            }
+
             return;
         }
     }
@@ -186,7 +204,7 @@ export class Form {
     public async sendProcess(
         options: generateFormOptions,
     ) {
-        const container =document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
+        const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         try {
@@ -204,9 +222,11 @@ export class Form {
                 this.formData?.identity !== 'MAGICSURVEY'
             );
 
-            this.id = response;
+            if (response){
+                this.id = response;
 
-            await this.processNextQuestion(container, questionContainer);
+                await this.processNextQuestion(container, questionContainer);
+            }
 
             // AFTER
             if (options.afterSubmitEvent) {
@@ -215,10 +235,9 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
+                    error: response ? null : new Error("No response")
                 });
             }
-
-            return response;
         } catch (error) {
             // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
             this.log.err(
@@ -234,9 +253,6 @@ export class Form {
                     error
                 });
             }
-
-            // You can perform error handling logic here if needed
-            return error;
         }
     }
 
@@ -311,7 +327,7 @@ export class Form {
                 feedback: {
                     answers: surveyAnswers,
                     metadata: [
-                        { 'key': 'url', 'value': window.location.href },
+                        {'key': 'url', 'value': window.location.href},
                     ],
                 },
                 completed,
@@ -324,15 +340,14 @@ export class Form {
                 this.log
             );
 
-        } catch
-            (error) {
+        } catch (error) {
             // Handle network or request error
             this.log.err(
                 `An error occurred while submitting the form ${this.appId}:`,
                 error
             );
             // You can perform error handling logic here if needed
-            throw error;
+            return '';
         }
     }
 
