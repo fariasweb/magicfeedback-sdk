@@ -14,8 +14,8 @@
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="../assets/cover.css" rel="stylesheet"/>
-    <link href="../../public/style.css" rel="stylesheet"/>
+    <link href="cover.css" rel="stylesheet"/>
+    <link href="../public/style.css" rel="stylesheet"/>
 </head>
 
 <!-- BODY -->
@@ -27,7 +27,7 @@
         <div class="inner">
             <nav class="nav nav-masthead justify-content-center">
                 <!-- LOGO -->
-                <img src="../assets/logo-dark-long.png" alt="MagicFeedbackAI" width="250px" height="auto">
+                <img src="./assets/logo-dark-long.png" alt="MagicFeedbackAI" width="250px" height="auto">
             </nav>
         </div>
     </header>
@@ -35,28 +35,12 @@
     <!-- FORM -->
     <main role="main" class="inner cover">
         <div class="card">
-            <div class="card-header" style="display: none">
+            <div class="card-header">
                 <h6 class="card-title" id="count-questions"></h6>
             </div>
             <div class="breadcrumb">
             </div>
-            <form id="static_form" style="margin-bottom: 20px">
-                <div style="padding: 15px">
-                    <div class="magicfeedback-div">
-                        <label class="magicfeedback-label" for="office">Office name</label>
-                        <input class="magicfeedback-text magicfeedback-input"
-                               type="text" id="office" name="office">
-                    </div>
-                </div>
-                <div id="demo_form_div" style="padding: 15px"></div>
-
-                <div class="success" style="display: none; padding: 15px 10px">
-                    <label style="color: green; font-size: 14px">Success! Thank you for your feedback</label>
-                </div>
-                <div class="magicfeedback-action-container">
-                    <button id="magicfeedback-submit" type="submit" class="magicfeedback-submit">Submit</button>
-                </div>
-            </form>
+            <div id="demo_form_div" style="padding: 15px"></div>
         </div>
     </main>
     <div class="loading">
@@ -73,82 +57,114 @@
 </body>
 <!-- JavaScript
 ================================================== -->
-<script src="../../dist/magicfeedback-sdk.browser.js"></script>
+<script src="../dist/magicfeedback-sdk.browser.js"></script>
 <script>
-
-    // MagicFeedback: Config with the callbacks and other options
-    const sdkConfig = {
-        addButton: false,
-        beforeSubmitEvent: function () {
-            console.log("BEFORE")
-            // Show loading spinner when the sdk is sending the data
-            document.querySelector(".loading").style.visibility = "visible";
-        },
-        afterSubmitEvent: function (response) {
-            console.log("AFTER", response);
-            // Manage the response and inform the user about the result
-            document.querySelector(".loading").style.visibility = "hidden";
-
-            // Update the progress counter with the current status
-            countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
-
-            // Show success or error message
-            if (response.error) alert(response.error);
-            if (response.progress === response.total) {
-                document.querySelector(".success").style.display = "block";
-            }
-        },
-        onLoadedEvent: function (response) {
-            console.log("LOADED", response);
-            // Update the progress counter with the current status
-            document.querySelector(".loading").style.visibility = "hidden";
-            countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
-        },
-    }
-
     const countQuestions = document.getElementById('count-questions');
-
-
-    // MagicFeedback: Init the SDK
     window.magicfeedback.init({
+        /*
+        * LOCAL
+          debug:true,
+          url:"http://localhost:3000"
+        */
         debug: true,
     });
 
-    // MagicFeedback: Setup the form with the form ID and the public key
+    // Create the form
     let form = window.magicfeedback.form(
         /* Form / Survey ID:*/ "8d67d250-a5b1-11ee-b7a3-3d6a2f35178f",
         /*PublicKey*/ '596ce70871d352da65701709248fd687'
     );
 
-    // MagicFeedback: Generate form with the config in the local code, sending the id of the div where the form will be rendered
+    // Generate form
     form.generate(
-        "demo_form_div", sdkConfig
+        "demo_form_div", {
+            addButton: true,
+            beforeSubmitEvent: function () {
+                console.log("BEFORE")
+                document.querySelector(".loading").style.visibility = "visible";
+            },
+            afterSubmitEvent: function (response) {
+                console.log("AFTER", response);
+                document.querySelector(".loading").style.visibility = "hidden";
+                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                if (response.error) alert(response.error);
+            },
+            onLoadedEvent: function (response) {
+                console.log("LOADED", response);
+                document.querySelector(".loading").style.visibility = "hidden";
+                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+            },
+        }
     );
 
-    // On submit event, in this case we are using a static submit button
-    document.getElementById('static_form').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        // Get static data from static form
-        const office = document.getElementById('office').value;
-        console.log('office', office);
-
-        // Other data from the form
-        // ...
-        // ...
-        // ...
-
-
-        // Check if we have all the data
-        if (office) {
-            // Submit static form, this is the moment to process the data and send it to the server
-            // ...
-            // ...
-
-            // MagicFeedback: Submit dynamic form, here is where the sdk process the data and send it to the server
-            form.sendProcess(sdkConfig);
-        }
-    });
+    /*
+    magicfeedback.send(
+        'f221a0d0-8d34-11ee-81e3-81ea6836afa4',
+        '596ce70871d352da65701709248fd687',
+        [
+            {
+                "key": "email",
+                "value": [
+                    "demo@minimals.cc"
+                ]
+            },
+            {
+                "key": "exp",
+                "value": [
+                    "Good"
+                ]
+            },
+            {
+                "key": "hours",
+                "value": [
+                    "3"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "Performance and speed"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "User interface and design"
+                ]
+            },
+            {
+                "key": "features",
+                "value": [
+                    "Additional functionality or features"
+                ]
+            },
+            {
+                "key": "renew",
+                "value": [
+                    "Neutral"
+                ]
+            },
+            {
+                "key": "started",
+                "value": [
+                    "2023-12-23"
+                ]
+            },
+            {
+                "key": "compare_product",
+                "value": [
+                    "a lot of use"
+                ]
+            },
+            {
+                "key": "name",
+                "value": [
+                    "Demo a"
+                ]
+            }
+        ]
+    )
+     */
 </script>
 </body>
 </html>
