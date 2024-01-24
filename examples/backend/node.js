@@ -1,5 +1,5 @@
 const { resolve4 } = require("dns");
-var magicfeedback = require("../dist/magicfeedback-sdk.node");
+var magicfeedback = require("../../dist/magicfeedback-sdk.node.js");
 
 magicfeedback.init({
     "url": "http://localhost:3000",
