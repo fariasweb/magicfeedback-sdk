@@ -26,14 +26,14 @@ export class Form {
     // Form completed data
     private formData: FormData | null;
     private id: string;
-    private feedback: NativeFeedback;
+    private readonly feedback: NativeFeedback;
 
     // Questions
     public questions: NativeQuestion[];
     private questionInProcess: NativeQuestion | null;
 
     // History of questions diccionary
-    private history: Record<number, HTMLElement[]>;
+    private readonly history: Record<number, HTMLElement[]>;
     private elementQuestions: HTMLElement[];
 
     // Count variables
@@ -229,9 +229,9 @@ export class Form {
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         try {
-            this.feedback.profile = {...this.feedback.profile, ...profile};
-            this.feedback.metrics = {...this.feedback.metrics, ...metrics};
-            this.feedback.metadata = {...this.feedback.metadata, ...metadata};
+            if (profile) this.feedback.profile = [...this.feedback.profile, ...profile];
+            if (metrics) this.feedback.metrics = [...this.feedback.metrics, ...metrics];
+            if (metadata) this.feedback.metadata = [...this.feedback.metadata, ...metadata];
 
             // BEFORE
             if (this.formOptionsConfig.beforeSubmitEvent) {
