@@ -71,6 +71,7 @@ export class Form {
      */
     public async generate(selector: string, options: generateFormOptions = {}) {
         try {
+            // Send the data to manage loadings and progress
             this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
 
             if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
@@ -196,7 +197,7 @@ export class Form {
 
 
     /**
-     * Process the next question
+     * Send current answer and verify if its necesary continue with a new question
      * @param options
      * @param container
      * @pubilc
@@ -224,7 +225,6 @@ export class Form {
 
             if (response){
                 this.id = response;
-
                 await this.processNextQuestion(container, questionContainer);
             }
 
@@ -258,7 +258,7 @@ export class Form {
 
 
     /**
-     * Answer
+     * Return the answers of the form in a JSON format
      * @param appId
      * @returns
      * TODO: Required

@@ -41,14 +41,20 @@
             <div class="breadcrumb">
             </div>
             <form id="static_form" style="margin-bottom: 20px">
-                <div style="padding: 15px">
+                <div style="padding: 15px 30px 0px 30px">
                     <div class="magicfeedback-div">
-                        <label class="magicfeedback-label" for="office">Office name</label>
+                        <label class="magicfeedback-label" for="name">Name</label>
                         <input class="magicfeedback-text magicfeedback-input"
-                               type="text" id="office" name="office">
+                               type="text" id="name" name="name">
+                    </div>
+
+                    <div class="magicfeedback-div">
+                        <label class="magicfeedback-label" for="email">Email</label>
+                        <input class="magicfeedback-text magicfeedback-input"
+                                      type="text" id="email" name="email">
                     </div>
                 </div>
-                <div id="demo_form_div" style="padding: 15px"></div>
+                <div id="demo_form_div" style="padding: 0px 30px 0px 30px"></div>
 
                 <div class="success" style="display: none; padding: 15px 10px">
                     <label style="color: green; font-size: 14px">Success! Thank you for your feedback</label>
@@ -79,7 +85,7 @@
     const countQuestions = document.getElementById('count-questions');
 
     // MagicFeedback: Config with the callbacks and other options
-    const Why = {
+    const sdkConfig = {
         addButton: false,
         beforeSubmitEvent: function () {
             console.log("BEFORE")
@@ -115,8 +121,8 @@
 
     // MagicFeedback: Setup the form with the form ID and the public key
     let form = window.magicfeedback.form(
-        /* Form / Survey ID:*/ "8d67d250-a5b1-11ee-b7a3-3d6a2f35178f",
-        /*PublicKey*/ '596ce70871d352da65701709248fd687'
+        /* Form / Survey ID:*/ "97af5c00-bb6f-11ee-9402-6de57c419db3",
+        /*PublicKey*/ 'e18e7a04f20867621d425b2568d0fc08'
     );
 
     // MagicFeedback: Generate form with the config in the local code, sending the id of the div where the form will be rendered
@@ -132,15 +138,18 @@
         e.preventDefault();
 
         // Get static data from static form
-        const office = document.getElementById('office').value;
-        console.log('office', office);
+        const name = document.getElementById('name').value;
+        console.log('name', name);
+        const email = document.getElementById('email').value;
+        console.log('email', email);
 
         // Basic check for original form
-        if (office) {
+        if (name && email) {
             // Local form: Submit static form, this is the moment to process the data and send it to the server
             // ...
             // ...
             // ...
+            const formId = "123";
 
             // MagicFeedback: Submit dynamic form, here is where the sdk process the data and send it to the server
             form.sendProcess(sdkConfig);
