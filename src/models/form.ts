@@ -220,9 +220,10 @@ export class Form {
      * @param metadata
      */
     public async send(
-        profile?: NativeAnswer[],
+        metadata?: NativeAnswer[],
         metrics?: NativeAnswer[],
-        metadata?: NativeAnswer[]
+        profile?: NativeAnswer[]
+        
     ) {
         const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;

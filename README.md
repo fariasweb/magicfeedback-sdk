@@ -30,6 +30,7 @@ This method is optional. You can start actived the debug mode to see on console 
 ```js
 magicfeedback.init({
     debug: true | false // Default false
+    env: "prod" // Default 
 })
 
 ```
@@ -106,10 +107,21 @@ this example). You can customize the form generation by including the optional p
 Finally, to send the form in the case of we are using oun buttons, you can use the form.send() function.
 
 ```js
+form.send()
+```
+If you would like to include additional information with your feedback, you can do so by adding it to the `metadata`, `metrics` o `profile` variables. These variables are optional and should be formatted as follows:
+
+```json
+[{"key": "key_1", "value": "value_1"}, {"key": "key_2", "value": "value_2"}, ...]
+```
+
+Here is an example of how to submit feedback with additional information:
+
+```js
 form.send(
-        profile, //{key:string, value:string[]}[] OPTIONAL
-        metrics, //{key:string, value:string[]}[] OPTIONAL
-        metadata, //{key:string, value:string[]}[] OPTIONAL
+    metadata, //{key:string, value:string[]}[] OPTIONAL
+    metrics, //{key:string, value:string[]}[] OPTIONAL
+    profile, //{key:string, value:string[]}[] OPTIONAL
 )
 ```
 
