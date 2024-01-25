@@ -1,4 +1,4 @@
-import {generateFormOptions, NativeAnswer, NativeQuestion} from "./types";
+import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from "./types";
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
@@ -10,9 +10,15 @@ export class Form {
     /**
      * Attributes
      */
+        // SDK Config
     private config: Config;
     private readonly log: Log;
 
+    // Form options
+    private formOptionsConfig: generateFormOptions;
+    private selector: string;
+
+    // Integration attributes
     private readonly appId: string;
     private readonly publicKey: string;
     private readonly url: string;
@@ -20,6 +26,7 @@ export class Form {
     // Form completed data
     private formData: FormData | null;
     private id: string;
+    private feedback: NativeFeedback;
 
     // Questions
     public questions: NativeQuestion[];
@@ -41,18 +48,31 @@ export class Form {
      * @param publicKey
      */
     constructor(config: Config, appId: string, publicKey: string) {
-        // Config
+        // SDK Config
         this.config = config;
         this.log = new Log(config);
+
+        // Form options
+        this.formOptionsConfig = {};
+        this.selector = "";
 
         // Attributes
         this.appId = appId;
         this.publicKey = publicKey;
         this.url = config.get("url") as string;
 
-        // Data
+        // Form completed data
         this.id = "";
         this.formData = null;
+        this.feedback = {
+            text: "",
+            answers: [],
+            profile: [],
+            metrics: [],
+            metadata: [],
+        };
+
+        // Questions and history
         this.questions = [];
         this.elementQuestions = [];
         this.questionInProcess = null;
@@ -71,6 +91,8 @@ export class Form {
      */
     public async generate(selector: string, options: generateFormOptions = {}) {
         try {
+            this.formOptionsConfig = options;
+            this.selector = selector;
             // Send the data to manage loadings and progress
             this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
 
@@ -85,21 +107,27 @@ export class Form {
             this.total = this.questions.length;
 
             // Send the data to manage loadings and progress
-            if (options.onLoadedEvent) {
-                await options.onLoadedEvent({
+            if (this.formOptionsConfig.onLoadedEvent) {
+                await this.formOptionsConfig.onLoadedEvent({
                     loading: false,
                     progress: this.progress,
                     total: this.total,
                 });
             }
 
+
+            // Get the params from the URL and add to the metadata
+            const params = new URLSearchParams(window.location.search);
+            const obj = Object.fromEntries(params.entries());
+            Object.entries(obj).map(([key, value]) => this.feedback.metadata.push({value: [value], key}));
+
             // Create the form from the JSON
-            this.generateForm(selector, options);
+            this.generateForm();
         } catch (e) {
             this.log.err(e);
 
-            if (options.onLoadedEvent) {
-                await options.onLoadedEvent({
+            if (this.formOptionsConfig.onLoadedEvent) {
+                await this.formOptionsConfig.onLoadedEvent({
                     loading: false,
                     error: e,
                 });
@@ -111,21 +139,14 @@ export class Form {
 
     /**
      * Create
-     * @param appId
-     * @param appQuestions
-     * @param selector
-     * @param options
      *
      * TODO: Add option to generate in <form> or in other <tag>
      */
-    private generateForm(
-        selector: string,
-        options: generateFormOptions = {}
-    ) {
+    private generateForm() {
         try {
             // Select and prepare the container
-            const container: HTMLElement | null = document.getElementById(selector);
-            if (!container) throw new Error(`Element with ID '${selector}' not found.`);
+            const container: HTMLElement | null = document.getElementById(this.selector);
+            if (!container) throw new Error(`Element with ID '${this.selector}' not found.`);
             container.id = "magicfeedback-container-" + this.appId;
             container.classList.add("magicfeedback-container");
             container.innerHTML = "";
@@ -163,55 +184,57 @@ export class Form {
             container.appendChild(form);
 
             // Submit button
-            if (options.addButton) {
+            if (this.formOptionsConfig.addButton) {
                 // Create a container for the buttons
                 const actionContainer = renderActions(
                     this.formData?.identity,
-                    () => this.renderBack()
+                    () => this.renderBackQuestion()
                 );
 
                 form.appendChild(actionContainer);
             }
 
-
             // Submit event
-            form.addEventListener("submit", async (event) => {
+            form.addEventListener("submit", (event) => {
                 event.preventDefault();
-                this.sendProcess(options)
+                this.send()
             });
-
-
         } catch (e) {
             this.log.err(e);
 
-            if (options.onLoadedEvent) {
-                options.onLoadedEvent({
+            if (this.formOptionsConfig.onLoadedEvent) {
+                this.formOptionsConfig.onLoadedEvent({
                     loading: false,
                     error: e,
                 });
             }
-
             return;
         }
     }
 
-
     /**
-     * Send current answer and verify if its necesary continue with a new question
-     * @param options
-     * @param container
+     * Send current answer and verify if its necessary continue with a new question
      * @pubilc
+     * @param profile
+     * @param metrics
+     * @param metadata
      */
-    public async sendProcess(
-        options: generateFormOptions,
+    public async send(
+        profile?: NativeAnswer[],
+        metrics?: NativeAnswer[],
+        metadata?: NativeAnswer[]
     ) {
         const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         try {
+            this.feedback.profile = {...this.feedback.profile, ...profile};
+            this.feedback.metrics = {...this.feedback.metrics, ...metrics};
+            this.feedback.metadata = {...this.feedback.metadata, ...metadata};
+
             // BEFORE
-            if (options.beforeSubmitEvent) {
-                await options.beforeSubmitEvent({
+            if (this.formOptionsConfig.beforeSubmitEvent) {
+                await this.formOptionsConfig.beforeSubmitEvent({
                     loading: true,
                     progress: this.progress,
                     total: this.total
@@ -219,18 +242,18 @@ export class Form {
             }
 
             // SEND
-            const response = await this.send(
+            const response = await this.pushAnswers(
                 this.formData?.identity !== 'MAGICSURVEY'
             );
 
-            if (response){
+            if (response) {
                 this.id = response;
                 await this.processNextQuestion(container, questionContainer);
             }
 
             // AFTER
-            if (options.afterSubmitEvent) {
-                await options.afterSubmitEvent({
+            if (this.formOptionsConfig.afterSubmitEvent) {
+                await this.formOptionsConfig.afterSubmitEvent({
                     response,
                     loading: false,
                     progress: this.progress,
@@ -245,8 +268,8 @@ export class Form {
                 error
             );
 
-            if (options.afterSubmitEvent) {
-                await options.afterSubmitEvent({
+            if (this.formOptionsConfig.afterSubmitEvent) {
+                await this.formOptionsConfig.afterSubmitEvent({
                     loading: false,
                     progress: this.progress,
                     total: this.total,
@@ -258,19 +281,19 @@ export class Form {
 
 
     /**
-     * Return the answers of the form in a JSON format
-     * @param appId
+     * Update feedback.answers with the answers of the form in a JSON format
      * @returns
      * TODO: Required
      */
-    public answer(): NativeAnswer[] {
+    public answer() {
         const form: HTMLElement | null = document.getElementById(
             "magicfeedback-" + this.appId
         );
 
         if (!form) {
             this.log.err(`Form "${form}" not found.`);
-            return [];
+            this.feedback.answers = [];
+            return;
         }
 
         const surveyAnswers: NativeAnswer[] = [];
@@ -300,10 +323,11 @@ export class Form {
         });
 
         if (hasError) {
-            return []; // Stop the process if there's an error
+            this.feedback.answers = []; // Stop the process if there's an error
+            return;
         }
 
-        return surveyAnswers;
+        this.feedback.answers = surveyAnswers;
     }
 
     /**
@@ -312,24 +336,19 @@ export class Form {
      * @param skipValidation
      * @returns
      */
-    private async send(completed: boolean = false, skipValidation = false): Promise<string> {
+    private async pushAnswers(completed: boolean = false, skipValidation = false): Promise<string> {
         try {
             // Get the survey answers from the answer() function
-            const surveyAnswers = this.answer();
+            this.answer();
 
-            if (!skipValidation && surveyAnswers.length === 0) throw new Error("No answers provided");
+            if (!skipValidation && this.feedback.answers.length === 0) throw new Error("No answers provided");
 
             // Define the URL and request payload
             const url = this.config.get("url");
             const body = {
                 integration: this.appId,
                 publicKey: this.publicKey,
-                feedback: {
-                    answers: surveyAnswers,
-                    metadata: [
-                        {'key': 'url', 'value': window.location.href},
-                    ],
-                },
+                feedback: this.feedback,
                 completed,
             }
 
@@ -361,14 +380,15 @@ export class Form {
         if (!question?.followup) return null;
         try {
             // Get the survey answers from the answer() function
-            const surveyAnswers = this.answer();
+            this.answer();
 
-            if (surveyAnswers.length === 0) throw new Error("No answers provided");
+            if (this.feedback.answers.length === 0) throw new Error("No answers provided");
 
             // Define the URL and request payload
             const url = this.config.get("url");
+
             const body = {
-                answer: surveyAnswers[0].value[0],
+                answer: this.feedback.answers[0].value[0],
                 publicKey: this.publicKey,
                 sessionId: this.formData?.id,
                 question
@@ -405,7 +425,7 @@ export class Form {
                 break;
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
-                    this.renderNext(form, container);
+                    this.renderNextQuestion(form, container);
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
@@ -421,7 +441,7 @@ export class Form {
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
-                        this.renderNext(form, container);
+                        this.renderNextQuestion(form, container);
                     }
                 }
                 break;
@@ -444,7 +464,7 @@ export class Form {
      * @param container
      * @private
      */
-    private renderNext(form: HTMLElement, container: HTMLElement) {
+    private renderNextQuestion(form: HTMLElement, container: HTMLElement) {
         this.progress++;
         if (this.progress < this.total) {
             this.questionInProcess = this.questions[this.progress];
@@ -457,7 +477,7 @@ export class Form {
             // Show the success message - Remove in the future
             const successMessage = renderSuccess("Thank you for your feedback!");
             container.appendChild(successMessage);
-            this.send(true, true);
+            this.pushAnswers(true, true);
         }
     }
 
@@ -465,7 +485,7 @@ export class Form {
      * Render back question
      * @private
      */
-    public renderBack() {
+    public renderBackQuestion() {
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         if (this.progress === 0) return;

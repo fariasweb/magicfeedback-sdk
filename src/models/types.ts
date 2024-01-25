@@ -1,7 +1,7 @@
 export type Key = string;
 
 export type InitOptions = {
-  url?: string;
+  env?: 'dev' | 'prod';
   debug?: boolean;
 };
 

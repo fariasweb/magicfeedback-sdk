@@ -103,10 +103,14 @@ this example). You can customize the form generation by including the optional p
   function receives the server response as a parameter.
 * **onLoadedEvent**: An optional function that you can define to execute actions after the form is loaded.
 
-Finally, to send the form, you can use the form.send() function.
+Finally, to send the form in the case of we are using oun buttons, you can use the form.send() function.
 
 ```js
-form.send()
+form.send(
+        profile, //{key:string, value:string[]}[] OPTIONAL
+        metrics, //{key:string, value:string[]}[] OPTIONAL
+        metadata, //{key:string, value:string[]}[] OPTIONAL
+)
 ```
 
 This function triggers the submission of the generated feedback form.

@@ -117,6 +117,7 @@
     // MagicFeedback
     window.magicfeedback.init({
         debug: true,
+        env: 'dev',
     });
 
     // MagicFeedback: Setup the form with the form ID and the public key
@@ -133,7 +134,7 @@
     // LOCAL FORM
     // On submit event, in this case we are using a static submit button
     document.getElementById('static_form').addEventListener('submit', function (e) {
-        
+
         // Prevent the default submit
         e.preventDefault();
 

@@ -4,7 +4,7 @@ export class Config {
     constructor() {
       this.variables = {};
 
-      this.variables["url"] = "https://api-dev.magicfeedback.io/";
+      this.variables["env"] = 'prod';
       this.variables["debug"] = false;
     }
 

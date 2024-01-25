@@ -3,6 +3,7 @@ import {Form} from "./models/form";
 import {Config} from "./models/config";
 import {Log} from "./utils/log";
 import {sendFeedback} from "./services/request.service";
+import {HOST_API_URL, HOST_API_URL_DEV} from "./config-globals";
 
 /**
  *
@@ -21,8 +22,9 @@ export default function main() {
      * @param options
      */
     function init(options?: InitOptions) {
-        if (options?.url) config.set("url", options?.url);
         if (options?.debug) config.set("debug", options?.debug);
+
+        config.set("url", options?.env && options?.env === "dev" ? HOST_API_URL_DEV : HOST_API_URL);
 
         log = new Log(config);
 

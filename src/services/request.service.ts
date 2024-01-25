@@ -111,7 +111,7 @@ export async function getFollowUpQuestion(url: string, body: any, log: Log): Pro
             log.log(`Received follow up question for form ${body.integration}`);
             // You can perform additional actions here if needed
             const responseJson = await response.json();
-            return responseJson;
+            return responseJson || '';
         } else {
             // Handle error response
             log.err(
