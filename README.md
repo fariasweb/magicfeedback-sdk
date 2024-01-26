@@ -104,11 +104,16 @@ this example). You can customize the form generation by including the optional p
   function receives the server response as a parameter.
 * **onLoadedEvent**: An optional function that you can define to execute actions after the form is loaded.
 
-Finally, to send the form in the case of we are using oun buttons, you can use the form.send() function.
+In teh case that you don't want to use the buttons of the sdk to manage the send and back actions, you can use the
+following functions to manage the form.
 
-```js
-form.send()
+```js 
+form.send() // Get the answers in the form to send and go to the next question or finish.
+
+form.back() // Go to the previous question.
 ```
+
+
 If you would like to include additional information with your feedback, you can do so by adding it to the `metadata`, `metrics` o `profile` variables. These variables are optional and should be formatted as follows:
 
 ```json

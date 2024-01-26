@@ -188,7 +188,7 @@ export class Form {
                 // Create a container for the buttons
                 const actionContainer = renderActions(
                     this.formData?.identity,
-                    () => this.renderBackQuestion()
+                    () => this.back()
                 );
 
                 form.appendChild(actionContainer);
@@ -223,7 +223,7 @@ export class Form {
         metadata?: NativeAnswer[],
         metrics?: NativeAnswer[],
         profile?: NativeAnswer[]
-        
+
     ) {
         const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
@@ -391,7 +391,7 @@ export class Form {
             const body = {
                 answer: this.feedback.answers[0].value[0],
                 publicKey: this.publicKey,
-                sessionId: this.formData?.id,
+                sessionId: this.id,
                 question
             }
 
@@ -486,7 +486,7 @@ export class Form {
      * Render back question
      * @private
      */
-    public renderBackQuestion() {
+    public back() {
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         if (this.progress === 0) return;
