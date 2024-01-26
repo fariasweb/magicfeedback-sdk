@@ -14,8 +14,8 @@
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="cover.css" rel="stylesheet"/>
-    <link href="../public/style.css" rel="stylesheet"/>
+    <link href="../assets/cover.css" rel="stylesheet"/>
+    <link href="../../public/style.css" rel="stylesheet"/>
 </head>
 
 <!-- BODY -->
@@ -27,7 +27,7 @@
         <div class="inner">
             <nav class="nav nav-masthead justify-content-center">
                 <!-- LOGO -->
-                <img src="./assets/logo-dark-long.png" alt="MagicFeedbackAI" width="250px" height="auto">
+                <img src="../assets/logo-dark-long.png" alt="MagicFeedbackAI" width="250px" height="auto">
             </nav>
         </div>
     </header>
@@ -57,7 +57,7 @@
 </body>
 <!-- JavaScript
 ================================================== -->
-<script src="../dist/magicfeedback-sdk.browser.js"></script>
+<script src="../../dist/magicfeedback-sdk.browser.js"></script>
 <script>
     const countQuestions = document.getElementById('count-questions');
     window.magicfeedback.init({
@@ -67,11 +67,12 @@
           url:"http://localhost:3000"
         */
         debug: true,
+        env: "dev"
     });
 
     // Create the form
     let form = window.magicfeedback.form(
-        /* Form / Survey ID:*/ "8d67d250-a5b1-11ee-b7a3-3d6a2f35178f",
+        /* Form / Survey ID:*/ "ae3c98d0-b6a5-11ee-89cf-9555a8a8f572",
         /*PublicKey*/ '596ce70871d352da65701709248fd687'
     );
 

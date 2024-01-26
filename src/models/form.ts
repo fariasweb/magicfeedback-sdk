@@ -33,7 +33,7 @@ export class Form {
     private questionInProcess: NativeQuestion | null;
 
     // History of questions diccionary
-    private readonly history: Record<number, HTMLElement[]>;
+    private readonly history: Record<number, { object: NativeQuestion, element: HTMLElement }[]>;
     private elementQuestions: HTMLElement[];
 
     // Count variables
@@ -167,10 +167,10 @@ export class Form {
             switch (this.formData?.identity) {
                 case 'MAGICSURVEY':
                     this.elementQuestions.forEach((element, index) =>
-                        this.history[index] = [element]
+                        this.history[index] = [{object: this.questions[index], element}]
                     );
-                    this.questionInProcess = this.questions[0];
-                    questionContainer.appendChild(this.history[0][0]);
+                    this.questionInProcess = this.history[0][0].object;
+                    questionContainer.appendChild(this.history[0][0].element);
                     break;
                 default:
                     this.elementQuestions.forEach((element) =>
@@ -223,7 +223,6 @@ export class Form {
         metadata?: NativeAnswer[],
         metrics?: NativeAnswer[],
         profile?: NativeAnswer[]
-
     ) {
         const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
@@ -430,14 +429,12 @@ export class Form {
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
+                        // Update the question in process
                         this.questionInProcess = followUp;
-                        if (!this.questions[this.progress].followupQuestion) {
-                            this.questions[this.progress].followupQuestion = [followUp];
-                        } else {
-                            this.questions[this.progress].followupQuestion.push(followUp);
-                        }
+
+                        // Add the follow up question to the history
                         const question = renderQuestions([followUp])[0];
-                        this.history[this.progress].push(question);
+                        this.history[this.progress].push({object: followUp, element:question});
 
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
@@ -468,9 +465,9 @@ export class Form {
     private renderNextQuestion(form: HTMLElement, container: HTMLElement) {
         this.progress++;
         if (this.progress < this.total) {
-            this.questionInProcess = this.questions[this.progress];
+            this.questionInProcess = this.history[this.progress][0].object;
             form.removeChild(form.childNodes[0]);
-            form.appendChild(this.history[this.progress][0]);
+            form.appendChild(this.history[this.progress][0].element);
         } else {
             // Remove the form
             container.removeChild(container.childNodes[0]);
@@ -487,21 +484,23 @@ export class Form {
      * @private
      */
     public back() {
-        const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
-
         if (this.progress === 0) return;
+
+        const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
         form.removeChild(form.childNodes[0]);
+
         if (this.history[this.progress].length > 1) {
             // Delete the last question in the history array and load the previous one
             this.history[this.progress].pop();
-            this.questions[this.progress].followupQuestion.pop()
-            this.questionInProcess = this.questions[this.progress].followupQuestion[this.questions[this.progress].followupQuestion.length - 1];
-            form.appendChild(this.history[this.progress][this.history[this.progress].length - 1]);
         } else {
             // Use the previous question in the history array
             this.progress--;
-            this.questionInProcess = this.questions[this.progress];
-            form.appendChild(this.history[this.progress][0]);
         }
+
+        // Get the last question in the history array
+        const question = this.history[this.progress][this.history[this.progress].length - 1];
+        // Update the question in process
+        this.questionInProcess = question.object;
+        form.appendChild(question.element);
     }
 }
