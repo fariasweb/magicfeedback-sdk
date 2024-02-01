@@ -2,101 +2,102 @@
 
 /* Container styles */
 .magicfeedback-container {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 /* Container styles */
 .magicfeedback-div {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 /* Label styles */
 .magicfeedback-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
 /* Textarea styles */
 .magicfeedback-text,
 .magicfeedback-longtext {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555555;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Input styles */
 .magicfeedback-number {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555555;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Select styles */
 .magicfeedback-select {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555555;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Boolean styles */
 .magicfeedback-boolean {
-  margin-top: 8px;
+    margin-top: 8px;
 }
 
 /* Date input styles */
 .magicfeedback-date {
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #555555;
-  background-color: #ffffff;
-  background-image: none;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555555;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Submit button styles */
 .magicfeedback-submit, .magicfeedback-back {
-  display: inline-block;
-  padding: 6px 12px;
-  margin-bottom: 0;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  user-select: none;
-  background-color: #007bff;
-  border: 1px solid #007bff;
-  border-radius: 4px;
-  color: #ffffff;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    display: inline-block;
+    width: 150px;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    color: #ffffff;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -105,8 +106,8 @@
 .magicfeedback-back:hover,
 .magicfeedback-submit:focus,
 .magicfeedback-back:focus {
-  background-color: #0069d9;
-  border-color: #0062cc;
+    background-color: #0069d9;
+    border-color: #0062cc;
 }
 
 .magicfeedback-submit:active,
@@ -114,8 +115,8 @@
 .magicfeedback-back:active,
 .magicfeedback-back.active,
 .open > .dropdown-toggle.magicfeedback-submit {
-  background-color: #005cbf;
-  border-color: #0056b3;
+    background-color: #005cbf;
+    border-color: #0056b3;
 }
 
 .magicfeedback-submit:active:hover,
@@ -127,8 +128,8 @@
 .magicfeedback-submit:active.focus,
 .magicfeedback-submit.active.focus,
 .open > .dropdown-toggle.magicfeedback-submit.focus {
-  background-color: #004e98;
-  border-color: #0047b0;
+    background-color: #004e98;
+    border-color: #0047b0;
 }
 
 .magicfeedback-submit.disabled,
@@ -143,8 +144,8 @@ fieldset[disabled] .magicfeedback-submit:focus,
 .magicfeedback-submit.disabled.focus,
 .magicfeedback-submit[disabled].focus,
 fieldset[disabled] .magicfeedback-submit.focus {
-  background-color: #007bff;
-  border-color: #007bff;
+    background-color: #007bff;
+    border-color: #007bff;
 }
 
 .magicfeedback-back.disabled,
@@ -159,81 +160,146 @@ fieldset[disabled] .magicfeedback-back:focus,
 .magicfeedback-back.disabled.focus,
 .magicfeedback-back[disabled].focus,
 fieldset[disabled] .magicfeedback-back.focus {
-  background-color: #007bff;
-  border-color: #007bff;
+    background-color: #007bff;
+    border-color: #007bff;
 }
 
 .magicfeedback-submit .badge,
 .magicfeedback-back .badge {
-  color: #007bff;
-  background-color: #ffffff;
+    color: #007bff;
+    background-color: #ffffff;
 }
 
 /* magicfeedback.css */
 
 /* Radio input styles */
 .magicfeedback-radio input[type="radio"] {
-  position: relative;
-  margin-top: 0.3rem;
-  margin-right: 0.25rem;
-  margin-left: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background-color: #ffffff;
-  outline: none;
-  cursor: pointer;
+    position: relative;
+    margin-top: 0.3rem;
+    margin-right: 0.25rem;
+    margin-left: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
 }
 
 .magicfeedback-radio input[type="radio"]:checked:before {
-  position: absolute;
-  left: 0;
-  display: block;
-  width: 1rem;
-  height: 1rem;
-  content: "";
-  border-radius: 50%;
-  background-color: #007bff;
-  border: 1px solid #ced4da;
+    position: absolute;
+    left: 0;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    content: "";
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 1px solid #ced4da;
 }
 
 /* Checkbox input styles */
 .magicfeedback-checkbox input[type="checkbox"] {
-  position: relative;
-  margin-top: 0.3rem;
-  margin-right: 0.25rem;
-  margin-left: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.25rem;
-  background-color: #ffffff;
-  outline: none;
-  cursor: pointer;
+    position: relative;
+    margin-top: 0.3rem;
+    margin-right: 0.25rem;
+    margin-left: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
 }
 
 .magicfeedback-checkbox input[type="checkbox"]:checked:before {
-  position: absolute;
-  left: 0;
-  display: block;
-  width: 1rem;
-  height: 1rem;
-  content: "";
-  border-radius: 0.25rem;
-  background-color: #007bff;
-  border: 1px solid #ced4da;
+    position: absolute;
+    left: 0;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    content: "";
+    border-radius: 0.25rem;
+    background-color: #007bff;
+    border: 1px solid #ced4da;
 }
 
 /* Label styles */
 .magicfeedback-radio label,
 .magicfeedback-checkbox label {
-  margin-right: 0.5rem;
-  display: inline-block;
-  margin-bottom: 0;
-  font-weight: normal;
+    margin-right: 0.5rem;
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+/* Rating styles */
+.magicfeedback-rating {
+
+}
+
+.magicfeedback-rating-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 5px;
+    padding: 0;
+    list-style: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.magicfeedback-rating-option {
+    margin: 0 0.5rem;
+    padding: 0;
+}
+
+.magicfeedback-rating-option-label-container {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.magicfeedback-rating-option-label-container label {
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: 600;
+    font-size: 14px;
+    color: #475569;
+}
+
+.magicfeedback-rating-option-label-container input[type=radio] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* IMAGE STYLES */
+.magicfeedback-rating-option-label-container input[type=radio] + img {
+    cursor: pointer;
+    height: 48px;
+    width: 48px;
+}
+
+/* LABEL STYLES */
+.magicfeedback-rating-option-label-container input[type=radio] + label {
+    cursor: pointer;
+}
+
+/* CHECKED STYLES */
+.magicfeedback-rating-option-label-container input[type=radio]:checked + img {
+    border: 2px solid #007bff;
+    border-radius: 50%;
 }

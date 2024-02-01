@@ -50,34 +50,85 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 break;
             case "RADIO":
             case "MULTIPLECHOICE":
+            case 'RATING':
                 element = document.createElement("div");
-                elementTypeClass =
-                    `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}`;
 
-                value.forEach((option) => {
-                    const container = document.createElement("div");
-                    container.classList.add(
-                        `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}-container`
-                    );
-                    const label = document.createElement("label");
-                    const input = document.createElement("input");
-                    input.type = type === "RADIO" ? "radio" : "checkbox";
-                    input.name = ref;
-                    input.value = option;
-                    input.required = require;
-                    input.classList.add(elementTypeClass);
-                    input.classList.add("magicfeedback-input");
+                if (type === 'RATING') {
+                    elementTypeClass = 'magicfeedback-rating';
 
-                    if (option === defaultValue) {
-                        input.checked = true;
+                    const ratingContainer = document.createElement('div');
+                    ratingContainer.classList.add('magicfeedback-rating-container');
+
+                    for (let i = 0; i <= 10; i++) {
+                        const ratingOption = document.createElement('div');
+                        ratingOption.classList.add('magicfeedback-rating-option');
+
+                        const containerLabel = document.createElement('label');
+                        containerLabel.htmlFor = `rating-${i}`;
+                        containerLabel.classList.add('magicfeedback-rating-option-label-container');
+
+                        const ratingLabel = document.createElement('label');
+                        ratingLabel.htmlFor = `rating-${i}`;
+                        ratingLabel.textContent = i.toString();
+
+                        const ratingImage = document.createElement('img');
+                        ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
+                        ratingImage.alt = `face-${i}`;
+                        // ratingImage is used to set the form value
+                        // ... add the code to set the value here
+
+                        ratingImage.className = `rating-image${i}`;
+
+                        const input = document.createElement("input");
+                        input.id = `rating-${i}`;
+                        input.type = "radio";
+                        input.name = ref;
+                        input.value = i.toString();
+                        input.required = require;
+                        input.classList.add(elementTypeClass);
+                        input.classList.add("magicfeedback-input");
+
+                        containerLabel.appendChild(input);
+                        containerLabel.appendChild(ratingImage);
+                        containerLabel.appendChild(ratingLabel);
+
+                        ratingOption.appendChild(containerLabel);
+                        ratingContainer.appendChild(ratingOption);
                     }
 
-                    label.textContent = option;
+                    element.appendChild(ratingContainer);
 
-                    container.appendChild(input);
-                    container.appendChild(label);
-                    element.appendChild(container);
-                });
+                } else {
+                    elementTypeClass =
+                        `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}`;
+
+                    value.forEach((option,index) => {
+                        const container = document.createElement("div");
+                        container.classList.add(
+                            `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}-container`
+                        );
+                        const label = document.createElement("label");
+                        const input = document.createElement("input");
+                        input.id = `rating-${index}`;
+                        input.type = type === "RADIO" ? "radio" : "checkbox";
+                        input.name = ref;
+                        input.value = option;
+                        input.required = require;
+                        input.classList.add(elementTypeClass);
+                        input.classList.add("magicfeedback-input");
+
+                        if (option === defaultValue) {
+                            input.checked = true;
+                        }
+
+                        label.textContent = option;
+                        label.htmlFor = `rating-${index}`;
+
+                        container.appendChild(input);
+                        container.appendChild(label);
+                        element.appendChild(container);
+                    });
+                }
                 break;
             case "SELECT":
                 // Create a select element for RADIO and MULTIPLECHOICE types
@@ -103,6 +154,24 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "checkbox";
                 elementTypeClass = "magicfeedback-boolean";
+                break;
+            case "EMAIL":
+                // Create an input element with type "email" for EMAIL type
+                element = document.createElement("input");
+                (element as HTMLInputElement).type = "email";
+                elementTypeClass = "magicfeedback-email";
+                break;
+            case "PASSWORD":
+                // Create an input element with type "password" for PASSWORD type
+                element = document.createElement("input");
+                (element as HTMLInputElement).type = "password";
+                elementTypeClass = "magicfeedback-password";
+                break;
+            case "CONTACT":
+                // Create an input element with type "tel" for CONTACT type
+                element = document.createElement("input");
+                (element as HTMLInputElement).type = "tel";
+                elementTypeClass = "magicfeedback-contact";
                 break;
             default:
                 return; // Skip unknown types

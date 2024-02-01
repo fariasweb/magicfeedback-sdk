@@ -15,6 +15,11 @@ const serializedParams = (params: any) => Object.entries(params).map(
     ([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
 ).join("&");
 
+export function validateEmail(email: string): boolean {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+}
+
 export async function getForm(url: string, appId: string, publicKey: string, log: Log): Promise<FormData | null> {
     try {
         const response = await fetch(url + endpoints.sdk.app_info(appId, publicKey), {

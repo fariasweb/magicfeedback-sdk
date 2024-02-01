@@ -2,7 +2,7 @@ import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from 
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
-import {getFollowUpQuestion, getForm, getQuestions, sendFeedback} from "../services/request.service";
+import {getFollowUpQuestion, getForm, getQuestions, sendFeedback, validateEmail} from "../services/request.service";
 import {FormData} from "./formData";
 import {renderActions, renderQuestions, renderSuccess} from "../services/questions.service";
 
@@ -303,7 +303,6 @@ export class Form {
 
         inputs.forEach((input) => {
             const inputType = (input as HTMLInputElement).type;
-            //const required = (input as HTMLInputElement).required;
 
             const ans: NativeAnswer = {
                 key: (input as HTMLInputElement).name,
@@ -311,14 +310,41 @@ export class Form {
             };
 
             const value = (input as HTMLInputElement).value;
-            if (inputType === "radio" || inputType === "checkbox") {
-                if ((input as HTMLInputElement).checked) {
-                    ans.value.push(value);
-                    surveyAnswers.push(ans);
-                }
+
+            if (!ans.key || ans.key === "") {
+                return;
             } else {
-                ans.value.push(value);
-                surveyAnswers.push(ans);
+                switch (inputType) {
+                    case "radio":
+                    case "checkbox":
+                        if ((input as HTMLInputElement).checked) {
+                            ans.value.push(value);
+                            surveyAnswers.push(ans);
+                        }
+                        break;
+                    case "email":
+                        if (!validateEmail(value)) {
+                            this.log.err("Invalid email");
+                            hasError = true;
+                        } else {
+                            this.feedback.profile.push({
+                                key: "email",
+                                value: [value],
+                            });
+
+                            ans.value.push(value);
+                            surveyAnswers.push(ans);
+                        }
+                        break;
+                    default:
+                        if (value !== "") {
+                            ans.value.push(value);
+                            surveyAnswers.push(ans);
+                        } else {
+                            this.log.err("Invalid value");
+                            hasError = true;
+                        }
+                }
             }
         });
 
@@ -333,15 +359,18 @@ export class Form {
     /**
      * Send
      * @param completed
-     * @param skipValidation
      * @returns
      */
-    private async pushAnswers(completed: boolean = false, skipValidation = false): Promise<string> {
+    private async pushAnswers(completed: boolean = false): Promise<string> {
         try {
             // Get the survey answers from the answer() function
             this.answer();
-
-            if (!skipValidation && this.feedback.answers.length === 0) throw new Error("No answers provided");
+            if (
+                !completed &&
+                this.questionInProcess &&
+                this.questionInProcess.require &&
+                this.feedback.answers.length === 0
+            ) throw new Error("No answers provided");
 
             // Define the URL and request payload
             const url = this.config.get("url");
@@ -379,9 +408,6 @@ export class Form {
     private async callFollowUpQuestion(question: NativeQuestion | null): Promise<NativeQuestion | null> {
         if (!question?.followup) return null;
         try {
-            // Get the survey answers from the answer() function
-            this.answer();
-
             if (this.feedback.answers.length === 0) throw new Error("No answers provided");
 
             // Define the URL and request payload
@@ -419,10 +445,6 @@ export class Form {
 
     private async processNextQuestion(container: HTMLElement, form: HTMLElement) {
         switch (this.formData?.identity) {
-            case 'MAGICFORM':
-                this.total = this.questions.length;
-                this.progress = this.questions.length;
-                break;
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
                     this.renderNextQuestion(form, container);
@@ -434,7 +456,7 @@ export class Form {
 
                         // Add the follow up question to the history
                         const question = renderQuestions([followUp])[0];
-                        this.history[this.progress].push({object: followUp, element:question});
+                        this.history[this.progress].push({object: followUp, element: question});
 
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
@@ -444,8 +466,11 @@ export class Form {
                 }
                 break;
             default:
+                this.total = this.questions.length;
+                this.progress = this.questions.length;
+
                 // Remove the form
-                container.removeChild(container.childNodes[0]);
+                if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
 
                 // Show the success message
                 const successMessage = renderSuccess("Thank you for your feedback!");
@@ -470,12 +495,12 @@ export class Form {
             form.appendChild(this.history[this.progress][0].element);
         } else {
             // Remove the form
-            container.removeChild(container.childNodes[0]);
+            if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
 
             // Show the success message - Remove in the future
             const successMessage = renderSuccess("Thank you for your feedback!");
             container.appendChild(successMessage);
-            this.pushAnswers(true, true);
+            this.pushAnswers(true);
         }
     }
 

@@ -1,2 +1,2 @@
 #!/bin/bash
-npm publish --access public --tag beta
+npm run publish:beta
