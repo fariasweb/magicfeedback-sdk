@@ -68,8 +68,8 @@
 
     // MagicFeedback: Setup the form with the form ID and the public key
     let form = window.magicfeedback.form(
-        /* Form / Survey ID:*/ "fb4e7a10-c4d0-11ee-a8f6-9f073c649adf",
-        /*PublicKey*/ 'd0b832989bf8dbff38e9d1d4ebcc5cc0'
+        "/* Form / Survey ID:*/",
+        "/*PublicKey*/"
     );
 
     // MagicFeedback: Config with the callbacks and other options
@@ -91,7 +91,7 @@
     }
 
     // MagicFeedback: Generate form with the config in the local code, sending the id of the div where the form will be rendered
-    //form.generate("form_div", sdkConfig);
+    form.generate("form_div", sdkConfig);
 
 </script>
 </body>

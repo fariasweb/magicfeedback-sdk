@@ -54,7 +54,9 @@
                                       type="text" id="email" name="email">
                     </div>
                 </div>
-                <div id="demo_form_div" style="padding: 0px 30px 0px 30px"></div>
+                <div id="demo_form_div" style="padding: 0px 30px 0px 30px">
+                    <!-- ADICIOANTL FORM -->
+                </div>
 
                 <div class="success" style="display: none; padding: 15px 10px">
                     <label style="color: green; font-size: 14px">Success! Thank you for your feedback</label>
@@ -113,15 +115,15 @@
 
     // MagicFeedback: Setup the form with the form ID and the public key
     let form = window.magicfeedback.form(
-        /* Form / Survey ID:*/ "97af5c00-bb6f-11ee-9402-6de57c419db3",
-        /*PublicKey*/ 'e18e7a04f20867621d425b2568d0fc08'
+        "/* Form / Survey ID:*/",
+        "/*PublicKey*/"
     );
 
     document.querySelector(".loading").style.visibility = "hidden";
     // MagicFeedback: Generate form with the config in the local code, sending the id of the div where the form will be rendered
-    /*form.generate(
+    form.generate(
         "demo_form_div", sdkConfig
-    );*/
+    );
 
     // LOCAL FORM
     // On submit event, in this case we are using a static submit button
