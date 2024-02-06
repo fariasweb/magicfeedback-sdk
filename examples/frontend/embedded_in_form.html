@@ -82,8 +82,6 @@
 <script src="../../dist/magicfeedback-sdk.browser.js"></script>
 <script>
 
-    const countQuestions = document.getElementById('count-questions');
-
     // MagicFeedback: Config with the callbacks and other options
     const sdkConfig = {
         addButton: false,
@@ -97,20 +95,13 @@
             // Manage the response and inform the user about the result
             document.querySelector(".loading").style.visibility = "hidden";
 
-            // Update the progress counter with the current status
-            countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
-
             // Show success or error message
             if (response.error) alert(response.error);
-            if (response.progress === response.total) {
-                document.querySelector(".success").style.display = "block";
-            }
         },
         onLoadedEvent: function (response) {
             console.log("LOADED", response);
             // Update the progress counter with the current status
             document.querySelector(".loading").style.visibility = "hidden";
-            countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
         },
     }
 
@@ -126,10 +117,11 @@
         /*PublicKey*/ 'e18e7a04f20867621d425b2568d0fc08'
     );
 
+    document.querySelector(".loading").style.visibility = "hidden";
     // MagicFeedback: Generate form with the config in the local code, sending the id of the div where the form will be rendered
-    form.generate(
+    /*form.generate(
         "demo_form_div", sdkConfig
-    );
+    );*/
 
     // LOCAL FORM
     // On submit event, in this case we are using a static submit button
