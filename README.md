@@ -162,6 +162,7 @@ with the public key of your feedback application. This ID and key is provided by
 
 Then, you can include the feedback data in an object with the following structure:
 
+```js
     {
         text: "string", // Optional
         answers: [
@@ -189,6 +190,7 @@ Then, you can include the feedback data in an object with the following structur
             },
         ],
     }
+```
 
 * **key**: This setting determines the key of the feedback data.
 * **value**: This setting determines the value of the feedback data.
