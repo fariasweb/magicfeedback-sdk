@@ -27,18 +27,21 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create a text input field
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "text";
+                (element as HTMLInputElement).placeholder = "Write your answer here...";
                 elementTypeClass = "magicfeedback-text";
                 break;
             case "LONGTEXT":
                 // Create a textarea element for TEXT and LONGTEXT types
                 element = document.createElement("textarea");
                 (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
+                (element as HTMLInputElement).placeholder = "Write your answer here...";
                 elementTypeClass = "magicfeedback-longtext";
                 break;
             case "NUMBER":
                 // Create an input element with type "number" for NUMBER type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "number";
+                (element as HTMLInputElement).placeholder = "Insert a number here";
                 elementTypeClass = "magicfeedback-number";
 
                 if (value.length) {
@@ -59,28 +62,28 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                     const ratingContainer = document.createElement('div');
                     ratingContainer.classList.add('magicfeedback-rating-container');
 
-                    for (let i = 0; i <= 10; i++) {
+                    for (let i = 1; i <= 10; i++) {
                         const ratingOption = document.createElement('div');
                         ratingOption.classList.add('magicfeedback-rating-option');
 
                         const containerLabel = document.createElement('label');
-                        containerLabel.htmlFor = `rating-${i}`;
+                        containerLabel.htmlFor = `rating-${ref}-${i}`;
                         containerLabel.classList.add('magicfeedback-rating-option-label-container');
 
                         const ratingLabel = document.createElement('label');
-                        ratingLabel.htmlFor = `rating-${i}`;
+                        ratingLabel.htmlFor = `rating-${ref}-${i}`;
                         ratingLabel.textContent = i.toString();
 
                         const ratingImage = document.createElement('img');
                         ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
-                        ratingImage.alt = `face-${i}`;
+                        ratingImage.alt = `face-${ref}-${i}`;
                         // ratingImage is used to set the form value
                         // ... add the code to set the value here
 
                         ratingImage.className = `rating-image${i}`;
 
                         const input = document.createElement("input");
-                        input.id = `rating-${i}`;
+                        input.id = `rating-${ref}-${i}`;
                         input.type = "radio";
                         input.name = ref;
                         input.value = i.toString();
@@ -109,7 +112,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                         );
                         const label = document.createElement("label");
                         const input = document.createElement("input");
-                        input.id = `rating-${index}`;
+                        input.id = `rating-${ref}-${index}`;
                         input.type = type === "RADIO" ? "radio" : "checkbox";
                         input.name = ref;
                         input.value = option;
@@ -122,7 +125,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                         }
 
                         label.textContent = option;
-                        label.htmlFor = `rating-${index}`;
+                        label.htmlFor = `rating-${ref}-${index}`;
 
                         container.appendChild(input);
                         container.appendChild(label);
@@ -134,6 +137,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create a select element for RADIO and MULTIPLECHOICE types
                 element = document.createElement("select");
                 elementTypeClass = "magicfeedback-select";
+                (element as HTMLInputElement).placeholder = "Select an option";
 
                 value.forEach((optionValue) => {
                     // Create an option element for each value in the question's value array
@@ -159,12 +163,14 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create an input element with type "email" for EMAIL type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "email";
+                (element as HTMLInputElement).placeholder = "you@example.com";
                 elementTypeClass = "magicfeedback-email";
                 break;
             case "PASSWORD":
                 // Create an input element with type "password" for PASSWORD type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "password";
+                (element as HTMLInputElement).placeholder = "Write your password here";
                 elementTypeClass = "magicfeedback-password";
                 break;
             case "CONTACT":
@@ -176,6 +182,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
             default:
                 return; // Skip unknown types
         }
+
 
         element.id = `magicfeedback-${id}`;
         element.setAttribute("name", ref);
