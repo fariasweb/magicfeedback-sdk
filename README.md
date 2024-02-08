@@ -1,6 +1,6 @@
 # MagicFeedbackAI SDK
 
-MagicFeedback AI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)
+This JavaScript library empowers you to effortlessly integrate the power of [MagicFeedback.io](https://magicfeedback.io/) into your web applications. With minimal code, you can capture valuable user feedback and insights, driving continuous improvement and enhancing user experience.
 
 ## Table of Contents
 
