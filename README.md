@@ -2,6 +2,13 @@
 
 MagicFeedback AI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)
 
+## Table of Contents
+
+* [Install](#install)
+* [Init](#init)
+* [How to use](#how-to-use)
+* [Style](#style)
+
 ## Install
 
 This library is available as a [package on NPM](https://www.npmjs.com/package/@magicfeedback/native). To install into a
