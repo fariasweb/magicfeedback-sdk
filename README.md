@@ -1,6 +1,13 @@
 # MagicFeedbackAI SDK
 
-MagicFeedback AI JavaScript Library for [MagicFeedback.io](https://magicfeedback.io/)
+This JavaScript library empowers you to effortlessly integrate the power of [MagicFeedback.io](https://magicfeedback.io/) into your web applications. With minimal code, you can capture valuable user feedback and insights, driving continuous improvement and enhancing user experience.
+
+## Table of Contents
+
+* [Install](#install)
+* [Init](#init)
+* [How to use](#how-to-use)
+* [Style](#style)
 
 ## Install
 
@@ -162,6 +169,7 @@ with the public key of your feedback application. This ID and key is provided by
 
 Then, you can include the feedback data in an object with the following structure:
 
+```js
     {
         text: "string", // Optional
         answers: [
@@ -189,6 +197,7 @@ Then, you can include the feedback data in an object with the following structur
             },
         ],
     }
+```
 
 * **key**: This setting determines the key of the feedback data.
 * **value**: This setting determines the value of the feedback data.
@@ -196,3 +205,92 @@ Then, you can include the feedback data in an object with the following structur
 Not all the fields are required. You can send only the fields that you need. But you need to send one of that minimal.
 
 Finally, to send the feedback, you can use the magicfeedback.send() function.
+
+
+## Style
+
+This section provides the CSS code you can use to customize the appearance of your Magicfeedback form. By applying these styles to the corresponding classes in your HTML, you can control the layout, colors, fonts, and other visual aspects of your feedback form.
+
+Feel free to adapt and expand upon the provided styles to match your desired design and branding.
+
+```css
+/* Overall container for the feedback form */
+.magicfeedback-container {
+  /* ... add your container styles here ... */
+}
+
+/* Main form element */
+.magicfeedback-form {
+  /* ... add your form styles here ... */
+}
+
+/* Section for questions */
+.magicfeedback-questions {
+  /* ... add your questions section styles here ... */
+}
+
+/* Section for div */
+.magicfeedback-div {
+  /* ... add your generic div styles here ... */
+}
+
+/* Generic styles for various input elements */
+.magicfeedback-label,
+.magicfeedback-input,
+.magicfeedback-contact,
+.magicfeedback-password,
+.magicfeedback-email,
+.magicfeedback-boolean,
+.magicfeedback-date,
+.magicfeedback-select,
+.magicfeedback-radio,
+.magicfeedback-checkbox,
+.magicfeedback-rating,
+.magicfeedback-rating-container,
+.magicfeedback-rating-option,
+.magicfeedback-rating-option-label-container,
+.magicfeedback-number,
+.magicfeedback-longtext,
+.magicfeedback-text {
+  /* ... add your generic input styles here ... */
+}
+
+/* Specific styles for individual input types */
+.magicfeedback-radio-container,
+.magicfeedback-checkbox-container {
+  /* ... add styles for radio/checkbox containers ... */
+}
+
+.magicfeedback-rating-image1,
+.magicfeedback-rating-image2,
+.magicfeedback-rating-image3,
+.magicfeedback-rating-image4,
+.magicfeedback-rating-image5,
+.magicfeedback-rating-image6,
+.magicfeedback-rating-image7,
+.magicfeedback-rating-image8,
+.magicfeedback-rating-image9,
+.magicfeedback-rating-image10 {
+  /* ... add styles for rating images ... */
+}
+
+/* Action buttons container */
+.magicfeedback-action-container {
+  /* ... add your action button container styles here ... */
+}
+
+/* Submit button */
+.magicfeedback-submit {
+  /* ... add your submit button styles here ... */
+}
+
+/* Back button */
+.magicfeedback-back {
+  /* ... add your back button styles here ... */
+}
+
+/* Success message (if applicable) */
+.magicfeedback-success {
+  /* ... add your success message styles here ... */
+}
+```
