@@ -16,7 +16,9 @@
     <script src="../../dist/magicfeedback-sdk.browser.js"></script>
     <script>
       window.magicfeedback.init({debug:true});
-      let form = window.magicfeedback.form("f5e81c80-48c9-11ee-b344-fb2d02b4e0ab");
+      let form = window.magicfeedback.form( 
+        "/* Form / Survey ID:*/",
+        "/*PublicKey*/");
       form.generate("demo", { addButton: true,
           beforeSubmitEvent: function () {
             console.log("Before submit form");
