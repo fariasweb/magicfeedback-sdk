@@ -1,6 +1,8 @@
 # MagicFeedbackAI SDK
 
-This JavaScript library empowers you to effortlessly integrate the power of [MagicFeedback.io](https://magicfeedback.io/) into your web applications. With minimal code, you can capture valuable user feedback and insights, driving continuous improvement and enhancing user experience.
+This JavaScript library empowers you to effortlessly integrate the power
+of [MagicFeedback.io](https://magicfeedback.io/) into your web applications. With minimal code, you can capture valuable
+user feedback and insights, driving continuous improvement and enhancing user experience.
 
 ## Table of Contents
 
@@ -91,8 +93,27 @@ form.generate(
                             loading: boolean,
                             progress: number,
                             total: number,
+                            formData: FormData
                         }) => {
         } //Function to execute after load the form
+
+        /*
+        class FormData {
+            id: string;
+            name: string;        
+            description: string;        
+            type: string;       
+            identity: string;        
+            status: string;       
+            createdAt: Date;        
+            updatedAt: Date;        
+            externalId?: string | null;       
+            companyId: string;        
+            productId: string;       
+            userId: string;        
+            setting: Record<string, any>;        
+            conf: Record<string, any>; 
+      */
     }
 )
 ```
@@ -120,11 +141,21 @@ form.send() // Get the answers in the form to send and go to the next question o
 form.back() // Go to the previous question.
 ```
 
-
-If you would like to include additional information with your feedback, you can do so by adding it to the `metadata`, `metrics` o `profile` variables. These variables are optional and should be formatted as follows:
+If you would like to include additional information with your feedback, you can do so by adding it to the `metadata`
+, `metrics` o `profile` variables. These variables are optional and should be formatted as follows:
 
 ```json
-[{"key": "key_1", "value": "value_1"}, {"key": "key_2", "value": "value_2"}, ...]
+[
+  {
+    "key": "key_1",
+    "value": "value_1"
+  },
+  {
+    "key": "key_2",
+    "value": "value_2"
+  },
+  ...
+]
 ```
 
 Here is an example of how to submit feedback with additional information:
@@ -171,32 +202,40 @@ Then, you can include the feedback data in an object with the following structur
 
 ```js
     {
-        text: "string", // Optional
-        answers: [
-            {
-                key: 'string',
-                value: ["string"]
-            },
-        ],
-        metadata: [
-            {
-                key: 'string',
-                value: "string"
-            },
-        ],
-        metrics: [
-            {
-                key: 'string',
-                value: "string"
-            },
-        ],
-        profile: [
-            {
-                key: 'string',
-                value: "string"
-            },
-        ],
-    }
+    text: "string", // Optional
+        answers
+:
+    [
+        {
+            key: 'string',
+            value: ["string"]
+        },
+    ],
+        metadata
+:
+    [
+        {
+            key: 'string',
+            value: "string"
+        },
+    ],
+        metrics
+:
+    [
+        {
+            key: 'string',
+            value: "string"
+        },
+    ],
+        profile
+:
+    [
+        {
+            key: 'string',
+            value: "string"
+        },
+    ],
+}
 ```
 
 * **key**: This setting determines the key of the feedback data.
@@ -206,32 +245,33 @@ Not all the fields are required. You can send only the fields that you need. But
 
 Finally, to send the feedback, you can use the magicfeedback.send() function.
 
-
 ## Style
 
-This section provides the CSS code you can use to customize the appearance of your Magicfeedback form. By applying these styles to the corresponding classes in your HTML, you can control the layout, colors, fonts, and other visual aspects of your feedback form.
+This section provides the CSS code you can use to customize the appearance of your Magicfeedback form. By applying these
+styles to the corresponding classes in your HTML, you can control the layout, colors, fonts, and other visual aspects of
+your feedback form.
 
 Feel free to adapt and expand upon the provided styles to match your desired design and branding.
 
 ```css
 /* Overall container for the feedback form */
 .magicfeedback-container {
-  /* ... add your container styles here ... */
+    /* ... add your container styles here ... */
 }
 
 /* Main form element */
 .magicfeedback-form {
-  /* ... add your form styles here ... */
+    /* ... add your form styles here ... */
 }
 
 /* Section for questions */
 .magicfeedback-questions {
-  /* ... add your questions section styles here ... */
+    /* ... add your questions section styles here ... */
 }
 
 /* Section for div */
 .magicfeedback-div {
-  /* ... add your generic div styles here ... */
+    /* ... add your generic div styles here ... */
 }
 
 /* Generic styles for various input elements */
@@ -252,13 +292,13 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-number,
 .magicfeedback-longtext,
 .magicfeedback-text {
-  /* ... add your generic input styles here ... */
+    /* ... add your generic input styles here ... */
 }
 
 /* Specific styles for individual input types */
 .magicfeedback-radio-container,
 .magicfeedback-checkbox-container {
-  /* ... add styles for radio/checkbox containers ... */
+    /* ... add styles for radio/checkbox containers ... */
 }
 
 .magicfeedback-rating-image1,
@@ -271,26 +311,26 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-rating-image8,
 .magicfeedback-rating-image9,
 .magicfeedback-rating-image10 {
-  /* ... add styles for rating images ... */
+    /* ... add styles for rating images ... */
 }
 
 /* Action buttons container */
 .magicfeedback-action-container {
-  /* ... add your action button container styles here ... */
+    /* ... add your action button container styles here ... */
 }
 
 /* Submit button */
 .magicfeedback-submit {
-  /* ... add your submit button styles here ... */
+    /* ... add your submit button styles here ... */
 }
 
 /* Back button */
 .magicfeedback-back {
-  /* ... add your back button styles here ... */
+    /* ... add your back button styles here ... */
 }
 
 /* Success message (if applicable) */
 .magicfeedback-success {
-  /* ... add your success message styles here ... */
+    /* ... add your success message styles here ... */
 }
 ```

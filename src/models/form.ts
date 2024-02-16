@@ -112,6 +112,7 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
+                    formData: this.formData,
                 });
             }
 
@@ -303,13 +304,16 @@ export class Form {
 
         inputs.forEach((input) => {
             const inputType = (input as HTMLInputElement).type;
+            const elementTypeClass = (input as HTMLInputElement).classList[0];
 
             const ans: NativeAnswer = {
                 key: (input as HTMLInputElement).name,
                 value: [],
             };
 
-            const value = (input as HTMLInputElement).value;
+            const value = elementTypeClass === 'magicfeedback-boolean' ?
+                (input as HTMLInputElement).checked.toString() :
+                (input as HTMLInputElement).value;
 
             if (!ans.key || ans.key === "") {
                 return;
@@ -317,7 +321,10 @@ export class Form {
                 switch (inputType) {
                     case "radio":
                     case "checkbox":
-                        if ((input as HTMLInputElement).checked) {
+                        if (
+                            elementTypeClass === "magicfeedback-boolean" ||
+                            (input as HTMLInputElement).checked
+                        ) {
                             ans.value.push(value);
                             surveyAnswers.push(ans);
                         }
