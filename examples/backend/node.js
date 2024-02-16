@@ -14,7 +14,7 @@ answers.push({
 });
 
 magicfeedback
-  .send("66f1d080-0a02-11ee-97ea-499b24e1474e", answers, { name: "Fran" })
+  .send("_ID_", answers, { name: "Fran" })
   .then((res) => {
     //console.log(res);
   });
