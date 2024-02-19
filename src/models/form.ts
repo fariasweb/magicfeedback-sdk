@@ -347,9 +347,6 @@ export class Form {
                         if (value !== "") {
                             ans.value.push(value);
                             surveyAnswers.push(ans);
-                        } else {
-                            this.log.err("Invalid value");
-                            hasError = true;
                         }
                 }
             }
@@ -372,12 +369,20 @@ export class Form {
         try {
             // Get the survey answers from the answer() function
             this.answer();
-            if (
-                !completed &&
-                this.questionInProcess &&
-                this.questionInProcess.require &&
-                this.feedback.answers.length === 0
-            ) throw new Error("No answers provided");
+            if (this.formData?.identity === "MAGICFORM") {
+                if (this.feedback.answers.length === 0) throw new Error("No answers provided");
+                this.questions.forEach((question) => {
+                    if (question.require && !this.feedback.answers.find((a) => a.key === question.ref)) {
+                        throw new Error(`No answer provided for question ${question.title}`);
+                    }
+                });
+            } else {
+                if (
+                    !completed &&
+                    this.questionInProcess?.require &&
+                    this.feedback.answers.length === 0
+                ) throw new Error("No answers provided");
+            }
 
             // Define the URL and request payload
             const url = this.config.get("url");
