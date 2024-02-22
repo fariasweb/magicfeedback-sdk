@@ -87,7 +87,6 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                         input.type = "radio";
                         input.name = ref;
                         input.value = i.toString();
-                        input.required = require;
                         input.classList.add(elementTypeClass);
                         input.classList.add("magicfeedback-input");
 
@@ -116,7 +115,6 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                         input.type = type === "RADIO" ? "radio" : "checkbox";
                         input.name = ref;
                         input.value = option;
-                        input.required = require;
                         input.classList.add(elementTypeClass);
                         input.classList.add("magicfeedback-input");
 

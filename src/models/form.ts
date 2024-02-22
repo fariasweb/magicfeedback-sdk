@@ -326,7 +326,19 @@ export class Form {
                             (input as HTMLInputElement).checked
                         ) {
                             ans.value.push(value);
-                            surveyAnswers.push(ans);
+
+                            // check if the answer is already in the array and merge the values
+                            const index = surveyAnswers.findIndex(
+                                (a) => a.key === ans.key
+                            );
+                            if (index !== -1) {
+                                surveyAnswers[index].value = [
+                                    ...surveyAnswers[index].value,
+                                    ...ans.value,
+                                ];
+                            } else {
+                                surveyAnswers.push(ans);
+                            }
                         }
                         break;
                     case "email":
