@@ -163,7 +163,7 @@ export class Form {
             questionContainer.id = "magicfeedback-questions-" + this.appId;
 
             // Process questions and create in the form
-            this.elementQuestions = renderQuestions(this.questions);
+            this.elementQuestions = renderQuestions(this.questions, this.formOptionsConfig.questionFormat);
 
             switch (this.formData?.identity) {
                 case 'MAGICSURVEY':
@@ -189,7 +189,10 @@ export class Form {
                 // Create a container for the buttons
                 const actionContainer = renderActions(
                     this.formData?.identity,
-                    () => this.back()
+                    () => this.back(),
+                    this.formOptionsConfig.sendButtonText,
+                    this.formOptionsConfig.backButtonText,
+                    this.formOptionsConfig.nextButtonText,
                 );
 
                 form.appendChild(actionContainer);
@@ -479,7 +482,7 @@ export class Form {
                         this.questionInProcess = followUp;
 
                         // Add the follow up question to the history
-                        const question = renderQuestions([followUp])[0];
+                        const question = renderQuestions([followUp], this.formOptionsConfig?.questionFormat)[0];
                         this.history[this.progress].push({object: followUp, element: question});
 
                         form.removeChild(form.childNodes[0]);
@@ -493,12 +496,18 @@ export class Form {
                 this.total = this.questions.length;
                 this.progress = this.questions.length;
 
-                // Remove the form
-                if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
+                if (this.formOptionsConfig.addSuccessScreen) {
+                    // Remove the form
+                    if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
 
-                // Show the success message
-                const successMessage = renderSuccess("Thank you for your feedback!");
-                container.appendChild(successMessage);
+                    // Show the success message
+                    const successMessage = renderSuccess(
+                        this.formOptionsConfig.successMessage ||
+                        "Thank you for your feedback!"
+                    );
+
+                    container.appendChild(successMessage);
+                }
 
                 break;
         }
@@ -518,12 +527,19 @@ export class Form {
             form.removeChild(form.childNodes[0]);
             form.appendChild(this.history[this.progress][0].element);
         } else {
-            // Remove the form
-            if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
+            if (this.formOptionsConfig.addSuccessScreen) {
+                // Remove the form
+                if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
 
-            // Show the success message - Remove in the future
-            const successMessage = renderSuccess("Thank you for your feedback!");
-            container.appendChild(successMessage);
+                // Show the success message
+                const successMessage = renderSuccess(
+                    this.formOptionsConfig.successMessage ||
+                    "Thank you for your feedback!"
+                );
+
+                container.appendChild(successMessage);
+            }
+
             this.pushAnswers(true);
         }
     }

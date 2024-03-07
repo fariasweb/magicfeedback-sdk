@@ -72,14 +72,17 @@
 
     // Create the form
     let form = window.magicfeedback.form(
-        "cec90390-d0cc-11ee-940d-3b3f04f76acf",
-        "2fbb0baac28232fc7b405257950fa84d"
+        "8a9cb3a0-dc94-11ee-a210-3ff4e15733a3",
+        "2c75ebc69b72f7cf1e4a6774a8e78711"
     );
 
     // Generate form
     form.generate(
         "demo_form_div", {
             addButton: true,
+            addSuccessScreen: true,
+            questionFormat: "slim",
+            sendButtonText: "Send my friend",
             beforeSubmitEvent: function () {
                 console.log("BEFORE")
                 document.querySelector(".loading").style.visibility = "visible";

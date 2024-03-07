@@ -74,7 +74,13 @@ let form = window.magicfeedback.form(
 form.generate(
     "demo_form_div",
     {
-        addButton: true | false, // Default false
+        addButton: true | false, // Default false, option to add a button to send the form
+        sendButtonText: string, // Default "Send", option to change the text of the send button
+        backButtonText: string, // Default "Back", option to change the text of the back button
+        nextButtonText: string, // Default "Next", option to change the text of the next button
+        addSuccessScreen: boolean, // Default flase, option to add a success screen after send the form
+        successMessage: string, // Default "Thank you for your feedback!", option to change the success message
+        questionFormat: "standard" | "slim", // Default "standard", option to change the format of the questions.
         beforeSubmitEvent: ({
                                 loading: boolean,
                                 progress: number,
@@ -297,6 +303,7 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 
 /* Specific styles for individual input types */
 .magicfeedback-radio-container,
+.magicfeedback-boolean-container,
 .magicfeedback-checkbox-container {
     /* ... add styles for radio/checkbox containers ... */
 }

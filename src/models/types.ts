@@ -58,6 +58,12 @@ export type NativeFeedback = {
 
 export type generateFormOptions = {
     addButton?: boolean;
+    sendButtonText?: string;
+    backButtonText?: string;
+    nextButtonText?: string;
+    addSuccessScreen?: boolean;
+    successMessage?: string;
+    questionFormat?: "standard" | "slim";
     tag?: generateFormOptionsTag;
     afterSubmitEvent?: Function;
     beforeSubmitEvent?: Function;

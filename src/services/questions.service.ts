@@ -1,6 +1,9 @@
 import {NativeQuestion} from "../models/types";
 
-export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
+export function renderQuestions(
+    appQuestions: NativeQuestion[],
+    format: string = "standard"
+): HTMLElement[] {
     if (!appQuestions) throw new Error("[MagicFeedback] No questions provided");
     const questions: HTMLElement[] = [];
 
@@ -27,21 +30,21 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create a text input field
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "text";
-                (element as HTMLInputElement).placeholder = "Write your answer here...";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Write your answer here...";
                 elementTypeClass = "magicfeedback-text";
                 break;
             case "LONGTEXT":
                 // Create a textarea element for TEXT and LONGTEXT types
                 element = document.createElement("textarea");
                 (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
-                (element as HTMLInputElement).placeholder = "Write your answer here...";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Write your answer here...";
                 elementTypeClass = "magicfeedback-longtext";
                 break;
             case "NUMBER":
                 // Create an input element with type "number" for NUMBER type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "number";
-                (element as HTMLInputElement).placeholder = "Insert a number here";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Insert a number here";
                 elementTypeClass = "magicfeedback-number";
 
                 if (value.length) {
@@ -104,7 +107,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                     elementTypeClass =
                         `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}`;
 
-                    value.forEach((option,index) => {
+                    value.forEach((option, index) => {
                         const container = document.createElement("div");
                         container.classList.add(
                             `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}-container`
@@ -135,7 +138,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create a select element for RADIO and MULTIPLECHOICE types
                 element = document.createElement("select");
                 elementTypeClass = "magicfeedback-select";
-                (element as HTMLInputElement).placeholder = "Select an option";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Select an option";
 
                 value.forEach((optionValue) => {
                     // Create an option element for each value in the question's value array
@@ -149,6 +152,7 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create an input element with type "date" for DATE type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "date";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Select a date";
                 elementTypeClass = "magicfeedback-date";
                 break;
             case "BOOLEAN":
@@ -161,20 +165,21 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
                 // Create an input element with type "email" for EMAIL type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "email";
-                (element as HTMLInputElement).placeholder = "you@example.com";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "you@example.com";
                 elementTypeClass = "magicfeedback-email";
                 break;
             case "PASSWORD":
                 // Create an input element with type "password" for PASSWORD type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "password";
-                (element as HTMLInputElement).placeholder = "Write your password here";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Write your password here";
                 elementTypeClass = "magicfeedback-password";
                 break;
             case "CONTACT":
                 // Create an input element with type "tel" for CONTACT type
                 element = document.createElement("input");
                 (element as HTMLInputElement).type = "tel";
+                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Enter your phone number";
                 elementTypeClass = "magicfeedback-contact";
                 break;
             default:
@@ -184,9 +189,15 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
 
         element.id = `magicfeedback-${id}`;
         element.setAttribute("name", ref);
+        element.classList.add(elementTypeClass);
 
         if (defaultValue !== undefined) {
             (element as HTMLInputElement).value = defaultValue;
+        }
+
+        if (!["RADIO", "MULTIPLECHOICE"].includes(type)) {
+            element.classList.add("magicfeedback-input");
+            (element as HTMLInputElement).required = require;
         }
 
         // Add the label and input element to the form
@@ -194,23 +205,28 @@ export function renderQuestions(appQuestions: NativeQuestion[]): HTMLElement[] {
         label.setAttribute("for", `magicfeedback-${id}`);
         label.textContent = title;
         label.classList.add("magicfeedback-label");
-        elementContainer.appendChild(label);
-        element.classList.add(elementTypeClass);
 
-        if (type != "RADIO" && type != "MULTIPLECHOICE") {
-            element.classList.add("magicfeedback-input");
-            (element as HTMLInputElement).required = require;
+        if (["BOOLEAN"].includes(type)) {
+            elementContainer.classList.add("magicfeedback-boolean-container");
+            elementContainer.appendChild(element);
+            elementContainer.appendChild(label);
+        } else {
+            if (format !== 'slim') elementContainer.appendChild(label);
+            elementContainer.appendChild(element);
         }
 
-        elementContainer.appendChild(element);
         questions.push(elementContainer);
     });
 
     return questions;
 }
 
-export function renderActions(identity: string = '', backAction: () => void): HTMLElement {
-
+export function renderActions(identity: string = '',
+                              backAction: () => void,
+                              sendButtonText: string = "Submit",
+                              backButtonText: string = "Back",
+                              nextButtonText: string = "Next"
+): HTMLElement {
     const actionContainer = document.createElement("div");
     actionContainer.classList.add("magicfeedback-action-container");
 
@@ -219,14 +235,14 @@ export function renderActions(identity: string = '', backAction: () => void): HT
     submitButton.id = "magicfeedback-submit";
     submitButton.type = "submit";
     submitButton.classList.add("magicfeedback-submit");
-    submitButton.textContent = identity === 'MAGICSURVEY' ? "Next" : "Submit"
+    submitButton.textContent = identity === 'MAGICSURVEY' ? (nextButtonText || "Next") : (sendButtonText || "Submit")
 
     // Create a back button
     const backButton = document.createElement("button");
     backButton.id = "magicfeedback-back";
     backButton.type = "button";
     backButton.classList.add("magicfeedback-back");
-    backButton.textContent = "Back";
+    backButton.textContent = backButtonText || "Back";
     backButton.addEventListener("click", backAction);
 
     if (identity === 'MAGICSURVEY') {
