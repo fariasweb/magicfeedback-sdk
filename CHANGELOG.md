@@ -6,7 +6,7 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
-## [1.1.13] - 2024-03-08
+## 🚀 [1.1.13] - 2024-03-08
 
 ### New Features
 - Users can now customize the text of various UI elements within the feedback widget:
