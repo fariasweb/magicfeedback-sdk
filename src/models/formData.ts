@@ -1,3 +1,5 @@
+import {NativeQuestion} from "./types";
+
 export class FormData {
     id: string;
 
@@ -15,6 +17,8 @@ export class FormData {
 
     updatedAt: Date;
 
+    savedAt?: Date;
+
     externalId?: string | null;
 
     companyId: string;
@@ -26,6 +30,8 @@ export class FormData {
     setting: Record<string, any>;
 
     conf: Record<string, any>;
+
+    questions: NativeQuestion[];
 
     constructor(
         id: string,
@@ -41,7 +47,8 @@ export class FormData {
         productId: string,
         userId: string,
         setting: Record<string, any>,
-        conf: Record<string, any>
+        conf: Record<string, any>,
+        questions: NativeQuestion[]
     ) {
         this.id = id
         this.name = name
@@ -57,5 +64,6 @@ export class FormData {
         this.userId = userId
         this.setting = setting
         this.conf = conf
+        this.questions = questions
     }
 }

@@ -56,83 +56,108 @@ export function renderQuestions(
                 break;
             case "RADIO":
             case "MULTIPLECHOICE":
-            case 'RATING':
                 element = document.createElement("div");
 
-                if (type === 'RATING') {
-                    elementTypeClass = 'magicfeedback-rating';
+                elementTypeClass =
+                    `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}`;
 
-                    const ratingContainer = document.createElement('div');
-                    ratingContainer.classList.add('magicfeedback-rating-container');
+                value.forEach((option, index) => {
+                    const container = document.createElement("div");
+                    container.classList.add(
+                        `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}-container`
+                    );
+                    const label = document.createElement("label");
+                    const input = document.createElement("input");
+                    input.id = `rating-${ref}-${index}`;
+                    input.type = type === "RADIO" ? "radio" : "checkbox";
+                    input.name = ref;
+                    input.value = option;
+                    input.classList.add(elementTypeClass);
+                    input.classList.add("magicfeedback-input");
 
-                    for (let i = 1; i <= 10; i++) {
-                        const ratingOption = document.createElement('div');
-                        ratingOption.classList.add('magicfeedback-rating-option');
-
-                        const containerLabel = document.createElement('label');
-                        containerLabel.htmlFor = `rating-${ref}-${i}`;
-                        containerLabel.classList.add('magicfeedback-rating-option-label-container');
-
-                        const ratingLabel = document.createElement('label');
-                        ratingLabel.htmlFor = `rating-${ref}-${i}`;
-                        ratingLabel.textContent = i.toString();
-
-                        const ratingImage = document.createElement('img');
-                        ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
-                        ratingImage.alt = `face-${ref}-${i}`;
-                        // ratingImage is used to set the form value
-                        // ... add the code to set the value here
-
-                        ratingImage.className = `rating-image${i}`;
-
-                        const input = document.createElement("input");
-                        input.id = `rating-${ref}-${i}`;
-                        input.type = "radio";
-                        input.name = ref;
-                        input.value = i.toString();
-                        input.classList.add(elementTypeClass);
-                        input.classList.add("magicfeedback-input");
-
-                        containerLabel.appendChild(input);
-                        containerLabel.appendChild(ratingImage);
-                        containerLabel.appendChild(ratingLabel);
-
-                        ratingOption.appendChild(containerLabel);
-                        ratingContainer.appendChild(ratingOption);
+                    if (option === defaultValue) {
+                        input.checked = true;
                     }
 
-                    element.appendChild(ratingContainer);
+                    label.textContent = option;
+                    label.htmlFor = `rating-${ref}-${index}`;
 
-                } else {
-                    elementTypeClass =
-                        `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}`;
+                    container.appendChild(input);
+                    container.appendChild(label);
+                    element.appendChild(container);
+                });
+                break;
+            case 'RATING':
+            case 'WIDGET_RATING_EMOJI_1_10':
+            case 'WIDGET_RATING_EMOJI_1_5':
+            case 'WIDGET_RATING_NUMBER_1_10':
+            case 'WIDGET_RATING_NUMBER_1_5':
+                element = document.createElement("div");
+                elementTypeClass = 'magicfeedback-rating';
 
-                    value.forEach((option, index) => {
-                        const container = document.createElement("div");
-                        container.classList.add(
-                            `magicfeedback-${type === "RADIO" ? "radio" : "checkbox"}-container`
-                        );
-                        const label = document.createElement("label");
-                        const input = document.createElement("input");
-                        input.id = `rating-${ref}-${index}`;
-                        input.type = type === "RADIO" ? "radio" : "checkbox";
-                        input.name = ref;
-                        input.value = option;
-                        input.classList.add(elementTypeClass);
-                        input.classList.add("magicfeedback-input");
+                const ratingContainer = document.createElement('div');
+                ratingContainer.classList.add('magicfeedback-rating-container');
 
-                        if (option === defaultValue) {
-                            input.checked = true;
+                const maxRating = ['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_NUMBER_1_5'].includes(type) ? 5 : 10;
+
+                for (let i = 1; i <= maxRating; i++) {
+                    const ratingOption = document.createElement('div');
+                    ratingOption.classList.add('magicfeedback-rating-option');
+
+                    const containerLabel = document.createElement('label');
+                    containerLabel.htmlFor = `rating-${ref}-${i}`;
+                    containerLabel.classList.add('magicfeedback-rating-option-label-container');
+
+                    const ratingLabel = document.createElement('label');
+                    ratingLabel.htmlFor = `rating-${ref}-${i}`;
+                    ratingLabel.textContent = i.toString();
+
+                    const ratingImage = document.createElement('img');
+                    if (['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_NUMBER_1_5'].includes(type)) {
+                        switch (i) {
+                            case 1:
+                                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/1.svg";
+                                break;
+                            case 2:
+                                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/2.svg";
+                                break;
+                            case 3:
+                                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/6.svg";
+                                break;
+                            case 4:
+                                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/9.svg";
+                                break;
+                            case 5:
+                                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/10.svg";
+                                break;
                         }
+                    } else {
+                        ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
+                    }
 
-                        label.textContent = option;
-                        label.htmlFor = `rating-${ref}-${index}`;
+                    ratingImage.alt = `face-${ref}-${i}`;
+                    // ratingImage is used to set the form value
+                    // ... add the code to set the value here
 
-                        container.appendChild(input);
-                        container.appendChild(label);
-                        element.appendChild(container);
-                    });
+                    ratingImage.className = `rating-image${i}`;
+
+                    const input = document.createElement("input");
+                    input.id = `rating-${ref}-${i}`;
+                    input.type = "radio";
+                    input.name = ref;
+                    input.value = i.toString();
+                    input.classList.add(elementTypeClass);
+                    input.classList.add("magicfeedback-input");
+
+                    containerLabel.appendChild(input);
+                    if(['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_EMOJI_1_10'].includes(type)) containerLabel.appendChild(ratingImage);
+                    containerLabel.appendChild(ratingLabel);
+
+                    ratingOption.appendChild(containerLabel);
+                    ratingContainer.appendChild(ratingOption);
                 }
+
+                element.appendChild(ratingContainer);
                 break;
             case "SELECT":
                 // Create a select element for RADIO and MULTIPLECHOICE types
