@@ -32,6 +32,7 @@ export enum FEEDBACKAPPANSWERTYPE {
     WIDGET_RATING_EMOJI_1_5 = "WIDGET_RATING_EMOJI_1_5",
     WIDGET_RATING_NUMBER_1_10 = "WIDGET_RATING_NUMBER_1_10",
     WIDGET_RATING_NUMBER_1_5 = "WIDGET_RATING_NUMBER_1_5",
+    WIDGET_RATING_STAR_1_5 = "WIDGET_RATING_STAR_1_5",
 }
 
 export type NativeQuestion = {
@@ -45,6 +46,7 @@ export type NativeQuestion = {
     defaultValue: string;
     appId: string;
     followup: boolean;
+    position: number;
 };
 
 export type NativeAnswer = {

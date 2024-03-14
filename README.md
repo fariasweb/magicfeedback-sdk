@@ -38,7 +38,7 @@ This method is optional. You can start actived the debug mode to see on console 
 
 ```js
 magicfeedback.init({
-    debug: true | false // Default false
+    debug: true | false, // Default false
     env: "prod" // Default 
 })
 
@@ -150,7 +150,7 @@ form.back() // Go to the previous question.
 If you would like to include additional information with your feedback, you can do so by adding it to the `metadata`
 , `metrics` o `profile` variables. These variables are optional and should be formatted as follows:
 
-```json
+```js
 [
   {
     "key": "key_1",
@@ -160,7 +160,7 @@ If you would like to include additional information with your feedback, you can 
     "key": "key_2",
     "value": "value_2"
   },
-  ...
+  /* ... */
 ]
 ```
 
@@ -208,39 +208,31 @@ Then, you can include the feedback data in an object with the following structur
 
 ```js
     {
-    text: "string", // Optional
-        answers
-:
-    [
-        {
-            key: 'string',
-            value: ["string"]
-        },
+    text: "string", /* Optional */
+    answers: [
+      {
+          key: 'string',
+          value: ["string"]
+      },
     ],
-        metadata
-:
-    [
-        {
-            key: 'string',
-            value: "string"
-        },
+    metadata: [
+      {
+          key: 'string',
+          value: "string"
+      },
     ],
-        metrics
-:
-    [
-        {
-            key: 'string',
-            value: "string"
-        },
+    metrics: [
+      {
+          key: 'string',
+          value: "string"
+      },
     ],
-        profile
-:
-    [
-        {
-            key: 'string',
-            value: "string"
-        },
-    ],
+    profile: [
+      {
+          key: 'string',
+          value: "string"
+      },
+    ]
 }
 ```
 
@@ -321,6 +313,37 @@ Feel free to adapt and expand upon the provided styles to match your desired des
     /* ... add styles for rating images ... */
 }
 
+/* Section for number rating */
+.magicfeedback-rating-number-container {
+    /* ... add your number rating container styles here ... */
+}
+
+.magicfeedback-rating-number-option {
+    /* ... add your number rating option styles here ... */
+}
+
+.magicfeedback-rating-number-option-label-container {
+    /* ... add your number rating option label container styles here ... */
+}
+
+
+/* Section for star rating */
+.magicfeedback-rating-star {
+    /* ... add your star rating container styles here ... */
+}
+
+.magicfeedback-rating-star-container {
+    /* ... add your star rating styles here ... */
+}
+
+.magicfeedback-rating-star-option {
+    /* ... add your star rating option styles here ... */
+}
+
+.magicfeedback-rating-star-selected {
+    /* ... add your star rating selected styles here ... */
+}
+
 /* Action buttons container */
 .magicfeedback-action-container {
     /* ... add your action button container styles here ... */
@@ -341,3 +364,31 @@ Feel free to adapt and expand upon the provided styles to match your desired des
     /* ... add your success message styles here ... */
 }
 ```
+
+## Collected Metadata
+
+### Browser Metadata (navigator object):
+
+* **navigator-url (Browser URL)**: This captures the full URL, including any query parameters, using window.location.href.
+* **navigator-origin (Browser Origin)**: This retrieves the origin portion of the URL (protocol, host, and port) using
+window.location.origin.
+* **navigator-pathname (Browser Pathname)**: This extracts the path component of the URL using window.location.pathname.
+* **navigator-search (Browser Search Parameters): This captures the query string (search parameters) from the URL using
+window.location.search.
+* **navigator-user (User Agent)**: This retrieves a string identifying the browser and its version using navigator.userAgent.
+
+* **navigator-language (Browser Language)**: This captures the user's preferred language setting from the browser using
+navigator.language.
+* **navigator-platform (Browser Platform)**: This retrieves the operating system platform the browser is running on using
+navigator.platform.
+* **navigator-appVersion (Browser Application Version)**: This captures the browser application version using
+navigator.appVersion. 
+* **navigator-appName (Browser Application Name)**: This retrieves the name of the browser application using
+navigator.appName. 
+* **navigator-product (Browser Product)**: This captures the name of the browser's rendering engine using navigator.product.
+
+
+### Screen Metadata (screen object):
+
+* **screen-width (Screen Width)**: This retrieves the width of the user's screen in pixels using window.screen.width.
+* **screen-height (Screen Height)**: This captures the height of the user's screen in pixels using window.screen.height.

@@ -181,10 +181,13 @@ export class Form {
      */
     private generateForm() {
         try {
+            // Order questions by position
+            this.questions.sort((a, b) => a.position - b.position);
             // Select and prepare the container
             const container: HTMLElement | null = document.getElementById(this.selector);
             if (!container) throw new Error(`Element with ID '${this.selector}' not found.`);
             container.classList.add("magicfeedback-container");
+            container.id = "magicfeedback-container-" + this.appId;
             container.innerHTML = "";
 
             // Create the form

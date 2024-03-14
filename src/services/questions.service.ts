@@ -90,8 +90,6 @@ export function renderQuestions(
             case 'RATING':
             case 'WIDGET_RATING_EMOJI_1_10':
             case 'WIDGET_RATING_EMOJI_1_5':
-            case 'WIDGET_RATING_NUMBER_1_10':
-            case 'WIDGET_RATING_NUMBER_1_5':
                 element = document.createElement("div");
                 elementTypeClass = 'magicfeedback-rating';
 
@@ -113,7 +111,7 @@ export function renderQuestions(
                     ratingLabel.textContent = i.toString();
 
                     const ratingImage = document.createElement('img');
-                    if (['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_NUMBER_1_5'].includes(type)) {
+                    if (['WIDGET_RATING_EMOJI_1_5'].includes(type)) {
                         switch (i) {
                             case 1:
                                 ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/1.svg";
@@ -150,7 +148,13 @@ export function renderQuestions(
                     input.classList.add("magicfeedback-input");
 
                     containerLabel.appendChild(input);
-                    if(['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_EMOJI_1_10'].includes(type)) containerLabel.appendChild(ratingImage);
+                    if (['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_EMOJI_1_10', 'RATING'].includes(type)) {
+                        containerLabel.appendChild(ratingImage);
+                    } else {
+                        // Each number should have a border around it and be around the same size as an emoji.
+                        // The number should be centered in the middle of the border.
+                        containerLabel.classList.add('magicfeedback-rating-option-label-container-number');
+                    }
                     containerLabel.appendChild(ratingLabel);
 
                     ratingOption.appendChild(containerLabel);
@@ -158,6 +162,54 @@ export function renderQuestions(
                 }
 
                 element.appendChild(ratingContainer);
+                break;
+            case 'WIDGET_RATING_NUMBER_1_10':
+            case 'WIDGET_RATING_NUMBER_1_5':
+                element = document.createElement("div");
+                elementTypeClass = 'magicfeedback-rating-number';
+
+                const ratingNumberContainer = document.createElement('div');
+                ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
+
+                const maxRatingNumber = ['WIDGET_RATING_NUMBER_1_5'].includes(type) ? 5 : 10;
+
+                for (let i = 1; i <= maxRatingNumber; i++) {
+                    // Create a input button element for each value in the question's value array
+                    const ratingOption = document.createElement('div');
+                    ratingOption.classList.add('magicfeedback-rating-number-option');
+
+                    const containerLabel = document.createElement('label');
+                    containerLabel.htmlFor = `rating-${ref}-${i}`;
+                    containerLabel.classList.add('magicfeedback-rating-number-option-label-container');
+
+                    const ratingLabel = document.createElement('label');
+                    ratingLabel.htmlFor = `rating-${ref}-${i}`;
+                    ratingLabel.textContent = i.toString();
+
+                    const input = document.createElement("input");
+                    input.id = `rating-${ref}-${i}`;
+                    input.type = "radio";
+                    input.name = ref;
+                    input.value = i.toString();
+                    input.classList.add(elementTypeClass);
+                    input.classList.add("magicfeedback-input");
+
+                    containerLabel.appendChild(input);
+                    containerLabel.appendChild(ratingLabel);
+                    ratingOption.appendChild(containerLabel);
+                    ratingNumberContainer.appendChild(ratingOption);
+                }
+
+                element.appendChild(ratingNumberContainer);
+
+                break;
+            case 'WIDGET_RATING_STAR_1_5':
+                element = document.createElement("div");
+                elementTypeClass = 'magicfeedback-rating-star';
+
+                const ratingStarContainer = createStarRating();
+
+                element.appendChild(ratingStarContainer);
                 break;
             case "SELECT":
                 // Create a select element for RADIO and MULTIPLECHOICE types
@@ -277,6 +329,60 @@ export function renderActions(identity: string = '',
     actionContainer.appendChild(submitButton);
 
     return actionContainer;
+}
+
+function createStarRating() {
+    const size = 40;
+    const selectedClass = "magicfeedback-rating-star-selected";
+    const starFilled = "★";
+
+    const ratingContainer = document.createElement("div");
+    ratingContainer.classList.add("magicfeedback-rating-star-container");
+
+    for (let i = 1; i <= 5; i++) {
+        const ratingOption = document.createElement("label");
+        ratingOption.classList.add("magicfeedback-rating-star-option");
+
+        // Create hidden radio input
+        const ratingInput = document.createElement("input");
+        ratingInput.type = "radio";
+        ratingInput.name = "rating"; // Adjust name if needed
+        ratingInput.value = i.toString();
+        ratingInput.style.position = "absolute";
+        ratingInput.style.opacity = "0";
+        ratingInput.style.width = "0";
+        ratingInput.style.height = "0";
+
+        // Update filled stars on radio input change
+        ratingInput.addEventListener("change", () => {
+            const allStars = ratingContainer.querySelectorAll(".rating__star");
+
+            for (let j = 0; j < allStars.length; j++) {
+                // String to number
+                if (j + 1 <= Number(ratingInput.value)) {
+                    if (!allStars[j].classList.contains(selectedClass)) allStars[j].classList.add(selectedClass);
+                } else {
+                    if (allStars[j].classList.contains(selectedClass)) allStars[j].classList.remove(selectedClass);
+                }
+            }
+        });
+
+        ratingOption.appendChild(ratingInput);
+
+        // Create star element (after for better positioning)
+        const starElement = document.createElement("span");
+        starElement.classList.add("rating__star");
+        starElement.textContent = starFilled;
+        starElement.style.fontSize = `${size}px`; // Set star size
+        starElement.style.cursor = "pointer";
+        // Add hover effect
+        ratingOption.appendChild(starElement);
+
+
+        ratingContainer.appendChild(ratingOption);
+    }
+
+    return ratingContainer;
 }
 
 export function renderError(error: string): HTMLElement {
