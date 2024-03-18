@@ -96,9 +96,10 @@ export function renderQuestions(
                 const ratingContainer = document.createElement('div');
                 ratingContainer.classList.add('magicfeedback-rating-container');
 
-                const maxRating = ['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_NUMBER_1_5'].includes(type) ? 5 : 10;
+                const maxRating = ['WIDGET_RATING_EMOJI_1_5'].includes(type) ? 5 : 10;
+                const minRating = ['WIDGET_RATING_EMOJI_1_5'].includes(type) ? 1 : 0;
 
-                for (let i = 1; i <= maxRating; i++) {
+                for (let i = minRating; i <= maxRating; i++) {
                     const ratingOption = document.createElement('div');
                     ratingOption.classList.add('magicfeedback-rating-option');
 
@@ -172,8 +173,9 @@ export function renderQuestions(
                 ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
 
                 const maxRatingNumber = ['WIDGET_RATING_NUMBER_1_5'].includes(type) ? 5 : 10;
+                const minRatingNumber = ['WIDGET_RATING_NUMBER_1_5'].includes(type) ? 1 : 0;
 
-                for (let i = 1; i <= maxRatingNumber; i++) {
+                for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                     // Create a input button element for each value in the question's value array
                     const ratingOption = document.createElement('div');
                     ratingOption.classList.add('magicfeedback-rating-number-option');
@@ -207,7 +209,7 @@ export function renderQuestions(
                 element = document.createElement("div");
                 elementTypeClass = 'magicfeedback-rating-star';
 
-                const ratingStarContainer = createStarRating();
+                const ratingStarContainer = createStarRating(ref);
 
                 element.appendChild(ratingStarContainer);
                 break;
@@ -331,7 +333,7 @@ export function renderActions(identity: string = '',
     return actionContainer;
 }
 
-function createStarRating() {
+function createStarRating(ref: string) {
     const size = 40;
     const selectedClass = "magicfeedback-rating-star-selected";
     const starFilled = "★";
@@ -345,6 +347,7 @@ function createStarRating() {
 
         // Create hidden radio input
         const ratingInput = document.createElement("input");
+        ratingInput.id = `rating-${ref}-${i}`;
         ratingInput.type = "radio";
         ratingInput.name = "rating"; // Adjust name if needed
         ratingInput.value = i.toString();
@@ -352,6 +355,7 @@ function createStarRating() {
         ratingInput.style.opacity = "0";
         ratingInput.style.width = "0";
         ratingInput.style.height = "0";
+        ratingInput.classList.add("magicfeedback-input");
 
         // Update filled stars on radio input change
         ratingInput.addEventListener("change", () => {
@@ -370,10 +374,12 @@ function createStarRating() {
         ratingOption.appendChild(ratingInput);
 
         // Create star element (after for better positioning)
-        const starElement = document.createElement("span");
+        const starElement = document.createElement("label");
+        starElement.htmlFor = `rating-${ref}-${i}`;
         starElement.classList.add("rating__star");
         starElement.textContent = starFilled;
         starElement.style.fontSize = `${size}px`; // Set star size
+        starElement.style.color = "#CCCCCC"; // Set star color
         starElement.style.cursor = "pointer";
         // Add hover effect
         ratingOption.appendChild(starElement);

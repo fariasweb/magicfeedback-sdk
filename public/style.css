@@ -403,7 +403,7 @@ magicfeedback-rating-star-container {
     -ms-user-select: none;
 }
 
-.magicfeedback-rating-star-option:not(:checked) > span {
+.magicfeedback-rating-star-option:not(:checked) > .rating__star {
     float:right;
     width:1em;
     overflow:hidden;
@@ -414,9 +414,9 @@ magicfeedback-rating-star-container {
     margin:0 10px;
 }
 
-.magicfeedback-rating-star-option:not(:checked) > span:hover,
-.magicfeedback-rating-star-option:not(:checked) > span:hover ~ span {
-    color: #deb217;
+.magicfeedback-rating-star-option:not(:checked) > .rating__star:hover,
+.magicfeedback-rating-star-option:not(:checked) > .rating__star:hover ~ span {
+    color: #deb217 !important;
 }
 
 .magicfeedback-rating-star-selected {
