@@ -217,7 +217,14 @@ export function renderQuestions(
                 // Create a select element for RADIO and MULTIPLECHOICE types
                 element = document.createElement("select");
                 elementTypeClass = "magicfeedback-select";
-                (element as HTMLInputElement).placeholder = format === 'slim' ? title : "Select an option";
+
+                // Create an option <option value="" disabled selected hidden>Please Choose...</option>
+                const option = document.createElement("option");
+                option.value = "";
+                option.text = format === 'slim' ? title : (defaultValue || "Select an option");
+                option.disabled = true;
+                option.selected = true;
+                (element as HTMLSelectElement).appendChild(option);
 
                 value.forEach((optionValue) => {
                     // Create an option element for each value in the question's value array

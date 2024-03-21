@@ -81,6 +81,7 @@ form.generate(
         addSuccessScreen: boolean, // Default flase, option to add a success screen after send the form
         successMessage: string, // Default "Thank you for your feedback!", option to change the success message
         questionFormat: "standard" | "slim", // Default "standard", option to change the format of the questions.
+        getMetaData: boolean, // Default true, option to get the metadata of the form  
         beforeSubmitEvent: ({
                                 loading: boolean,
                                 progress: number,
