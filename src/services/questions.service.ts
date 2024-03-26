@@ -88,7 +88,7 @@ export function renderQuestions(
                 });
                 break;
             case 'RATING':
-            case 'WIDGET_RATING_EMOJI_1_10':
+            case 'WIDGET_RATING_EMOJI_0_10':
             case 'WIDGET_RATING_EMOJI_1_5':
                 element = document.createElement("div");
                 elementTypeClass = 'magicfeedback-rating';
@@ -149,13 +149,7 @@ export function renderQuestions(
                     input.classList.add("magicfeedback-input");
 
                     containerLabel.appendChild(input);
-                    if (['WIDGET_RATING_EMOJI_1_5', 'WIDGET_RATING_EMOJI_1_10', 'RATING'].includes(type)) {
-                        containerLabel.appendChild(ratingImage);
-                    } else {
-                        // Each number should have a border around it and be around the same size as an emoji.
-                        // The number should be centered in the middle of the border.
-                        containerLabel.classList.add('magicfeedback-rating-option-label-container-number');
-                    }
+                    containerLabel.appendChild(ratingImage);
                     containerLabel.appendChild(ratingLabel);
 
                     ratingOption.appendChild(containerLabel);
@@ -164,7 +158,7 @@ export function renderQuestions(
 
                 element.appendChild(ratingContainer);
                 break;
-            case 'WIDGET_RATING_NUMBER_1_10':
+            case 'WIDGET_RATING_NUMBER_0_10':
             case 'WIDGET_RATING_NUMBER_1_5':
                 element = document.createElement("div");
                 elementTypeClass = 'magicfeedback-rating-number';
