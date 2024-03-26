@@ -2,7 +2,7 @@ import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from 
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
-import {getFollowUpQuestion, getForm, getQuestions, sendFeedback, validateEmail} from "../services/request.service";
+import {getFollowUpQuestion, getForm, sendFeedback, validateEmail} from "../services/request.service";
 import {FormData} from "./formData";
 import {renderActions, renderQuestions, renderSuccess} from "../services/questions.service";
 
@@ -53,7 +53,16 @@ export class Form {
         this.log = new Log(config);
 
         // Form options
-        this.formOptionsConfig = {};
+        this.formOptionsConfig = {
+            addButton: true,
+            sendButtonText: "Send",
+            backButtonText: "Back",
+            nextButtonText: "Next",
+            addSuccessScreen: true,
+            getMetaData: true,
+            questionFormat: "standard",
+        };
+
         this.selector = "";
 
         // Attributes
@@ -89,18 +98,49 @@ export class Form {
      * @param selector
      * @param options
      */
-    public async generate(selector: string, options: generateFormOptions = {}) {
+    public async generate(selector: string, options: generateFormOptions) {
+
+        // Check options, and set default values if this is not defined
+
         try {
-            this.formOptionsConfig = options;
+            // Set the options
+            this.formOptionsConfig = {...this.formOptionsConfig, ...options};
+
             this.selector = selector;
-            // Send the data to manage loadings and progress
-            this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
+
+            // Check if the form is in the localstorage and the time is less than 1 day
+            const localForm = localStorage.getItem(`magicfeedback-${this.appId}`);
+
+            if (localForm && new Date(JSON.parse(localForm).savedAt) < new Date(new Date().getTime() + 60 * 60 * 24 * 1000)) {
+                this.formData = JSON.parse(localForm);
+                getForm(this.url, this.appId, this.publicKey, this.log).then((form: FormData | null) => {
+                    if (form?.updatedAt && this.formData?.savedAt && form?.updatedAt > this.formData?.savedAt) {
+                        console.log("Form updated");
+                        this.formData = form;
+                        this.formData.savedAt = new Date();
+                        if (this.formData.questions) {
+                            this.questions = this.formData.questions;
+                            this.total = this.questions.length;
+                        }
+                        localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
+                        // Create the form from the JSON
+                        this.generateForm();
+                    }
+                });
+            } else {
+                // Send the data to manage loadings and progress
+                this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
+            }
 
             if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
 
-            this.log.log("Generating form for app", this.appId);
+            if (!this.formData.savedAt) {
+                // Save formData in the localstorage to use it in the future
+                this.formData.savedAt = new Date();
+                localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
+            }
 
-            this.questions = await getQuestions(this.url, this.appId, this.publicKey, this.log);
+            this.questions = this.formData.questions;
 
             if (this.questions === undefined || !this.questions) throw new Error(`No questions for app ${this.appId}`);
 
@@ -116,11 +156,7 @@ export class Form {
                 });
             }
 
-
-            // Get the params from the URL and add to the metadata
-            const params = new URLSearchParams(window.location.search);
-            const obj = Object.fromEntries(params.entries());
-            Object.entries(obj).map(([key, value]) => this.feedback.metadata.push({value: [value], key}));
+            if (this.formOptionsConfig.getMetaData) this.getMetaData();
 
             // Create the form from the JSON
             this.generateForm();
@@ -145,11 +181,13 @@ export class Form {
      */
     private generateForm() {
         try {
+            // Order questions by position
+            this.questions.sort((a, b) => a.position - b.position);
             // Select and prepare the container
             const container: HTMLElement | null = document.getElementById(this.selector);
             if (!container) throw new Error(`Element with ID '${this.selector}' not found.`);
-            container.id = "magicfeedback-container-" + this.appId;
             container.classList.add("magicfeedback-container");
+            container.id = "magicfeedback-container-" + this.appId;
             container.innerHTML = "";
 
             // Create the form
@@ -214,6 +252,32 @@ export class Form {
             }
             return;
         }
+    }
+
+    /**
+     * Get the metadata from the URL, navigators and others
+     * @private
+     */
+
+    private getMetaData() {
+        // Add the navigator url and params from the URL to the metadata
+        this.feedback.metadata.push({key: "navigator-url", value: [window.location.href]});
+        this.feedback.metadata.push({key: "navigator-origin", value: [window.location.origin]});
+        this.feedback.metadata.push({key: "navigator-pathname", value: [window.location.pathname]});
+        this.feedback.metadata.push({key: "navigator-search", value: [window.location.search]});
+
+        // Add the navigator metadata
+        this.feedback.metadata.push({key: "navigator-user", value: [navigator.userAgent]});
+        this.feedback.metadata.push({key: "navigator-language", value: [navigator.language]});
+        this.feedback.metadata.push({key: "navigator-platform", value: [navigator.platform]});
+        this.feedback.metadata.push({key: "navigator-appVersion", value: [navigator.appVersion]});
+        this.feedback.metadata.push({key: "navigator-appName", value: [navigator.appName]});
+        this.feedback.metadata.push({key: "navigator-product", value: [navigator.product]});
+
+        // Add the size of the screen
+        this.feedback.metadata.push({key: "screen-width", value: [window.screen.width.toString()]});
+        this.feedback.metadata.push({key: "screen-height", value: [window.screen.height.toString()]});
+
     }
 
     /**
