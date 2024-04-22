@@ -6,6 +6,16 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.1.16] - 2024-04-26
+- Added image in inputs, now you can add images in the feedback inputs to make it more interactive.
+- Added new widget logic to increase the flexibility of the feedback flow
+- New widgets: Added a new widget type:
+    - Multiple choice image: A widget that allows users to select multiple image options from a list.
+    - Contact form: A widget that allows users to submit their contact information.
+    - Yes/No: A widget that allows users to answer a yes/no question.
+-Fixed bugs:
+    - Resolved a bug with stars rating widget on save data 
+
 
 ## 🚀 [1.1.15] - 2024-03-26
 

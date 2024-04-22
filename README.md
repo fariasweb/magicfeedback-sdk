@@ -280,6 +280,7 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-password,
 .magicfeedback-email,
 .magicfeedback-boolean,
+.magicfeedback-consent,
 .magicfeedback-date,
 .magicfeedback-select,
 .magicfeedback-radio,
@@ -294,9 +295,14 @@ Feel free to adapt and expand upon the provided styles to match your desired des
     /* ... add your generic input styles here ... */
 }
 
+.magicfeedback-image {
+    /* ... add your image styles here ... */
+}
+
 /* Specific styles for individual input types */
 .magicfeedback-radio-container,
 .magicfeedback-boolean-container,
+.magicfeedback-consent-container,
 .magicfeedback-checkbox-container {
     /* ... add styles for radio/checkbox containers ... */
 }
@@ -344,6 +350,34 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-rating-star-selected {
     /* ... add your star rating selected styles here ... */
 }
+
+/* Section for multiple choice image */
+.magicfeedback-multiple-choice-image{
+    /* ... add your multiple choice image container styles here ... */
+}
+
+.magicfeedback-multiple-choice-image-container {
+    /* ... add your multiple choice image styles here ... */
+}
+
+.magicfeedback-multiple-choice-image-option {
+    /* ... add your multiple choice image option styles here ... */
+}
+
+.magicfeedback-image-option-label-container {
+    /* ... add your multiple choice image option label container styles here ... */
+}
+
+.magicfeedback-multiple-choice-image-label {
+    /* ... add your multiple choice image label styles here ... */
+}
+.magicfeedback-multiple-choice-image-input {
+    /* ... add your multiple choice image input styles here ... */
+}
+.magicfeedback-multiple-choice-image-image {
+    /* ... add your multiple choice image image styles here ... */
+}
+
 
 /* Action buttons container */
 .magicfeedback-action-container {

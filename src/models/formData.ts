@@ -33,6 +33,8 @@ export class FormData {
 
     questions: NativeQuestion[];
 
+    lang: string[];
+
     constructor(
         id: string,
         name: string,
@@ -48,7 +50,8 @@ export class FormData {
         userId: string,
         setting: Record<string, any>,
         conf: Record<string, any>,
-        questions: NativeQuestion[]
+        questions: NativeQuestion[],
+        lang: string[]
     ) {
         this.id = id
         this.name = name
@@ -65,5 +68,6 @@ export class FormData {
         this.setting = setting
         this.conf = conf
         this.questions = questions
+        this.lang = lang
     }
 }

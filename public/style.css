@@ -61,7 +61,14 @@
 }
 
 /* Boolean styles */
-.magicfeedback-boolean {
+.magicfeedback-boolean,
+.magicfeedback-consent {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+{
     margin-top: 8px;
 }
 

@@ -16,29 +16,33 @@ export type NativeFeedbackProfile = {
 };
 
 export enum FEEDBACKAPPANSWERTYPE {
+    CONTACT = "CONTACT",
+    MULTIPLECHOISE_IMAGE = "MULTIPLECHOISE_IMAGE",
+    EMAIL = "EMAIL",
+    RATING_STAR = "RATING_STAR",
+    RADIO = "RADIO",
+    MULTIPLECHOICE = "MULTIPLECHOICE",
+    SELECT = "SELECT",
     TEXT = "TEXT",
     LONGTEXT = "LONGTEXT",
     NUMBER = "NUMBER",
-    RADIO = "RADIO",
-    MULTIPLECHOICE = "MULTIPLECHOICE",
+    RATING_EMOJI = "RATING_EMOJI",
+    RATING_NUMBER = "RATING_NUMBER",
     DATE = "DATE",
     BOOLEAN = "BOOLEAN",
-    SELECT = "SELECT",
-    EMAIL = "EMAIL",
     PASSWORD = "PASSWORD",
-    RATING = "RATING",
-    CONTACT = "CONTACT",
-    WIDGET_RATING_EMOJI_0_10 = "WIDGET_RATING_EMOJI_0_10",
-    WIDGET_RATING_EMOJI_1_5 = "WIDGET_RATING_EMOJI_1_5",
-    WIDGET_RATING_NUMBER_0_10 = "WIDGET_RATING_NUMBER_0_10",
-    WIDGET_RATING_NUMBER_1_5 = "WIDGET_RATING_NUMBER_1_5",
-    WIDGET_RATING_STAR_1_5 = "WIDGET_RATING_STAR_1_5",
+    CONSENT = "CONSENT"
+}
+
+export class QuestionType{
+    conf: any;
 }
 
 export type NativeQuestion = {
     id: string;
     title: string;
     type: FEEDBACKAPPANSWERTYPE;
+    questionType: QuestionType;
     ref: string;
     require: boolean;
     external_id: string;
@@ -47,6 +51,7 @@ export type NativeQuestion = {
     appId: string;
     followup: boolean;
     position: number;
+    assets: any;
 };
 
 export type NativeAnswer = {

@@ -201,7 +201,7 @@ export class Form {
             questionContainer.id = "magicfeedback-questions-" + this.appId;
 
             // Process questions and create in the form
-            this.elementQuestions = renderQuestions(this.questions, this.formOptionsConfig.questionFormat);
+            this.elementQuestions = renderQuestions(this.questions, this.formOptionsConfig.questionFormat, this.formData?.lang[0]);
 
             switch (this.formData?.identity) {
                 case 'MAGICSURVEY':
@@ -546,7 +546,7 @@ export class Form {
                         this.questionInProcess = followUp;
 
                         // Add the follow up question to the history
-                        const question = renderQuestions([followUp], this.formOptionsConfig?.questionFormat)[0];
+                        const question = renderQuestions([followUp], this.formOptionsConfig?.questionFormat, this.formData?.lang[0])[0];
                         this.history[this.progress].push({object: followUp, element: question});
 
                         form.removeChild(form.childNodes[0]);
