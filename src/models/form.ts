@@ -378,9 +378,11 @@ export class Form {
                 value: [],
             };
 
-            const value = elementTypeClass === 'magicfeedback-boolean' ?
+            const value = elementTypeClass === 'magicfeedback-consent' ?
                 (input as HTMLInputElement).checked.toString() :
                 (input as HTMLInputElement).value;
+
+            console.log(value);
 
             if (!ans.key || ans.key === "") {
                 return;
@@ -389,7 +391,7 @@ export class Form {
                     case "radio":
                     case "checkbox":
                         if (
-                            elementTypeClass === "magicfeedback-boolean" ||
+                            elementTypeClass === "magicfeedback-consent" ||
                             (input as HTMLInputElement).checked
                         ) {
                             ans.value.push(value);

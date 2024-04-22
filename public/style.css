@@ -429,3 +429,29 @@ magicfeedback-rating-star-container {
 .magicfeedback-rating-star-selected {
     color: #ffc700 !important;
 }
+
+/* Style for multiple choice image */
+.magicfeedback-image-option-label-container:hover {
+    cursor: pointer;
+    border: 0 !important;
+}
+
+.magicfeedback-image-option-label-container input[type=radio]:checked + img {
+    border: 1px solid #007bff !important;
+    box-shadow: 0 0 3px #007bff !important;
+}
+
+
+.magicfeedback-consent-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.magicfeedback-consent-container label {
+    margin-left: 10px;
+}
+

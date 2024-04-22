@@ -13,6 +13,7 @@ export function renderQuestions(
         if (question?.questionType?.conf?.length > 0) {
             let elementContainer: HTMLElement = document.createElement("div");
             elementContainer.classList.add("magicfeedback-div");
+            question.questionType.conf.forEach((conf: any) => conf.ref = question.ref);
             const elements = renderQuestions(question.questionType.conf, format, language);
             elements.forEach((element) => {
                 elementContainer.appendChild(element);
@@ -368,9 +369,15 @@ function renderContainer(
             break;
         case "CONSENT":
             // Create an input element with type "checkbox" for BOOLEAN type
-            element = document.createElement("input");
-            (element as HTMLInputElement).type = "checkbox";
+            element = document.createElement("div");
             elementTypeClass = "magicfeedback-consent";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `magicfeedback-${id}`;
+            checkbox.name = ref;
+            checkbox.value = "true";
+            checkbox.classList.add("magicfeedback-input");
             break;
         case "EMAIL":
             // Create an input element with type "email" for EMAIL type
