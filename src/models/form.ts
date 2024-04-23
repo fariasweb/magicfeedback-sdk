@@ -382,8 +382,6 @@ export class Form {
                 (input as HTMLInputElement).checked.toString() :
                 (input as HTMLInputElement).value;
 
-            console.log(value);
-
             if (!ans.key || ans.key === "") {
                 return;
             } else {
@@ -410,24 +408,38 @@ export class Form {
                             }
                         }
                         break;
-                    case "email":
-                        if (!validateEmail(value)) {
-                            this.log.err("Invalid email");
-                            hasError = true;
-                        } else {
-                            this.feedback.profile.push({
-                                key: "email",
-                                value: [value],
-                            });
-
-                            ans.value.push(value);
-                            surveyAnswers.push(ans);
-                        }
-                        break;
                     default:
                         if (value !== "") {
+                            if (inputType === "email") {
+                                if (!validateEmail(value)) {
+                                    this.log.err("Invalid email");
+                                    hasError = true;
+                                    break;
+                                } else {
+                                    this.feedback.profile.push({
+                                        key: "email",
+                                        value: [value],
+                                    });
+                                }
+                            }
+
                             ans.value.push(value);
-                            surveyAnswers.push(ans);
+                            // check if the answer is already in the array and merge the values
+                            const index = surveyAnswers.findIndex(
+                                (a) => a.key === ans.key
+                            );
+                            console.log(index, surveyAnswers);
+                            if (index !== -1) {
+                                surveyAnswers[index].value = [
+                                    ...surveyAnswers[index].value,
+                                    ...ans.value,
+                                ];
+                            } else {
+                                surveyAnswers.push(ans);
+                            }
+
+
+
                         }
                 }
             }

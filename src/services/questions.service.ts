@@ -30,8 +30,46 @@ export function renderQuestions(
 }
 
 function parseTitle(title: string, lang: string): string {
-    console.log(title);
     return typeof title === "object" ? (title[lang] || title['en']) : title;
+}
+
+// Make a function to return a array with yes and no in every language
+function getBooleanOptions(lang: string): string[] {
+    switch (lang) {
+        case "es":
+            return ['Sí', 'No'];
+        case "fr":
+            return ['Oui', 'Non'];
+        case "de":
+            return ['Ja', 'Nein'];
+        case "it":
+            return ['Sì', 'No'];
+        case "pt":
+            return ['Sim', 'Não'];
+        case "nl":
+            return ['Ja', 'Nee'];
+        case "pl":
+            return ['Tak', 'Nie'];
+        case "ru":
+            return ['Да', 'Нет'];
+        case "ja":
+            return ['はい', 'いいえ'];
+        case "zh":
+            return ['是', '不'];
+        case "ko":
+            return ['예', '아니'];
+        case 'da':
+            return ['Ja', 'Nej'];
+        case 'fi':
+            return ['Kyllä', 'Ei'];
+        case 'sv':
+            return ['Ja', 'Nej'];
+        case 'no':
+            return ['Ja', 'Nei'];
+        default:
+            return ['Yes', 'No'];
+
+    }
 }
 
 function renderContainer(
@@ -125,6 +163,64 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-radio';
 
+            const booleanContainer = document.createElement('div');
+            booleanContainer.classList.add('magicfeedback-boolean-container');
+            booleanContainer.style.display = "flex";
+            booleanContainer.style.flexDirection = "row";
+            booleanContainer.style.justifyContent = "space-between";
+            booleanContainer.style.width = "70%";
+            booleanContainer.style.margin = "auto";
+
+            const booleanOptions = assets.addIcon ? ['✓', '✗'] : getBooleanOptions(language);
+
+            // Create a input button element for each value in the question's value array
+            booleanOptions.forEach((option, index) => {
+                const container = document.createElement("label");
+                container.classList.add("magicfeedback-boolean-option");
+                container.htmlFor = `rating-${ref}-${index}`;
+                container.style.cursor = "pointer";
+                container.style.border = "1px solid #000";
+                container.style.display = "flex";
+                container.style.justifyContent = "center";
+                container.style.alignItems = "center";
+                container.style.margin = "auto";
+                container.style.padding = "0";
+                container.style.width = "45%";
+                container.style.height = "38px";
+
+                const containerLabel = document.createElement('label');
+                containerLabel.htmlFor = `rating-${ref}-${index}`;
+                containerLabel.classList.add('magicfeedback-boolean-option-label-container');
+                containerLabel.style.margin = "0";
+                containerLabel.style.padding = "0";
+
+
+                const label = document.createElement("label");
+                label.htmlFor = `rating-${ref}-${index}`;
+                label.textContent = option;
+                label.style.margin = "0";
+                label.style.padding = "0";
+
+                const input = document.createElement("input");
+                input.id = `rating-${ref}-${index}`;
+                input.type = "radio";
+                input.name = ref;
+                input.value = option;
+                input.classList.add(elementTypeClass);
+                input.classList.add("magicfeedback-input");
+                input.style.position = "absolute";
+                input.style.opacity = "0";
+                input.style.width = "0";
+                input.style.height = "0";
+                input.style.margin = "0";
+
+                containerLabel.appendChild(input);
+                containerLabel.appendChild(label);
+                container.appendChild(containerLabel);
+                booleanContainer.appendChild(container);
+            });
+
+            element.appendChild(booleanContainer);
             break;
         case 'RATING_EMOJI':
             element = document.createElement("div");
@@ -314,7 +410,7 @@ function renderContainer(
                     input.style.opacity = "0";
                     input.style.width = "0";
                     input.style.height = "0";
-                    input.classList.add("magicfeedback-multiple-choice-image-input");
+                    input.classList.add("magicfeedback-input");
 
                     // Add max size to the image
                     const image = document.createElement("img");
@@ -364,25 +460,28 @@ function renderContainer(
             // Create an input element with type "date" for DATE type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
+            (element as HTMLInputElement).required = require;
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Select a date";
             elementTypeClass = "magicfeedback-date";
             break;
         case "CONSENT":
             // Create an input element with type "checkbox" for BOOLEAN type
-            element = document.createElement("div");
+            element = document.createElement("input");
             elementTypeClass = "magicfeedback-consent";
 
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = `magicfeedback-${id}`;
-            checkbox.name = ref;
-            checkbox.value = "true";
-            checkbox.classList.add("magicfeedback-input");
+            (element as HTMLInputElement).type = "checkbox";
+            element.id = `magicfeedback-${id}`;
+            (element as HTMLInputElement).name = ref;
+            (element as HTMLInputElement).value = "true";
+            (element as HTMLInputElement).required = require;
+            element.classList.add("magicfeedback-consent");
+            element.classList.add("magicfeedback-input");
             break;
         case "EMAIL":
             // Create an input element with type "email" for EMAIL type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "email";
+            (element as HTMLInputElement).required = require;
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "you@example.com";
             elementTypeClass = "magicfeedback-email";
             break;
@@ -390,6 +489,7 @@ function renderContainer(
             // Create an input element with type "password" for PASSWORD type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
+            (element as HTMLInputElement).required = require;
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Write your password here";
             elementTypeClass = "magicfeedback-password";
             break;
