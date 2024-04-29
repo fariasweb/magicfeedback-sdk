@@ -188,12 +188,6 @@ function renderContainer(
                 container.style.width = "45%";
                 container.style.height = "38px";
 
-                const containerLabel = document.createElement('label');
-                containerLabel.htmlFor = `rating-${ref}-${index}`;
-                containerLabel.classList.add('magicfeedback-boolean-option-label-container');
-                containerLabel.style.margin = "0";
-                containerLabel.style.padding = "0";
-
 
                 const label = document.createElement("label");
                 label.htmlFor = `rating-${ref}-${index}`;
@@ -214,9 +208,8 @@ function renderContainer(
                 input.style.height = "0";
                 input.style.margin = "0";
 
-                containerLabel.appendChild(input);
-                containerLabel.appendChild(label);
-                container.appendChild(containerLabel);
+                container.appendChild(input);
+                container.appendChild(label);
                 booleanContainer.appendChild(container);
             });
 
