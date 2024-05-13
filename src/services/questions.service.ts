@@ -1,4 +1,5 @@
 import {NativeQuestion} from "../models/types";
+import {placeholder} from "./placeholder";
 
 export function renderQuestions(
     appQuestions: NativeQuestion[],
@@ -101,21 +102,23 @@ function renderContainer(
             // Create a text input field
             element = document.createElement("input");
             (element as HTMLInputElement).type = "text";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Write your answer here...";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en')
+
+            ;
             elementTypeClass = "magicfeedback-text";
             break;
         case "LONGTEXT":
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Write your answer here...";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
         case "NUMBER":
             // Create an input element with type "number" for NUMBER type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "number";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Insert a number here";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.number(language || 'en');
             elementTypeClass = "magicfeedback-number";
 
             if (value.length) {
@@ -349,14 +352,24 @@ function renderContainer(
             const maxItems = value.length;
             let itemsPerRow = 1;
             let itemsPerColumn = 1;
-            if (maxItems === 2) {
-                itemsPerRow = 2;
-            } else if (maxItems === 4) {
-                itemsPerRow = 2;
-                itemsPerColumn = 2;
-            } else if (maxItems === 6) {
-                itemsPerRow = 3;
-                itemsPerColumn = 2;
+
+            switch (maxItems) {
+                case 1:
+                case 2:
+                case 3:
+                    itemsPerRow = maxItems;
+                    itemsPerColumn = 1;
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    itemsPerColumn = 2;
+                    itemsPerRow = Math.ceil(maxItems / 2);
+                    break;
+                default:
+                    itemsPerColumn = 3;
+                    itemsPerRow = Math.ceil(maxItems / 3);
+                    break;
             }
 
             const useLabel = assets.addTitle === undefined ? false : assets.addTitle;
@@ -454,7 +467,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Select a date";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.date(language || 'en');
             elementTypeClass = "magicfeedback-date";
             break;
         case "CONSENT":
@@ -483,7 +496,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "Write your password here";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.password(language || 'en');
             elementTypeClass = "magicfeedback-password";
             break;
         default:
