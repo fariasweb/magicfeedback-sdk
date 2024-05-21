@@ -371,8 +371,9 @@ function renderContainer(
                     itemsPerRow = Math.ceil(maxItems / 3);
                     break;
             }
-
-            const useLabel = assets.addTitle === undefined ? false : assets.addTitle;
+            console.log(assets);
+            const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
+            const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
 
             // The image is the only input but can have a title
             value.forEach((option) => {
@@ -409,7 +410,7 @@ function renderContainer(
 
                     const input = document.createElement("input");
                     input.id = `rating-${ref}-${position}`;
-                    input.type = "radio";
+                    input.type = multiOptions ? "checkbox" : "radio";
                     input.name = ref;
                     input.value = value;
                     input.style.position = "absolute";

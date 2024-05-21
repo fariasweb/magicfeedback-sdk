@@ -436,7 +436,8 @@ magicfeedback-rating-star-container {
     border: 0 !important;
 }
 
-.magicfeedback-image-option-label-container input[type=radio]:checked + img {
+.magicfeedback-image-option-label-container input[type=radio]:checked + img,
+.magicfeedback-image-option-label-container input[type=checkbox]:checked + img {
     border: 1px solid #007bff !important;
     box-shadow: 0 0 3px #007bff !important;
 }

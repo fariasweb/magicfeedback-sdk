@@ -61,19 +61,14 @@
 <script>
     const countQuestions = document.getElementById('count-questions');
     window.magicfeedback.init({
-        /*
-        * LOCAL
-          debug:true,
-          url:"http://localhost:3000"
-        */
         debug: true,
         env: "dev"
     });
 
     // Create the form
     let form = window.magicfeedback.form(
-        "119a0dc0-fe33-11ee-9666-6dc0a4aa0b62",
-        "3c75ebc69b72f7cf1e4a6774a8e78711"
+        "f67fe1f0-1367-11ef-9f84-272d884537e8",
+        "897d7831736f5bfbc0a64ea699a39265"
     );
 
     // Generate form
@@ -91,6 +86,20 @@
                 document.querySelector(".loading").style.visibility = "hidden";
                 countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
                 if (response.error) alert(response.error);
+
+                if (response.answer) {
+                    console.log('answers',response.answer);
+                    response.answer.forEach((answer) => {
+                        if (answer.key === "whichofthefollowingbrandsdoyouknoworhaveeverheardof") {
+                            console.log(answer.key, answer.value);
+                            // Check if values not contain Suntop or Suncola
+                            if (!answer.value.includes('Suntop') && !answer.value.includes('Suncola')) {
+                                console.log('finish');
+                                form.finish();
+                            }
+                        }
+                    });
+                }
             },
             onLoadedEvent: function (response) {
                 console.log("LOADED", response);

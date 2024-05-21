@@ -326,6 +326,7 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
+                    answer: this.feedback.answers,
                     error: response ? null : new Error("No response")
                 });
             }
@@ -453,6 +454,24 @@ export class Form {
         this.feedback.answers = surveyAnswers;
     }
 
+    public finish() {
+        if (this.formOptionsConfig.addSuccessScreen) {
+            const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
+            // Remove the form
+            if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
+
+            // Show the success message
+            const successMessage = renderSuccess(
+                this.formOptionsConfig.successMessage ||
+                "Thank you for your feedback!"
+            );
+
+            container.appendChild(successMessage);
+        }
+
+        this.pushAnswers(true);
+    }
+
     /**
      * Send
      * @param completed
@@ -552,7 +571,7 @@ export class Form {
         switch (this.formData?.identity) {
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
-                    this.renderNextQuestion(form, container);
+                    this.renderNextQuestion(form);
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
@@ -566,7 +585,7 @@ export class Form {
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
-                        this.renderNextQuestion(form, container);
+                        this.renderNextQuestion(form);
                     }
                 }
                 break;
@@ -595,30 +614,16 @@ export class Form {
     /**
      * Render next question
      * @param form
-     * @param container
      * @private
      */
-    private renderNextQuestion(form: HTMLElement, container: HTMLElement) {
+    private renderNextQuestion(form: HTMLElement) {
         this.progress++;
         if (this.progress < this.total) {
             this.questionInProcess = this.history[this.progress][0].object;
             form.removeChild(form.childNodes[0]);
             form.appendChild(this.history[this.progress][0].element);
         } else {
-            if (this.formOptionsConfig.addSuccessScreen) {
-                // Remove the form
-                if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
-
-                // Show the success message
-                const successMessage = renderSuccess(
-                    this.formOptionsConfig.successMessage ||
-                    "Thank you for your feedback!"
-                );
-
-                container.appendChild(successMessage);
-            }
-
-            this.pushAnswers(true);
+            this.finish();
         }
     }
 
