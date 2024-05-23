@@ -302,10 +302,14 @@ export class Form {
             if (metrics) this.feedback.metrics = [...this.feedback.metrics, ...metrics];
             if (metadata) this.feedback.metadata = [...this.feedback.metadata, ...metadata];
 
+            // Get the survey answers from the answer() function
+            this.answer();
+
             // BEFORE
             if (this.formOptionsConfig.beforeSubmitEvent) {
                 await this.formOptionsConfig.beforeSubmitEvent({
                     loading: true,
+                    answer: this.feedback.answers,
                     progress: this.progress,
                     total: this.total
                 });
@@ -319,18 +323,18 @@ export class Form {
             if (response) {
                 this.id = response;
                 await this.processNextQuestion(container, questionContainer);
-            } else {
-                // AFTER
-                if (this.formOptionsConfig.afterSubmitEvent) {
-                    await this.formOptionsConfig.afterSubmitEvent({
-                        response,
-                        loading: false,
-                        progress: this.progress + 1,
-                        total: this.total - this.censorQuestions.length,
-                        answer: this.feedback.answers,
-                        error: response ? null : new Error("No response")
-                    });
-                }
+            }
+
+            // AFTER
+            if (this.formOptionsConfig.afterSubmitEvent) {
+                await this.formOptionsConfig.afterSubmitEvent({
+                    response,
+                    loading: false,
+                    progress: this.progress,
+                    total: this.total,
+                    answer: this.feedback.answers,
+                    error: response ? null : new Error("No response")
+                });
             }
 
 
@@ -477,6 +481,8 @@ export class Form {
             container.appendChild(successMessage);
         }
 
+        this.answer();
+
         this.pushAnswers(true);
     }
 
@@ -496,8 +502,7 @@ export class Form {
      */
     private async pushAnswers(completed: boolean = false): Promise<string> {
         try {
-            // Get the survey answers from the answer() function
-            this.answer();
+
             if (this.formData?.identity === "MAGICFORM") {
                 if (this.feedback.answers.length === 0) throw new Error("No answers provided");
                 this.questions.forEach((question) => {
@@ -588,33 +593,10 @@ export class Form {
         switch (this.formData?.identity) {
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
-                    // AFTER
-                    if (this.formOptionsConfig.afterSubmitEvent) {
-                        await this.formOptionsConfig.afterSubmitEvent({
-                            response: this.id,
-                            loading: false,
-                            progress: this.progress + 1,
-                            total: this.total - this.censorQuestions.length,
-                            answer: this.feedback.answers,
-                            error: this.id ? null : new Error("No response")
-                        });
-                    }
-
                     this.renderNextQuestion(form);
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
-                        // AFTER
-                        if (this.formOptionsConfig.afterSubmitEvent) {
-                            await this.formOptionsConfig.afterSubmitEvent({
-                                response: this.id,
-                                loading: false,
-                                progress: this.progress,
-                                total: this.total - this.censorQuestions.length,
-                                answer: this.feedback.answers,
-                                error: this.id ? null : new Error("No response")
-                            });
-                        }
                         // Update the question in process
                         this.questionInProcess = followUp;
 
@@ -625,17 +607,6 @@ export class Form {
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
-                        // AFTER
-                        if (this.formOptionsConfig.afterSubmitEvent) {
-                            await this.formOptionsConfig.afterSubmitEvent({
-                                response: this.id,
-                                loading: false,
-                                progress: this.progress + 1,
-                                total: this.total - this.censorQuestions.length,
-                                answer: this.feedback.answers,
-                                error: this.id ? null : new Error("No response")
-                            });
-                        }
                         this.renderNextQuestion(form);
                     }
                 }
@@ -655,18 +626,6 @@ export class Form {
                     );
 
                     container.appendChild(successMessage);
-
-                    // AFTER
-                    if (this.formOptionsConfig.afterSubmitEvent) {
-                        await this.formOptionsConfig.afterSubmitEvent({
-                            response: this.id,
-                            loading: false,
-                            progress: this.progress + 1,
-                            total: this.total - this.censorQuestions.length,
-                            answer: this.feedback.answers,
-                            error: this.id ? null : new Error("No response")
-                        });
-                    }
                 }
 
                 break;
@@ -683,9 +642,7 @@ export class Form {
         this.progress++;
         if (this.progress < this.total) {
             this.questionInProcess = this.history[this.progress][0].object;
-            console.log('this.censorQuestions', this.censorQuestions)
             if (!this.censorQuestions.includes(this.questionInProcess.id)) {
-                console.log('this.questionInProcess', this.history[this.progress][0])
                 form.removeChild(form.childNodes[0]);
                 form.appendChild(this.history[this.progress][0].element);
             } else {
@@ -704,7 +661,8 @@ export class Form {
         if (this.progress === 0) return;
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
-        form.removeChild(form.childNodes[0]);
+
+        if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
 
         if (this.history[this.progress].length > 1) {
             // Delete the last question in the history array and load the previous one
@@ -715,9 +673,13 @@ export class Form {
         }
 
         // Get the last question in the history array
-        const question = this.history[this.progress][this.history[this.progress].length - 1];
-        // Update the question in process
-        this.questionInProcess = question.object;
-        form.appendChild(question.element);
+        let question = this.history[this.progress][this.history[this.progress].length - 1];
+        if (this.censorQuestions.includes(question.object.id)) {
+            this.back();
+        } else {
+            // Update the question in process
+            this.questionInProcess = question.object;
+            form.appendChild(question.element);
+        }
     }
 }

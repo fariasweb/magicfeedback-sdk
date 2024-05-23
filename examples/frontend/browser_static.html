@@ -77,9 +77,32 @@
             addButton: true,
             addSuccessScreen: true,
             sendButtonText: "Send my friend",
-            beforeSubmitEvent: function () {
+            beforeSubmitEvent: function (response) {
                 console.log("BEFORE")
                 document.querySelector(".loading").style.visibility = "visible";
+                if (response.answer) {
+                    console.log('answers',response.answer);
+                    response.answer.forEach((answer) => {
+                        if (answer.key === "whichofthefollowingbrandsdoyouknoworhaveeverheardof") {
+                            console.log(answer.key, answer.value);
+                            // Check if values not contain Suntop or Suncola
+                            if (answer.value.includes('Suntop')) {
+                                console.log('Censure question 5 and 6');
+                                form.censureQuestions([
+                                    "b2c0f100-1382-11ef-a3d3-c7f03e952305",
+                                    "b48ed330-1382-11ef-a3d3-c7f03e952305"
+                                ]);
+                            } else if (answer.value.includes('Suncola')) {
+                                console.log('Censure question 2, 3 and 4');
+                                form.censureQuestions([
+                                    'ee93fe80-1381-11ef-a3d3-c7f03e952305',
+                                    "ad7580d0-1382-11ef-a3d3-c7f03e952305",
+                                    "af83a050-1382-11ef-a3d3-c7f03e952305"
+                                ]);
+                            }
+                        }
+                    });
+                }
             },
             afterSubmitEvent: function (response) {
                 console.log("AFTER", response);
@@ -96,19 +119,6 @@
                             if(['Suntop', 'Suncola'].every(v => !answer.value.includes(v))) {
                                 console.log('finish');
                                 form.finish();
-                            } else if (answer.value.includes('Suntop')) {
-                                console.log('Censure question 5 and 6');
-                                form.censureQuestions([
-                                    "b2c0f100-1382-11ef-a3d3-c7f03e952305",
-                                    "b48ed330-1382-11ef-a3d3-c7f03e952305"
-                                ]);
-                            } else if (answer.value.includes('Suncola')) {
-                                console.log('Censure question 2, 3 and 4');
-                                form.censureQuestions([
-                                    'ee93fe80-1381-11ef-a3d3-c7f03e952305',
-                                    "ad7580d0-1382-11ef-a3d3-c7f03e952305",
-                                    "af83a050-1382-11ef-a3d3-c7f03e952305"
-                                ]);
                             }
                         }
                     });
