@@ -31,6 +31,7 @@ export class Form {
     // Questions
     public questions: NativeQuestion[];
     private questionInProcess: NativeQuestion | null;
+    private censorQuestions: string[];
 
     // History of questions diccionary
     private readonly history: Record<number, { object: NativeQuestion, element: HTMLElement }[]>;
@@ -83,6 +84,7 @@ export class Form {
 
         // Questions and history
         this.questions = [];
+        this.censorQuestions = [];
         this.elementQuestions = [];
         this.questionInProcess = null;
         this.history = {};
@@ -317,19 +319,21 @@ export class Form {
             if (response) {
                 this.id = response;
                 await this.processNextQuestion(container, questionContainer);
+            } else {
+                // AFTER
+                if (this.formOptionsConfig.afterSubmitEvent) {
+                    await this.formOptionsConfig.afterSubmitEvent({
+                        response,
+                        loading: false,
+                        progress: this.progress + 1,
+                        total: this.total - this.censorQuestions.length,
+                        answer: this.feedback.answers,
+                        error: response ? null : new Error("No response")
+                    });
+                }
             }
 
-            // AFTER
-            if (this.formOptionsConfig.afterSubmitEvent) {
-                await this.formOptionsConfig.afterSubmitEvent({
-                    response,
-                    loading: false,
-                    progress: this.progress,
-                    total: this.total,
-                    answer: this.feedback.answers,
-                    error: response ? null : new Error("No response")
-                });
-            }
+
         } catch (error) {
             // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
             this.log.err(
@@ -340,8 +344,8 @@ export class Form {
             if (this.formOptionsConfig.afterSubmitEvent) {
                 await this.formOptionsConfig.afterSubmitEvent({
                     loading: false,
-                    progress: this.progress,
-                    total: this.total,
+                    progress: this.progress + this.censorQuestions.length,
+                    total: this.total - this.censorQuestions.length,
                     error
                 });
             }
@@ -440,7 +444,6 @@ export class Form {
                             }
 
 
-
                         }
                 }
             }
@@ -453,6 +456,11 @@ export class Form {
 
         this.feedback.answers = surveyAnswers;
     }
+
+    /**
+     * Finish the form
+     * @public
+     */
 
     public finish() {
         if (this.formOptionsConfig.addSuccessScreen) {
@@ -470,6 +478,15 @@ export class Form {
         }
 
         this.pushAnswers(true);
+    }
+
+    /**
+     * Censure questions form the form
+     * @param questions
+     * @public
+     */
+    public censureQuestions(questions: string[]) {
+        this.censorQuestions = this.questions.filter((q) => questions.includes(q.id)).map((q) => q.id);
     }
 
     /**
@@ -571,10 +588,33 @@ export class Form {
         switch (this.formData?.identity) {
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
+                    // AFTER
+                    if (this.formOptionsConfig.afterSubmitEvent) {
+                        await this.formOptionsConfig.afterSubmitEvent({
+                            response: this.id,
+                            loading: false,
+                            progress: this.progress + 1,
+                            total: this.total - this.censorQuestions.length,
+                            answer: this.feedback.answers,
+                            error: this.id ? null : new Error("No response")
+                        });
+                    }
+
                     this.renderNextQuestion(form);
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
+                        // AFTER
+                        if (this.formOptionsConfig.afterSubmitEvent) {
+                            await this.formOptionsConfig.afterSubmitEvent({
+                                response: this.id,
+                                loading: false,
+                                progress: this.progress,
+                                total: this.total - this.censorQuestions.length,
+                                answer: this.feedback.answers,
+                                error: this.id ? null : new Error("No response")
+                            });
+                        }
                         // Update the question in process
                         this.questionInProcess = followUp;
 
@@ -585,6 +625,17 @@ export class Form {
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
+                        // AFTER
+                        if (this.formOptionsConfig.afterSubmitEvent) {
+                            await this.formOptionsConfig.afterSubmitEvent({
+                                response: this.id,
+                                loading: false,
+                                progress: this.progress + 1,
+                                total: this.total - this.censorQuestions.length,
+                                answer: this.feedback.answers,
+                                error: this.id ? null : new Error("No response")
+                            });
+                        }
                         this.renderNextQuestion(form);
                     }
                 }
@@ -604,6 +655,18 @@ export class Form {
                     );
 
                     container.appendChild(successMessage);
+
+                    // AFTER
+                    if (this.formOptionsConfig.afterSubmitEvent) {
+                        await this.formOptionsConfig.afterSubmitEvent({
+                            response: this.id,
+                            loading: false,
+                            progress: this.progress + 1,
+                            total: this.total - this.censorQuestions.length,
+                            answer: this.feedback.answers,
+                            error: this.id ? null : new Error("No response")
+                        });
+                    }
                 }
 
                 break;
@@ -620,8 +683,14 @@ export class Form {
         this.progress++;
         if (this.progress < this.total) {
             this.questionInProcess = this.history[this.progress][0].object;
-            form.removeChild(form.childNodes[0]);
-            form.appendChild(this.history[this.progress][0].element);
+            console.log('this.censorQuestions', this.censorQuestions)
+            if (!this.censorQuestions.includes(this.questionInProcess.id)) {
+                console.log('this.questionInProcess', this.history[this.progress][0])
+                form.removeChild(form.childNodes[0]);
+                form.appendChild(this.history[this.progress][0].element);
+            } else {
+                this.renderNextQuestion(form);
+            }
         } else {
             this.finish();
         }
