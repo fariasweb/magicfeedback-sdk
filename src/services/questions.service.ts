@@ -67,6 +67,8 @@ function getBooleanOptions(lang: string): string[] {
             return ['Ja', 'Nej'];
         case 'no':
             return ['Ja', 'Nei'];
+        case 'ar':
+            return ['نعم', 'لا'];
         default:
             return ['Yes', 'No'];
 
@@ -97,12 +99,15 @@ function renderContainer(
     let elementContainer: HTMLElement = document.createElement("div");
     elementContainer.classList.add("magicfeedback-div");
 
+    const placeholderText = format === 'slim' ? parseTitle(title, language) : assets.placeholder
+
+
     switch (type) {
         case "TEXT":
             // Create a text input field
             element = document.createElement("input");
             (element as HTMLInputElement).type = "text";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en')
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en')
 
             ;
             elementTypeClass = "magicfeedback-text";
@@ -111,14 +116,14 @@ function renderContainer(
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en');
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
         case "NUMBER":
             // Create an input element with type "number" for NUMBER type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "number";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.number(language || 'en');
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.number(language || 'en');
             elementTypeClass = "magicfeedback-number";
 
             if (value.length) {
@@ -468,7 +473,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.date(language || 'en');
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.date(language || 'en');
             elementTypeClass = "magicfeedback-date";
             break;
         case "CONSENT":
@@ -489,7 +494,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "email";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "you@example.com";
+            (element as HTMLInputElement).placeholder = placeholderText || "you@example.com";
             elementTypeClass = "magicfeedback-email";
             break;
         case "PASSWORD":
@@ -497,7 +502,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.password(language || 'en');
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.password(language || 'en');
             elementTypeClass = "magicfeedback-password";
             break;
         default:
