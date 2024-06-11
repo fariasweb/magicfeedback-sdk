@@ -6,6 +6,14 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.2.4] - 2024-06-11
+### New Features
+- Added dynamic conditional options:
+  - Finish conditional: A new option that allows users to finish the feedback flow based on a condition.
+  - Skip conditional: A new option that allows users to skip a question based on a condition.
+  - Redirect conditional: A new option that allows users to redirect to a specific question based on a condition.
+- Get default values by params: new possibility to get the default values of the feedback by params.
+
 ## 🚀 [1.1.16] - 2024-04-26
 - Added image in inputs, now you can add images in the feedback inputs to make it more interactive.
 - Added new widget logic to increase the flexibility of the feedback flow
@@ -13,7 +21,7 @@ Please refer to the specific version number for detailed information.
     - Multiple choice image: A widget that allows users to select multiple image options from a list.
     - Contact form: A widget that allows users to submit their contact information.
     - Yes/No: A widget that allows users to answer a yes/no question.
--Fixed bugs:
+- Fixed bugs:
     - Resolved a bug with stars rating widget on save data 
 
 

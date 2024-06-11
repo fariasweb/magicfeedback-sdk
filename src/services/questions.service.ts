@@ -1,6 +1,12 @@
 import {NativeQuestion} from "../models/types";
 import {placeholder} from "./placeholder";
 
+// Function to get the query params
+const params = (a: string) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get(a);
+}
+
 export function renderQuestions(
     appQuestions: NativeQuestion[],
     format: string = "standard",
@@ -99,8 +105,10 @@ function renderContainer(
     let elementContainer: HTMLElement = document.createElement("div");
     elementContainer.classList.add("magicfeedback-div");
 
-    const placeholderText = format === 'slim' ? parseTitle(title, language) : assets.placeholder
+    const placeholderText = format === 'slim' ? parseTitle(title, language) : assets?.placeholder
 
+    // Look if exist the value in a query param with the ref like a key
+    const urlParamValue = params(id);
 
     switch (type) {
         case "TEXT":
@@ -154,7 +162,7 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
-                if (option === defaultValue) {
+                if (option === defaultValue || option === urlParamValue) {
                     input.checked = true;
                 }
 
@@ -376,7 +384,7 @@ function renderContainer(
                     itemsPerRow = Math.ceil(maxItems / 3);
                     break;
             }
-            console.log(assets);
+
             const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
             const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
 
@@ -514,8 +522,8 @@ function renderContainer(
     element.setAttribute("name", ref);
     element.classList.add(elementTypeClass);
 
-    if (defaultValue !== undefined) {
-        (element as HTMLInputElement).value = defaultValue;
+    if (defaultValue !== undefined || urlParamValue !== null) {
+        (element as HTMLInputElement).value = urlParamValue || defaultValue;
     }
 
     if (!["RADIO", "MULTIPLECHOICE"].includes(type)) {
