@@ -4,7 +4,8 @@ import {placeholder} from "./placeholder";
 export function renderQuestions(
     appQuestions: NativeQuestion[],
     format: string = "standard",
-    language: string = "en"
+    language: string = "en",
+    send?: () => void
 ): HTMLElement[] {
     if (!appQuestions) throw new Error("[MagicFeedback] No questions provided");
     const questions: HTMLElement[] = [];
@@ -14,15 +15,23 @@ export function renderQuestions(
         if (question?.questionType?.conf?.length > 0) {
             let elementContainer: HTMLElement = document.createElement("div");
             elementContainer.classList.add("magicfeedback-div");
-            question.questionType.conf.forEach((conf: any) => conf.ref = question.ref);
-            const elements = renderQuestions(question.questionType.conf, format, language);
+            console.log(question)
+            question.questionType.conf.forEach((conf: any) => {
+                conf.ref = question.ref
+                if (question.assets[conf.id]) {
+                    conf.assets = {
+                        placeholder: question.assets[conf.id],
+                    }
+                }
+            });
+            const elements = renderQuestions(question.questionType.conf, format, language, send);
             elements.forEach((element) => {
                 elementContainer.appendChild(element);
             });
             questions.push(elementContainer);
         } else {
             // Create a container for each question
-            const elementContainer = renderContainer(question, format, language);
+            const elementContainer = renderContainer(question, format, language, send);
             questions.push(elementContainer);
         }
     });
@@ -76,7 +85,8 @@ function getBooleanOptions(lang: string): string[] {
 function renderContainer(
     question: NativeQuestion,
     format: string,
-    language: string
+    language: string,
+    send?: () => void
 ): HTMLElement {
     const {
         id,
@@ -102,7 +112,7 @@ function renderContainer(
             // Create a text input field
             element = document.createElement("input");
             (element as HTMLInputElement).type = "text";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en')
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.answer(language || 'en')}`
 
             ;
             elementTypeClass = "magicfeedback-text";
@@ -111,6 +121,7 @@ function renderContainer(
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
+            (element as HTMLTextAreaElement).maxLength = 300; // Set the max length of the text area
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
@@ -118,7 +129,7 @@ function renderContainer(
             // Create an input element with type "number" for NUMBER type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "number";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.number(language || 'en');
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.number(language || 'en')}`;
             elementTypeClass = "magicfeedback-number";
 
             if (value.length) {
@@ -134,6 +145,8 @@ function renderContainer(
 
             elementTypeClass =
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
+
+            if (assets.extraOption) value.push(assets.extraOptionText);
 
             value.forEach((option, index) => {
                 const container = document.createElement("div");
@@ -156,9 +169,37 @@ function renderContainer(
                 label.textContent = option;
                 label.htmlFor = `rating-${ref}-${index}`;
 
+                if (assets.extraOption && option === assets.extraOptionText) {
+                    input.addEventListener("change", (event) => {
+                        const extraOption = document.getElementById(`extra-option-${ref}`);
+                        if (extraOption) {
+                            if ((event.target as HTMLInputElement).checked) {
+                                extraOption.style.display = "block";
+                            } else {
+                                extraOption.style.display = "none";
+                            }
+                        }
+                    });
+                }
+
                 container.appendChild(input);
                 container.appendChild(label);
                 element.appendChild(container);
+
+                // If is assets.extraOptionText add a input text after the label to add a custom value available only if is selected
+                if (assets.extraOption && option === assets.extraOptionText) {
+                    const inputText = document.createElement("input");
+                    inputText.type = "text";
+                    inputText.placeholder = "Custom value";
+                    inputText.classList.add("magicfeedback-extra-option");
+                    inputText.classList.add("magicfeedback-input");
+                    inputText.id = `extra-option-${ref}`;
+                    inputText.name = `extra-option-${ref}`;
+                    inputText.style.display = "none";
+                    element.appendChild(inputText);
+                }
+
+
             });
             break;
         case "BOOLEAN":
@@ -174,7 +215,7 @@ function renderContainer(
             booleanContainer.style.width = "70%";
             booleanContainer.style.margin = "auto";
 
-            const booleanOptions = assets.addIcon ? ['✓', '✗'] : getBooleanOptions(language);
+            const booleanOptions = assets.addIcon ? ['👍', '👎'] : getBooleanOptions(language);
 
             // Create a input button element for each value in the question's value array
             booleanOptions.forEach((option, index) => {
@@ -225,8 +266,35 @@ function renderContainer(
             const ratingContainer = document.createElement('div');
             ratingContainer.classList.add('magicfeedback-rating-container');
 
-            const maxRating = value.length ? Number(value[value.length - 1]) : 5;
-            const minRating = value.length ? Number(value[0]) : 1;
+            const maxRating = assets.max ? Number(assets.max) : 5;
+            const minRating = assets.min ? Number(assets.min) : 1;
+
+            const ratingPlaceholder = document.createElement('div');
+            ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
+            ratingPlaceholder.style.display = "flex";
+            ratingPlaceholder.style.justifyContent = "space-between";
+            ratingPlaceholder.style.width = "90%";
+            ratingPlaceholder.style.margin = "auto";
+
+            if (assets.minPlaceholder) {
+                const ratingPlaceholderMin = document.createElement('span');
+                ratingPlaceholderMin.textContent = assets.minPlaceholder;
+                ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-min');
+                ratingPlaceholderMin.style.fontStyle = "italic";
+                ratingPlaceholderMin.style.fontSize = "0.8em";
+
+                ratingPlaceholder.appendChild(ratingPlaceholderMin);
+            }
+
+            if (assets.maxPlaceholder) {
+                const ratingPlaceholderMax = document.createElement('span');
+                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
+                ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-max');
+                ratingPlaceholderMax.style.fontStyle = "italic";
+                ratingPlaceholderMax.style.fontSize = "0.8em";
+
+                ratingPlaceholder.appendChild(ratingPlaceholderMax);
+            }
 
             for (let i = minRating; i <= maxRating; i++) {
                 const ratingOption = document.createElement('div');
@@ -241,7 +309,12 @@ function renderContainer(
                 ratingLabel.textContent = i.toString();
 
                 const ratingImage = document.createElement('img');
-                if (maxRating === 5) {
+                ratingImage.alt = `face-${ref}-${i}`;
+                ratingImage.className = `rating-image${i}`;
+
+                if (minRating === 0 && maxRating === 10) {
+                    ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
+                } else if (minRating === 1 && maxRating === 5) {
                     switch (i) {
                         case 1:
                             ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/1.svg";
@@ -260,14 +333,10 @@ function renderContainer(
                             break;
                     }
                 } else {
-                    ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
+                    const ratingNum = Math.round((i - minRating) * (10 / (maxRating - minRating)));
+
+                    ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${ratingNum}.svg`;
                 }
-
-                ratingImage.alt = `face-${ref}-${i}`;
-                // ratingImage is used to set the form value
-                // ... add the code to set the value here
-
-                ratingImage.className = `rating-image${i}`;
 
                 const input = document.createElement("input");
                 input.id = `rating-${ref}-${i}`;
@@ -285,6 +354,41 @@ function renderContainer(
                 ratingContainer.appendChild(ratingOption);
             }
 
+            if (assets.extraOption && assets.extraOptionText) {
+                const extraOption = document.createElement('div');
+                extraOption.classList.add('magicfeedback-rating-option');
+
+                const containerLabel = document.createElement('label');
+                containerLabel.htmlFor = `rating-${ref}-extra`;
+                containerLabel.classList.add('magicfeedback-rating-option-label-container');
+
+                const ratingLabel = document.createElement('label');
+                ratingLabel.htmlFor = `rating-${ref}-extra`;
+                ratingLabel.textContent = assets.extraOptionText;
+
+                // Add a question mark icon to the extra option
+                const ratingImage = document.createElement('img');
+                ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/question.svg";
+                ratingImage.alt = `face-${ref}-extra`;
+                ratingImage.className = `magicfeedback-rating-image-extra`;
+
+                const input = document.createElement("input");
+                input.id = `rating-${ref}-extra`;
+                input.type = "radio";
+                input.name = ref;
+                input.value = '-';
+                input.classList.add(elementTypeClass);
+                input.classList.add("magicfeedback-input");
+
+                containerLabel.appendChild(input);
+                containerLabel.appendChild(ratingImage);
+                containerLabel.appendChild(ratingLabel);
+
+                extraOption.appendChild(containerLabel);
+                ratingContainer.appendChild(extraOption);
+            }
+
+            element.appendChild(ratingPlaceholder);
             element.appendChild(ratingContainer);
             break;
         case 'RATING_NUMBER':
@@ -294,8 +398,35 @@ function renderContainer(
             const ratingNumberContainer = document.createElement('div');
             ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
 
-            const maxRatingNumber = value.length ? Number(value[value.length - 1]) : 5;
-            const minRatingNumber = value.length ? Number(value[0]) : 1;
+            const maxRatingNumber = assets.max ? Number(assets.max) : 5;
+            const minRatingNumber = assets.min ? Number(assets.min) : 1;
+
+            const ratingNumberPlaceholder = document.createElement('div');
+            ratingNumberPlaceholder.classList.add('magicfeedback-rating-number-placeholder');
+            ratingNumberPlaceholder.style.display = "flex";
+            ratingNumberPlaceholder.style.justifyContent = "space-between";
+            ratingNumberPlaceholder.style.width = "90%";
+            ratingNumberPlaceholder.style.margin = "auto";
+
+            if (assets.minPlaceholder) {
+                const ratingPlaceholderMin = document.createElement('span');
+                ratingPlaceholderMin.textContent = assets.minPlaceholder;
+                ratingPlaceholderMin.classList.add('magicfeedback-rating-number-placeholder-min');
+                ratingPlaceholderMin.style.fontStyle = "italic";
+                ratingPlaceholderMin.style.fontSize = "0.8em";
+
+                ratingNumberPlaceholder.appendChild(ratingPlaceholderMin);
+            }
+
+            if (assets.maxPlaceholder) {
+                const ratingPlaceholderMax = document.createElement('span');
+                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
+                ratingPlaceholderMax.classList.add('magicfeedback-rating-number-placeholder-max');
+                ratingPlaceholderMax.style.fontStyle = "italic";
+                ratingPlaceholderMax.style.fontSize = "0.8em";
+
+                ratingNumberPlaceholder.appendChild(ratingPlaceholderMax);
+            }
 
             for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                 // Create a input button element for each value in the question's value array
@@ -324,6 +455,33 @@ function renderContainer(
                 ratingNumberContainer.appendChild(ratingOption);
             }
 
+            if (assets.extraOption && assets.extraOptionText) {
+                const extraOption = document.createElement('div');
+                extraOption.classList.add('magicfeedback-rating-number-option');
+
+                const containerLabel = document.createElement('label');
+                containerLabel.htmlFor = `rating-${ref}-extra`;
+                containerLabel.classList.add('magicfeedback-rating-number-option-label-container');
+
+                const ratingLabel = document.createElement('label');
+                ratingLabel.htmlFor = `rating-${ref}-extra`;
+                ratingLabel.textContent = assets.extraOptionText;
+
+                const input = document.createElement("input");
+                input.id = `rating-${ref}-extra`;
+                input.type = "radio";
+                input.name = ref;
+                input.value = '-';
+                input.classList.add(elementTypeClass);
+                input.classList.add("magicfeedback-input");
+
+                containerLabel.appendChild(input);
+                containerLabel.appendChild(ratingLabel);
+                extraOption.appendChild(containerLabel);
+                ratingNumberContainer.appendChild(extraOption);
+            }
+
+            element.appendChild(ratingNumberPlaceholder);
             element.appendChild(ratingNumberContainer);
 
             break;
@@ -335,7 +493,6 @@ function renderContainer(
 
             element.appendChild(ratingStarContainer);
             break;
-
         case 'MULTIPLECHOISE_IMAGE':
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-multiple-choice-image';
@@ -467,7 +624,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.date(language || 'en');
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.date(language || 'en')}`;
             elementTypeClass = "magicfeedback-date";
             break;
         case "CONSENT":
@@ -488,7 +645,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "email";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : "you@example.com";
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || "you@example.com"}`;
             elementTypeClass = "magicfeedback-email";
             break;
         case "PASSWORD":
@@ -496,7 +653,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.password(language || 'en');
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.password(language || 'en')}`;
             elementTypeClass = "magicfeedback-password";
             break;
         default:
@@ -543,7 +700,49 @@ function renderContainer(
                 elementContainer.appendChild(image);
             }
         }
-        elementContainer.appendChild(element);
+
+        if (type === "LONGTEXT") {
+            const counter = document.createElement("div");
+            counter.classList.add("magicfeedback-counter");
+            counter.textContent = "0/300";
+            counter.style.textAlign = "right";
+            counter.style.fontSize = "0.8em";
+            counter.style.color = "#999";
+            counter.style.marginTop = "5px";
+
+            element.addEventListener("input", () => {
+                counter.textContent = `${(element as HTMLTextAreaElement).value.length}/300`;
+            });
+
+            elementContainer.appendChild(element);
+            elementContainer.appendChild(counter);
+
+            if (assets.extraOption && assets.extraOptionText) {
+                const skipContainer = document.createElement("div");
+                skipContainer.classList.add("magicfeedback-skip-container");
+                skipContainer.style.display = "flex";
+                skipContainer.style.justifyContent = "space-between";
+                // Option to skip the question button
+                const skipButton = document.createElement("button");
+                skipButton.textContent = assets.extraOptionText;
+                skipButton.classList.add("magicfeedback-skip");
+                skipButton.style.cursor = "pointer";
+                skipButton.type = "button";
+
+                skipButton.addEventListener("click", () => {
+                    (element as HTMLTextAreaElement).value = '-'
+                    if (send) send();
+                });
+
+                skipContainer.appendChild(skipButton);
+
+                elementContainer.appendChild(skipContainer);
+            }
+
+        } else {
+            elementContainer.appendChild(element);
+        }
+
     }
 
     return elementContainer;
@@ -652,4 +851,30 @@ export function renderSuccess(success: string): HTMLElement {
     successElement.classList.add("magicfeedback-success");
     successElement.textContent = success;
     return successElement;
+}
+
+export function renderStartMessage(
+    startMessage: string,
+    startEvent: () => void,
+    addButton: boolean = false,
+    startButtonText: string = "Go!",
+): HTMLElement {
+    const startMessageContainer = document.createElement("div");
+    startMessageContainer.classList.add("magicfeedback-start-message-container");
+
+    const startMessageElement = document.createElement("div");
+    startMessageElement.classList.add("magicfeedback-start-message");
+    startMessageElement.textContent = startMessage;
+
+    const startMessageButton = document.createElement("button");
+    startMessageButton.id = "magicfeedback-start-message-button";
+    startMessageButton.classList.add("magicfeedback-start-message-button");
+    startMessageButton.textContent = startButtonText;
+
+    startMessageButton.addEventListener("click", () => startEvent());
+
+    startMessageContainer.appendChild(startMessageElement);
+    if (addButton) startMessageContainer.appendChild(startMessageButton);
+
+    return startMessageContainer;
 }

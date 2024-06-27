@@ -255,22 +255,22 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 ```css
 /* Overall container for the feedback form */
 .magicfeedback-container {
-    /* ... add your container styles here ... */
+  /* ... add your container styles here ... */
 }
 
 /* Main form element */
 .magicfeedback-form {
-    /* ... add your form styles here ... */
+  /* ... add your form styles here ... */
 }
 
 /* Section for questions */
 .magicfeedback-questions {
-    /* ... add your questions section styles here ... */
+  /* ... add your questions section styles here ... */
 }
 
 /* Section for div */
 .magicfeedback-div {
-    /* ... add your generic div styles here ... */
+  /* ... add your generic div styles here ... */
 }
 
 /* Generic styles for various input elements */
@@ -292,19 +292,40 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-number,
 .magicfeedback-longtext,
 .magicfeedback-text {
-    /* ... add your generic input styles here ... */
+  /* ... add your generic input styles here ... */
+}
+
+.magicfeedback-skip-container {
+  /* ... add your skip container styles here ... */
+}
+
+.magicfeedback-skip{
+    /* ... add your skip button styles here ... */
 }
 
 .magicfeedback-image {
-    /* ... add your image styles here ... */
+  /* ... add your image styles here ... */
 }
 
 /* Specific styles for individual input types */
 .magicfeedback-radio-container,
 .magicfeedback-boolean-container,
 .magicfeedback-consent-container,
-.magicfeedback-checkbox-container {
-    /* ... add styles for radio/checkbox containers ... */
+.magicfeedback-checkbox-container,
+.magicfeedback-longtext-container{
+  /* ... add styles for radio/checkbox containers ... */
+}
+
+.magicfeedback-rating-placeholder {
+  /* ... add your rating placeholder styles here ... */
+}
+
+.magicfeedback-rating-placeholder-min {
+  /* ... add your rating placeholder min styles here ... */
+}
+
+.magicfeedback-rating-placeholder-max {
+  /* ... add your rating placeholder max styles here ... */
 }
 
 .magicfeedback-rating-image1,
@@ -316,87 +337,115 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-rating-image7,
 .magicfeedback-rating-image8,
 .magicfeedback-rating-image9,
-.magicfeedback-rating-image10 {
-    /* ... add styles for rating images ... */
+.magicfeedback-rating-image10,
+.magicfeedback-rating-image-extra {
+  /* ... add styles for rating images ... */
 }
 
 /* Section for number rating */
 .magicfeedback-rating-number-container {
-    /* ... add your number rating container styles here ... */
+  /* ... add your number rating container styles here ... */
+}
+
+.magicfeedback-rating-number-placeholder {
+  /* ... add your number rating placeholder styles here ... */
+}
+
+.magicfeedback-rating-number-placeholder-min {
+  /* ... add your number rating placeholder min styles here ... */
+}
+
+.magicfeedback-rating-number-placeholder-max {
+  /* ... add your number rating placeholder max styles here ... */
 }
 
 .magicfeedback-rating-number-option {
-    /* ... add your number rating option styles here ... */
+  /* ... add your number rating option styles here ... */
 }
 
 .magicfeedback-rating-number-option-label-container {
-    /* ... add your number rating option label container styles here ... */
+  /* ... add your number rating option label container styles here ... */
 }
 
 
 /* Section for star rating */
 .magicfeedback-rating-star {
-    /* ... add your star rating container styles here ... */
+  /* ... add your star rating container styles here ... */
 }
 
 .magicfeedback-rating-star-container {
-    /* ... add your star rating styles here ... */
+  /* ... add your star rating styles here ... */
 }
 
 .magicfeedback-rating-star-option {
-    /* ... add your star rating option styles here ... */
+  /* ... add your star rating option styles here ... */
 }
 
 .magicfeedback-rating-star-selected {
-    /* ... add your star rating selected styles here ... */
+  /* ... add your star rating selected styles here ... */
 }
 
 /* Section for multiple choice image */
-.magicfeedback-multiple-choice-image{
-    /* ... add your multiple choice image container styles here ... */
+.magicfeedback-multiple-choice-image {
+  /* ... add your multiple choice image container styles here ... */
 }
 
 .magicfeedback-multiple-choice-image-container {
-    /* ... add your multiple choice image styles here ... */
+  /* ... add your multiple choice image styles here ... */
 }
 
 .magicfeedback-multiple-choice-image-option {
-    /* ... add your multiple choice image option styles here ... */
+  /* ... add your multiple choice image option styles here ... */
 }
 
 .magicfeedback-image-option-label-container {
-    /* ... add your multiple choice image option label container styles here ... */
+  /* ... add your multiple choice image option label container styles here ... */
 }
 
 .magicfeedback-multiple-choice-image-label {
-    /* ... add your multiple choice image label styles here ... */
+  /* ... add your multiple choice image label styles here ... */
 }
+
 .magicfeedback-multiple-choice-image-input {
-    /* ... add your multiple choice image input styles here ... */
+  /* ... add your multiple choice image input styles here ... */
 }
+
 .magicfeedback-multiple-choice-image-image {
-    /* ... add your multiple choice image image styles here ... */
+  /* ... add your multiple choice image image styles here ... */
 }
 
 
 /* Action buttons container */
 .magicfeedback-action-container {
-    /* ... add your action button container styles here ... */
+  /* ... add your action button container styles here ... */
 }
 
 /* Submit button */
 .magicfeedback-submit {
-    /* ... add your submit button styles here ... */
+  /* ... add your submit button styles here ... */
 }
 
 /* Back button */
 .magicfeedback-back {
-    /* ... add your back button styles here ... */
+  /* ... add your back button styles here ... */
+}
+
+/* Start message */
+.magicfeedback-start-message-container {
+  /* ... add your start message container styles here ... */
+}
+
+.magicfeedback-start-message {
+  /* ... add your start message styles here ... */
+}
+
+.magicfeedback-start-message-button {
+  /* ... add your start message button styles here ... */
 }
 
 /* Success message (if applicable) */
 .magicfeedback-success {
-    /* ... add your success message styles here ... */
+  /* ... add your success message styles here ... */
 }
 ```
 

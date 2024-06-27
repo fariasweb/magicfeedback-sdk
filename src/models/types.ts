@@ -72,6 +72,7 @@ export type generateFormOptions = {
     sendButtonText?: string;
     backButtonText?: string;
     nextButtonText?: string;
+    startButtonText?: string;
     addSuccessScreen?: boolean;
     successMessage?: string;
     questionFormat?: "standard" | "slim";

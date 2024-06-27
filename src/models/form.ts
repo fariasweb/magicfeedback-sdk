@@ -4,7 +4,7 @@ import {Config} from "./config";
 import {Log} from "../utils/log";
 import {getFollowUpQuestion, getForm, sendFeedback, validateEmail} from "../services/request.service";
 import {FormData} from "./formData";
-import {renderActions, renderQuestions, renderSuccess} from "../services/questions.service";
+import {renderActions, renderQuestions, renderStartMessage, renderSuccess} from "../services/questions.service";
 
 export class Form {
     /**
@@ -124,7 +124,7 @@ export class Form {
                         }
                         localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
                         // Create the form from the JSON
-                        this.generateForm();
+                        this.formData.style?.startMessage ? this.generateWelcomeMessage(this.formData.style.startMessage) : this.generateForm();
                     }
                 });
             } else {
@@ -158,8 +158,10 @@ export class Form {
 
             if (this.formOptionsConfig.getMetaData) this.getMetaData();
 
-            // Create the form from the JSON
-            this.generateForm();
+            this.formData.style?.startMessage ?
+                this.generateWelcomeMessage(this.formData.style.startMessage) :
+                this.generateForm();
+
         } catch (e) {
             this.log.err(e);
 
@@ -175,6 +177,24 @@ export class Form {
     }
 
     /**
+     * Generate container
+     * @returns
+     */
+    private generateContainer(): HTMLElement {
+        // Select and prepare the container
+        let container: HTMLElement | null = document.getElementById(this.selector);
+        if (!container) {
+            container = document.getElementById("magicfeedback-container-" + this.appId);
+            if (!container) throw new Error(`Element with ID '${this.selector}' not found.`);
+        }
+        container.classList.add("magicfeedback-container");
+        container.id = "magicfeedback-container-" + this.appId;
+        container.innerHTML = "";
+
+        return container;
+    }
+
+    /**
      * Create
      *
      * TODO: Add option to generate in <form> or in other <tag>
@@ -184,11 +204,7 @@ export class Form {
             // Order questions by position
             this.questions.sort((a, b) => a.position - b.position);
             // Select and prepare the container
-            const container: HTMLElement | null = document.getElementById(this.selector);
-            if (!container) throw new Error(`Element with ID '${this.selector}' not found.`);
-            container.classList.add("magicfeedback-container");
-            container.id = "magicfeedback-container-" + this.appId;
-            container.innerHTML = "";
+            let container: HTMLElement | null = this.generateContainer()
 
             // Create the form
             const form = document.createElement("form");
@@ -201,7 +217,12 @@ export class Form {
             questionContainer.id = "magicfeedback-questions-" + this.appId;
 
             // Process questions and create in the form
-            this.elementQuestions = renderQuestions(this.questions, this.formOptionsConfig.questionFormat, this.formData?.lang[0]);
+            this.elementQuestions = renderQuestions(
+                this.questions,
+                this.formOptionsConfig.questionFormat,
+                this.formData?.lang[0],
+                () => this.send()
+            );
 
             switch (this.formData?.identity) {
                 case 'MAGICSURVEY':
@@ -241,6 +262,40 @@ export class Form {
                 event.preventDefault();
                 this.send()
             });
+        } catch (e) {
+            this.log.err(e);
+
+            if (this.formOptionsConfig.onLoadedEvent) {
+                this.formOptionsConfig.onLoadedEvent({
+                    loading: false,
+                    error: e,
+                });
+            }
+            return;
+        }
+    }
+
+    /**
+     * Start form after the welcome message, mainly used in the start message
+     * @public
+     **/
+    public startForm() {
+        this.generateForm()
+    }
+
+    /**
+     * Generate welcome message page if the form has a start message,with a button to start the form
+     * @private
+     */
+    private generateWelcomeMessage(startMessage: string) {
+        try {
+            // Select and prepare the container
+            const container: HTMLElement | null = this.generateContainer()
+
+
+            const initialMessage = renderStartMessage(startMessage, () => this.startForm(), this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText);
+
+            container.appendChild(initialMessage)
         } catch (e) {
             this.log.err(e);
 
@@ -369,7 +424,9 @@ export class Form {
 
         const inputs = form.querySelectorAll(".magicfeedback-input");
 
+        console.log(inputs)
         inputs.forEach((input) => {
+            console.log(input)
             const inputType = (input as HTMLInputElement).type;
             const elementTypeClass = (input as HTMLInputElement).classList[0];
 
@@ -437,7 +494,6 @@ export class Form {
                             } else {
                                 surveyAnswers.push(ans);
                             }
-
 
 
                         }

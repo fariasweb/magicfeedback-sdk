@@ -35,6 +35,8 @@ export class FormData {
 
     lang: string[];
 
+    style: Record<string, any>;
+
     constructor(
         id: string,
         name: string,
@@ -51,7 +53,8 @@ export class FormData {
         setting: Record<string, any>,
         conf: Record<string, any>,
         questions: NativeQuestion[],
-        lang: string[]
+        lang: string[],
+        style: Record<string, any>
     ) {
         this.id = id
         this.name = name
@@ -69,5 +72,6 @@ export class FormData {
         this.conf = conf
         this.questions = questions
         this.lang = lang
+        this.style = style
     }
 }
