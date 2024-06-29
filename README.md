@@ -291,7 +291,8 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-rating-option-label-container,
 .magicfeedback-number,
 .magicfeedback-longtext,
-.magicfeedback-text {
+.magicfeedback-text,
+.magicfeedback-priority-list{
   /* ... add your generic input styles here ... */
 }
 
@@ -312,7 +313,8 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 .magicfeedback-boolean-container,
 .magicfeedback-consent-container,
 .magicfeedback-checkbox-container,
-.magicfeedback-longtext-container{
+.magicfeedback-longtext-container,
+.magicfeedback-priority-list-container{
   /* ... add styles for radio/checkbox containers ... */
 }
 
@@ -414,7 +416,24 @@ Feel free to adapt and expand upon the provided styles to match your desired des
   /* ... add your multiple choice image image styles here ... */
 }
 
-
+/* Section for priority-list */
+.magicfeedback-priority-list-container {
+  /* ... add your priority list container styles here ... */
+}
+.magicfeedback-priority-list-list {
+  /* ... add your priority list list styles here ... */
+}
+.magicfeedback-priority-list-item{
+    /* ... add your priority list item styles here ... */
+}
+.magicfeedback-priority-list-item-label{
+    /* ... add your priority list item label styles here ... */
+}
+.magicfeedback-priority-list-arrow-up,
+.magicfeedback-priority-list-arrow-down{
+      /* ... add your priority list arrow up styles here ... */
+    
+}
 /* Action buttons container */
 .magicfeedback-action-container {
   /* ... add your action button container styles here ... */

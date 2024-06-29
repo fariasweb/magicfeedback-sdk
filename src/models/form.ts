@@ -424,9 +424,7 @@ export class Form {
 
         const inputs = form.querySelectorAll(".magicfeedback-input");
 
-        console.log(inputs)
         inputs.forEach((input) => {
-            console.log(input)
             const inputType = (input as HTMLInputElement).type;
             const elementTypeClass = (input as HTMLInputElement).classList[0];
 
@@ -449,7 +447,21 @@ export class Form {
                             elementTypeClass === "magicfeedback-consent" ||
                             (input as HTMLInputElement).checked
                         ) {
+                            if (input.id.includes('matrix')) {
+                                const key = input.id.split("-")[input.id.split("-").length - 1];
+                                let v = '';
+                                inputs.forEach((i) => {
+                                    if ((i as HTMLInputElement).checked && i.id.includes(`matrix-${key}`)) {
+                                        v += (i as HTMLInputElement).value + ', '
+                                    }
+                                });
+
+                                // remove last comma
+                                v = v.slice(0, -2);
+                                ans.value.push(`${key}: ${v}`);
+                            } else {
                             ans.value.push(value);
+                            }
 
                             // check if the answer is already in the array and merge the values
                             const index = surveyAnswers.findIndex(
@@ -480,18 +492,24 @@ export class Form {
                                 }
                             }
 
-                            ans.value.push(value);
+                            if (input.id.includes('point-system')) {
+                                const key = input.id.split("-")[input.id.split("-").length - 1];
+                                ans.value.push(`${key}: ${value}%`);
+                            } else{
+                                ans.value.push(value);
+                            }
+
                             // check if the answer is already in the array and merge the values
                             const index = surveyAnswers.findIndex(
                                 (a) => a.key === ans.key
                             );
-                            console.log(index, surveyAnswers);
                             if (index !== -1) {
                                 surveyAnswers[index].value = [
                                     ...surveyAnswers[index].value,
                                     ...ans.value,
                                 ];
                             } else {
+                                // Add the answer to the array
                                 surveyAnswers.push(ans);
                             }
 
