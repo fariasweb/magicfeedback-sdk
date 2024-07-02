@@ -1,4 +1,4 @@
-import {NativeQuestion} from "../models/types";
+import {FEEDBACKAPPANSWERTYPE, NativeQuestion} from "../models/types";
 import {placeholder} from "./placeholder";
 
 export function renderQuestions(
@@ -108,7 +108,7 @@ function renderContainer(
     elementContainer.classList.add("magicfeedback-div");
 
     switch (type) {
-        case "TEXT":
+        case FEEDBACKAPPANSWERTYPE.TEXT:
             // Create a text input field
             element = document.createElement("input");
             (element as HTMLInputElement).type = "text";
@@ -117,7 +117,7 @@ function renderContainer(
             ;
             elementTypeClass = "magicfeedback-text";
             break;
-        case "LONGTEXT":
+        case FEEDBACKAPPANSWERTYPE.LONGTEXT:
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
@@ -125,7 +125,7 @@ function renderContainer(
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
-        case "NUMBER":
+        case FEEDBACKAPPANSWERTYPE.NUMBER:
             // Create an input element with type "number" for NUMBER type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "number";
@@ -139,8 +139,8 @@ function renderContainer(
                 (element as HTMLInputElement).value = value[0];
             }
             break;
-        case "RADIO":
-        case "MULTIPLECHOICE":
+        case FEEDBACKAPPANSWERTYPE.RADIO:
+        case FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE:
             element = document.createElement("div");
 
             elementTypeClass =
@@ -158,7 +158,7 @@ function renderContainer(
                 input.id = `rating-${ref}-${index}`;
                 input.type = type === "MULTIPLECHOICE" ? "checkbox" : "radio";
                 input.name = ref;
-                input.value = option;
+                input.value = '-';
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
@@ -196,13 +196,12 @@ function renderContainer(
                     inputText.id = `extra-option-${ref}`;
                     inputText.name = `extra-option-${ref}`;
                     inputText.style.display = "none";
+
                     element.appendChild(inputText);
                 }
-
-
             });
             break;
-        case "BOOLEAN":
+        case FEEDBACKAPPANSWERTYPE.BOOLEAN:
             // Create an input element with type "checkbox" for BOOLEAN type with option yes or no
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-radio';
@@ -252,6 +251,10 @@ function renderContainer(
                 input.style.height = "0";
                 input.style.margin = "0";
 
+                input.addEventListener("change", () => {
+                    if (send) send();
+                });
+
                 container.appendChild(input);
                 container.appendChild(label);
                 booleanContainer.appendChild(container);
@@ -259,7 +262,7 @@ function renderContainer(
 
             element.appendChild(booleanContainer);
             break;
-        case 'RATING_EMOJI':
+        case FEEDBACKAPPANSWERTYPE.RATING_EMOJI:
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating';
 
@@ -391,7 +394,7 @@ function renderContainer(
             element.appendChild(ratingPlaceholder);
             element.appendChild(ratingContainer);
             break;
-        case 'RATING_NUMBER':
+        case FEEDBACKAPPANSWERTYPE.RATING_NUMBER:
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-number';
 
@@ -485,7 +488,7 @@ function renderContainer(
             element.appendChild(ratingNumberContainer);
 
             break;
-        case 'RATING_STAR':
+        case FEEDBACKAPPANSWERTYPE.RATING_STAR:
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-star';
 
@@ -493,7 +496,7 @@ function renderContainer(
 
             element.appendChild(ratingStarContainer);
             break;
-        case 'MULTIPLECHOISE_IMAGE':
+        case FEEDBACKAPPANSWERTYPE.MULTIPLECHOISE_IMAGE:
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-multiple-choice-image';
 
@@ -598,7 +601,7 @@ function renderContainer(
 
             element.appendChild(multipleChoiceImageContainer);
             break;
-        case "SELECT":
+        case FEEDBACKAPPANSWERTYPE.SELECT:
             // Create a select element for RADIO and MULTIPLECHOICE types
             element = document.createElement("select");
             elementTypeClass = "magicfeedback-select";
@@ -619,7 +622,7 @@ function renderContainer(
                 (element as HTMLSelectElement).appendChild(option);
             });
             break;
-        case "DATE":
+        case FEEDBACKAPPANSWERTYPE.DATE:
             // Create an input element with type "date" for DATE type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
@@ -627,7 +630,7 @@ function renderContainer(
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.date(language || 'en')}`;
             elementTypeClass = "magicfeedback-date";
             break;
-        case "CONSENT":
+        case FEEDBACKAPPANSWERTYPE.CONSENT:
             // Create an input element with type "checkbox" for BOOLEAN type
             element = document.createElement("input");
             elementTypeClass = "magicfeedback-consent";
@@ -640,7 +643,7 @@ function renderContainer(
             element.classList.add("magicfeedback-consent");
             element.classList.add("magicfeedback-input");
             break;
-        case "EMAIL":
+        case FEEDBACKAPPANSWERTYPE.EMAIL:
             // Create an input element with type "email" for EMAIL type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "email";
@@ -648,7 +651,7 @@ function renderContainer(
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || "you@example.com"}`;
             elementTypeClass = "magicfeedback-email";
             break;
-        case "PASSWORD":
+        case FEEDBACKAPPANSWERTYPE.PASSWORD:
             // Create an input element with type "password" for PASSWORD type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
@@ -656,10 +659,290 @@ function renderContainer(
             (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.password(language || 'en')}`;
             elementTypeClass = "magicfeedback-password";
             break;
+        case FEEDBACKAPPANSWERTYPE.MULTI_QUESTION_MATRIX:
+            element = document.createElement("div");
+            elementTypeClass = "magicfeedback-multi-question-matrix";
+
+            const matrixContainer = document.createElement("div");
+            matrixContainer.classList.add("magicfeedback-multi-question-matrix-container");
+
+            //The matrix have a table format with the questions in the rows and the options in the columns, all the options have a title in the header of the column and is posssioble select moere than one option per question
+            const table = document.createElement("table");
+            table.classList.add("magicfeedback-multi-question-matrix-table");
+
+            // Create the header of the table
+            const header = document.createElement("thead");
+            header.classList.add("magicfeedback-multi-question-matrix-header");
+            header.style.paddingBottom = "15px";
+            const headerRow = document.createElement("tr");
+
+            ["", ...value].forEach((option) => {
+                const headerCell = document.createElement("th");
+                headerCell.textContent = option;
+                headerCell.style.padding = "0 10px 10px 10px ";
+                headerRow.appendChild(headerCell);
+            });
+
+            header.appendChild(headerRow);
+
+            // Create the body of the table
+            const body = document.createElement("tbody");
+
+            if (assets?.options?.length > 0) {
+                assets.options.split(',').forEach((o: string) => {
+                    const row = document.createElement("tr");
+                    row.style.paddingBottom = "15px";
+                    const rowLabel = document.createElement("td");
+                    rowLabel.classList.add("magicfeedback-multi-question-matrix-row-label");
+                    const label = document.createElement("label");
+                    label.classList.add("magicfeedback-multi-question-matrix-label");
+                    label.style.paddingRight = "15px";
+                    label.textContent = o;
+
+                    rowLabel.appendChild(label);
+                    row.appendChild(rowLabel);
+
+                    value.forEach((v) => {
+                        const cell = document.createElement("td");
+                        const input = document.createElement("input");
+                        input.type = "checkbox";
+                        input.name = ref;
+                        input.value = v;
+                        input.id = `matrix-${o}`;
+                        input.classList.add("magicfeedback-input");
+                        input.style.padding = "0 10px";
+                        cell.appendChild(input);
+                        row.appendChild(cell);
+                    });
+
+                    body.appendChild(row);
+                });
+            }
+
+            table.appendChild(header);
+            table.appendChild(body);
+            matrixContainer.appendChild(table);
+            element.appendChild(matrixContainer);
+            break;
+        case FEEDBACKAPPANSWERTYPE.PRIORITY_LIST:
+            element = document.createElement("div");
+            elementTypeClass = "magicfeedback-priority-list";
+
+            const priorityListContainer = document.createElement("div");
+            priorityListContainer.classList.add("magicfeedback-priority-list-container");
+
+            // The priority list have a list of items that the user can order by priority,
+            // the item is a card with the number of the position and title in the left and a
+            // arrow up and down to change the position of the item
+            const list = document.createElement("ul");
+            list.classList.add("magicfeedback-priority-list-list");
+
+            value.forEach((option, index) => {
+                const item = document.createElement("li");
+                item.classList.add("magicfeedback-priority-list-item");
+                item.style.display = "flex";
+                item.style.justifyContent = "space-between";
+                item.style.alignItems = "center";
+                item.style.margin = "5px";
+
+                // Add input position
+                const input = document.createElement("input");
+                input.classList.add("magicfeedback-input-magicfeedback-priority-list");
+                input.classList.add("magicfeedback-input");
+                input.type = "hidden";
+                input.id = `priority-list-${ref}`;
+                input.name = ref
+                input.value = `${index + 1}. ${option}`;
+                item.appendChild(input);
+
+                const itemLabel = document.createElement("label");
+                itemLabel.classList.add("magicfeedback-priority-list-item-label");
+                itemLabel.textContent = `${index + 1}. ${option}`;
+                item.appendChild(itemLabel);
+
+                const arrowContainer = document.createElement("div");
+                arrowContainer.style.display = "flex";
+                arrowContainer.style.alignItems = "center";
+                arrowContainer.style.justifyContent = "space-between";
+
+                const upArrow = document.createElement("img");
+                upArrow.classList.add("magicfeedback-priority-list-arrow-up");
+                // Add a up arrow svg icon
+                upArrow.src = "https://magicfeedback-c6458-dev.web.app/assets/arrow.svg";
+                upArrow.style.width = "20px";
+                upArrow.style.height = "20px";
+                upArrow.style.cursor = "pointer";
+                upArrow.style.margin = "0 5px";
+                upArrow.style.color = "#000";
+                upArrow.style.visibility = index === 0 ? "hidden" : "visible";
+
+                upArrow.addEventListener("click", () => {
+                    const previous = item.previousElementSibling;
+                    if (previous) {
+                        const position = Number(input.value.split(".")[0]) - 1;
+                        input.value = `${position}. ${option}`;
+                        itemLabel.textContent = `${position}. ${option}`;
+                        upArrow.style.visibility = position === 1 ? "hidden" : "visible";
+                        downArrow.style.visibility = position === value.length ? "hidden" : "visible";
+
+                        // Update the value of the item that had the new value to update the order
+                        const previousInput = previous.querySelector(".magicfeedback-input-magicfeedback-priority-list");
+                        const previousLabel = previous.querySelector(".magicfeedback-priority-list-item-label");
+                        const previousArrowUp = previous.querySelector(".magicfeedback-priority-list-arrow-up");
+                        const previousArrowDown = previous.querySelector(".magicfeedback-priority-list-arrow-down");
+
+                        if (previousInput && previousLabel && previousArrowUp && previousArrowDown) {
+                            const newPosition = Number((previousInput as HTMLInputElement).value.split(".")[0]) + 1;
+                            (previousInput as HTMLInputElement).value = `${newPosition}.${previousLabel.textContent?.split(".")[1]}`;
+                            previousLabel.textContent = `${newPosition}.${previousLabel.textContent?.split(".")[1]}`;
+                            (previousArrowUp as HTMLInputElement).style.visibility = newPosition === 1 ? "hidden" : "visible";
+                            (previousArrowDown as HTMLInputElement).style.visibility = newPosition === value.length ? "hidden" : "visible";
+                        }
+
+                        list.insertBefore(item, previous);
+                    }
+                })
+
+                arrowContainer.appendChild(upArrow);
+
+                const downArrow = document.createElement("img");
+                downArrow.classList.add("magicfeedback-priority-list-arrow-down");
+                // Add a down arrow svg icon
+                downArrow.src = "https://magicfeedback-c6458-dev.web.app/assets/arrow.svg";
+                downArrow.style.width = "20px";
+                downArrow.style.height = "20px";
+                downArrow.style.cursor = "pointer";
+                downArrow.style.margin = "0 5px";
+                downArrow.style.color = "#000";
+                downArrow.style.transform = "rotate(180deg)";
+                // Hidden if is the bottom
+                downArrow.style.visibility = index === value.length - 1 ? "hidden" : "visible";
+
+
+                downArrow.addEventListener("click", () => {
+                    const next = item.nextElementSibling;
+                    if (next) {
+                        const position = Number(input.value.split(".")[0]) + 1;
+                        input.value = position.toString();
+                        itemLabel.textContent = `${position.toString()}. ${option}`;
+                        upArrow.style.visibility = position === 1 ? "hidden" : "visible";
+                        downArrow.style.visibility = position === value.length ? "hidden" : "visible";
+
+                        // Update the value of the item that had the new value to update the order
+                        const nextInput = next.querySelector(".magicfeedback-input-magicfeedback-priority-list");
+                        const nextLabel = next.querySelector(".magicfeedback-priority-list-item-label");
+                        const nextArrowUp = next.querySelector(".magicfeedback-priority-list-arrow-up");
+                        const nextArrowDown = next.querySelector(".magicfeedback-priority-list-arrow-down");
+
+                        if (nextInput && nextLabel && nextArrowUp && nextArrowDown) {
+                            const newPosition = Number((nextInput as HTMLInputElement).value.split(".")[0]) - 1;
+                            (nextInput as HTMLInputElement).value = `${newPosition}.${nextLabel.textContent?.split(".")[1]}`;
+                            nextLabel.textContent = `${newPosition}.${nextLabel.textContent?.split(".")[1]}`;
+                            (nextArrowUp as HTMLInputElement).style.visibility = newPosition === 1 ? "hidden" : "visible";
+                            (nextArrowDown as HTMLInputElement).style.visibility = newPosition === value.length ? "hidden" : "visible";
+                        }
+
+                        list.insertBefore(next, item);
+                    }
+                })
+
+                arrowContainer.appendChild(downArrow);
+                item.appendChild(arrowContainer);
+
+                list.appendChild(item);
+            });
+
+            priorityListContainer.appendChild(list);
+            element.appendChild(priorityListContainer);
+            break;
+        case FEEDBACKAPPANSWERTYPE.POINT_SYSTEM:
+            element = document.createElement("div");
+            elementTypeClass = "magicfeedback-point-system";
+
+            const pointSystemContainer = document.createElement("div");
+            pointSystemContainer.classList.add("magicfeedback-point-system-container");
+
+            // The point system have a list of items that the user can assign a value, the user can assign a value to each item in % of the total points but the total points can't be more than 100
+            const pointSystemList = document.createElement("ul");
+            pointSystemList.classList.add("magicfeedback-point-system-list");
+            pointSystemList.style.padding = "0";
+
+            const totalPoints = 100;
+            const pointsPerItem = totalPoints / value.length;
+
+            //Add a total points counter
+            const totalPointsContainer = document.createElement("div");
+            totalPointsContainer.classList.add("magicfeedback-point-system-total");
+            totalPointsContainer.textContent = `0 / 100 %`;
+            totalPointsContainer.style.textAlign = "right";
+            totalPointsContainer.style.fontSize = "0.8em";
+            totalPointsContainer.style.color = "#999";
+            totalPointsContainer.style.marginTop = "5px";
+
+            value.forEach((option) => {
+                const item = document.createElement("li");
+                item.classList.add("magicfeedback-point-system-item");
+                item.style.display = "flex";
+                item.style.justifyContent = "space-between";
+                item.style.alignItems = "center";
+                item.style.margin = "5px";
+
+                const itemLabel = document.createElement("label");
+                itemLabel.textContent = option;
+                item.appendChild(itemLabel);
+
+                const inputContainer = document.createElement("span");
+                inputContainer.classList.add("magicfeedback-point-system-input-container");
+
+                const itemInput = document.createElement("input");
+                itemInput.name = ref;
+                itemInput.id = `point-system-${option}`;
+                itemInput.type = "number";
+                itemInput.min = "0";
+                itemInput.max = `${totalPoints}`;
+                itemInput.value = `0`;
+                itemInput.classList.add("magicfeedback-input");
+                itemInput.style.width = "40px";
+                itemInput.style.border = "0";
+                itemInput.style.textAlign = "center";
+                itemInput.style.margin = "0 5px";
+                // Add the % symbol to the input
+                const percentSymbol = document.createElement("span");
+                percentSymbol.textContent = "%";
+                percentSymbol.style.color = "#000";
+
+
+                // Control the total points assigned to the items
+                itemInput.addEventListener("input", () => {
+                    const allInputs = pointSystemList.querySelectorAll("input");
+                    let total = 0;
+                    allInputs.forEach((input) => {
+                        total += Number((input as HTMLInputElement).value);
+                    });
+
+                    if (total > totalPoints) {
+                        itemInput.value = `${pointsPerItem}%`;
+                        total = total - Number((itemInput as HTMLInputElement).value);
+                    }
+
+                    totalPointsContainer.textContent = `${total} / 100 %`;
+                });
+
+                inputContainer.appendChild(itemInput);
+                inputContainer.appendChild(percentSymbol);
+
+                item.appendChild(inputContainer);
+                pointSystemList.appendChild(item);
+            });
+
+
+            pointSystemContainer.appendChild(pointSystemList);
+            pointSystemContainer.appendChild(totalPointsContainer);
+            element.appendChild(pointSystemContainer);
+            break;
         default:
             return elementContainer;
     }
-
 
     element.id = `magicfeedback-${id}`;
     element.setAttribute("name", ref);
@@ -720,14 +1003,25 @@ function renderContainer(
             if (assets.extraOption && assets.extraOptionText) {
                 const skipContainer = document.createElement("div");
                 skipContainer.classList.add("magicfeedback-skip-container");
+                skipContainer.classList.add(`magicfeedback-checkbox-container`);
                 skipContainer.style.display = "flex";
-                skipContainer.style.justifyContent = "space-between";
-                // Option to skip the question button
-                const skipButton = document.createElement("button");
-                skipButton.textContent = assets.extraOptionText;
+                skipContainer.style.justifyContent = "flex-start";
+                // Option to skip the question checkbox
+                const skipButton = document.createElement("input");
                 skipButton.classList.add("magicfeedback-skip");
+                skipButton.type = "checkbox";
+                skipButton.id = `skip-${ref}`;
+                skipButton.name = ref;
+                skipButton.value = '-';
                 skipButton.style.cursor = "pointer";
-                skipButton.type = "button";
+
+                const skipLabel = document.createElement("label");
+                skipLabel.htmlFor = `skip-${ref}`;
+                skipLabel.textContent = assets.extraOptionText;
+                skipLabel.style.fontSize = "0.8em";
+                skipLabel.style.color = "#999";
+                skipLabel.style.cursor = "pointer";
+                skipLabel.style.margin = "0 5px";
 
                 skipButton.addEventListener("click", () => {
                     (element as HTMLTextAreaElement).value = '-'
@@ -735,6 +1029,7 @@ function renderContainer(
                 });
 
                 skipContainer.appendChild(skipButton);
+                skipContainer.appendChild(skipLabel);
 
                 elementContainer.appendChild(skipContainer);
             }
@@ -864,7 +1159,7 @@ export function renderStartMessage(
 
     const startMessageElement = document.createElement("div");
     startMessageElement.classList.add("magicfeedback-start-message");
-    startMessageElement.textContent = startMessage;
+    startMessageElement.innerHTML = startMessage;
 
     const startMessageButton = document.createElement("button");
     startMessageButton.id = "magicfeedback-start-message-button";

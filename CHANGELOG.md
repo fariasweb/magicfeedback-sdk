@@ -6,6 +6,17 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.2.5] - 2024-05-26
+- New widgets: Added a new widget type:
+  - Matrix selected: A widget that allows users to select multiple options from a matrix.
+  - Priority list: A widget that allows users to rank a list of items by priority.
+  - Percentage list values: A widget that allows users to assign percentage values to a list of items.
+- Increased the number of options in the multiple choice widget to form 0 or 1 to 2 to 10
+- Added a new option to the boolean widget to allow users to select "N/A" as an option.
+- Added a new option to the multiple choice widget to allow users to select "Other" as an option.
+- Added a new option to the longtext widget to allow users to select "Skip" as an option.
+- Init and end page with a new design, include the option to render a custom html.
+
 ## 🚀 [1.1.16] - 2024-04-26
 - Added image in inputs, now you can add images in the feedback inputs to make it more interactive.
 - Added new widget logic to increase the flexibility of the feedback flow
