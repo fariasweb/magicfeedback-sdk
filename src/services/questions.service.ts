@@ -1,6 +1,12 @@
 import {FEEDBACKAPPANSWERTYPE, NativeQuestion} from "../models/types";
 import {placeholder} from "./placeholder";
 
+// Function to get the query params
+const params = (a: string) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get(a);
+}
+
 export function renderQuestions(
     appQuestions: NativeQuestion[],
     format: string = "standard",
@@ -76,6 +82,8 @@ function getBooleanOptions(lang: string): string[] {
             return ['Ja', 'Nej'];
         case 'no':
             return ['Ja', 'Nei'];
+        case 'ar':
+            return ['نعم', 'لا'];
         default:
             return ['Yes', 'No'];
 
@@ -107,12 +115,17 @@ function renderContainer(
     let elementContainer: HTMLElement = document.createElement("div");
     elementContainer.classList.add("magicfeedback-div");
 
+    const placeholderText = format === 'slim' ? parseTitle(title, language) : assets?.placeholder
+
+    // Look if exist the value in a query param with the ref like a key
+    const urlParamValue = params(id);
+
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
             // Create a text input field
             element = document.createElement("input");
             (element as HTMLInputElement).type = "text";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.answer(language || 'en')}`
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en')
 
             ;
             elementTypeClass = "magicfeedback-text";
@@ -122,14 +135,14 @@ function renderContainer(
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
             (element as HTMLTextAreaElement).maxLength = 300; // Set the max length of the text area
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.answer(language || 'en');
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
         case FEEDBACKAPPANSWERTYPE.NUMBER:
             // Create an input element with type "number" for NUMBER type
             element = document.createElement("input");
             (element as HTMLInputElement).type = "number";
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.number(language || 'en')}`;
+            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : placeholder.number(language || 'en');
             elementTypeClass = "magicfeedback-number";
 
             if (value.length) {
@@ -162,7 +175,7 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
-                if (option === defaultValue) {
+                if (option === defaultValue || option === urlParamValue) {
                     input.checked = true;
                 }
 
@@ -532,7 +545,8 @@ function renderContainer(
                     break;
             }
 
-            const useLabel = assets.addTitle === undefined ? false : assets.addTitle;
+            const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
+            const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
 
             // The image is the only input but can have a title
             value.forEach((option) => {
@@ -569,7 +583,7 @@ function renderContainer(
 
                     const input = document.createElement("input");
                     input.id = `rating-${ref}-${position}`;
-                    input.type = "radio";
+                    input.type = multiOptions ? "checkbox" : "radio";
                     input.name = ref;
                     input.value = value;
                     input.style.position = "absolute";
@@ -627,7 +641,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "date";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.date(language || 'en')}`;
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.date(language || 'en');
             elementTypeClass = "magicfeedback-date";
             break;
         case FEEDBACKAPPANSWERTYPE.CONSENT:
@@ -648,7 +662,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "email";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || "you@example.com"}`;
+            (element as HTMLInputElement).placeholder = placeholderText || "you@example.com";
             elementTypeClass = "magicfeedback-email";
             break;
         case FEEDBACKAPPANSWERTYPE.PASSWORD:
@@ -656,7 +670,7 @@ function renderContainer(
             element = document.createElement("input");
             (element as HTMLInputElement).type = "password";
             (element as HTMLInputElement).required = require;
-            (element as HTMLInputElement).placeholder = format === 'slim' ? parseTitle(title, language) : `${assets.placeholder || placeholder.password(language || 'en')}`;
+            (element as HTMLInputElement).placeholder = placeholderText || placeholder.password(language || 'en');
             elementTypeClass = "magicfeedback-password";
             break;
         case FEEDBACKAPPANSWERTYPE.MULTI_QUESTION_MATRIX:
@@ -948,8 +962,8 @@ function renderContainer(
     element.setAttribute("name", ref);
     element.classList.add(elementTypeClass);
 
-    if (defaultValue !== undefined) {
-        (element as HTMLInputElement).value = defaultValue;
+    if (defaultValue !== undefined || urlParamValue !== null) {
+        (element as HTMLInputElement).value = urlParamValue || defaultValue;
     }
 
     if (!["RADIO", "MULTIPLECHOICE"].includes(type)) {
