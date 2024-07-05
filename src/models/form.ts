@@ -31,6 +31,7 @@ export class Form {
     // Questions
     public questions: NativeQuestion[];
     private questionInProcess: NativeQuestion | null;
+    private censorQuestions: string[];
 
     // History of questions diccionary
     private readonly history: Record<number, { object: NativeQuestion, element: HTMLElement }[]>;
@@ -83,6 +84,7 @@ export class Form {
 
         // Questions and history
         this.questions = [];
+        this.censorQuestions = [];
         this.elementQuestions = [];
         this.questionInProcess = null;
         this.history = {};
@@ -355,10 +357,14 @@ export class Form {
             if (metrics) this.feedback.metrics = [...this.feedback.metrics, ...metrics];
             if (metadata) this.feedback.metadata = [...this.feedback.metadata, ...metadata];
 
+            // Get the survey answers from the answer() function
+            this.answer();
+
             // BEFORE
             if (this.formOptionsConfig.beforeSubmitEvent) {
                 await this.formOptionsConfig.beforeSubmitEvent({
                     loading: true,
+                    answer: this.feedback.answers,
                     progress: this.progress,
                     total: this.total
                 });
@@ -381,9 +387,12 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
+                    answer: this.feedback.answers,
                     error: response ? null : new Error("No response")
                 });
             }
+
+
         } catch (error) {
             // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
             this.log.err(
@@ -394,8 +403,8 @@ export class Form {
             if (this.formOptionsConfig.afterSubmitEvent) {
                 await this.formOptionsConfig.afterSubmitEvent({
                     loading: false,
-                    progress: this.progress,
-                    total: this.total,
+                    progress: this.progress + this.censorQuestions.length,
+                    total: this.total - this.censorQuestions.length,
                     error
                 });
             }
@@ -528,14 +537,47 @@ export class Form {
     }
 
     /**
+     * Finish the form
+     * @public
+     */
+
+    public finish() {
+        if (this.formOptionsConfig.addSuccessScreen) {
+            const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
+            // Remove the form
+            if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
+
+            // Show the success message
+            const successMessage = renderSuccess(
+                this.formOptionsConfig.successMessage ||
+                "Thank you for your feedback!"
+            );
+
+            container.appendChild(successMessage);
+        }
+
+        this.answer();
+
+        this.pushAnswers(true);
+    }
+
+    /**
+     * Censure questions form the form
+     * @param questions
+     * @public
+     */
+    public censureQuestions(questions: string[]) {
+        this.censorQuestions = this.questions.filter((q) => questions.includes(q.id)).map((q) => q.id);
+    }
+
+    /**
      * Send
      * @param completed
      * @returns
      */
     private async pushAnswers(completed: boolean = false): Promise<string> {
         try {
-            // Get the survey answers from the answer() function
-            this.answer();
+
             if (this.formData?.identity === "MAGICFORM") {
                 if (this.feedback.answers.length === 0) throw new Error("No answers provided");
                 this.questions.forEach((question) => {
@@ -626,7 +668,7 @@ export class Form {
         switch (this.formData?.identity) {
             case 'MAGICSURVEY':
                 if (!this.questionInProcess?.followup) {
-                    this.renderNextQuestion(form, container);
+                    this.renderNextQuestion(form);
                 } else {
                     const followUp = await this.callFollowUpQuestion(this.questionInProcess);
                     if (followUp) {
@@ -640,7 +682,7 @@ export class Form {
                         form.removeChild(form.childNodes[0]);
                         form.appendChild(question);
                     } else {
-                        this.renderNextQuestion(form, container);
+                        this.renderNextQuestion(form);
                     }
                 }
                 break;
@@ -669,30 +711,20 @@ export class Form {
     /**
      * Render next question
      * @param form
-     * @param container
      * @private
      */
-    private renderNextQuestion(form: HTMLElement, container: HTMLElement) {
+    private renderNextQuestion(form: HTMLElement) {
         this.progress++;
         if (this.progress < this.total) {
             this.questionInProcess = this.history[this.progress][0].object;
-            form.removeChild(form.childNodes[0]);
-            form.appendChild(this.history[this.progress][0].element);
-        } else {
-            if (this.formOptionsConfig.addSuccessScreen) {
-                // Remove the form
-                if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
-
-                // Show the success message
-                const successMessage = renderSuccess(
-                    this.formOptionsConfig.successMessage ||
-                    "Thank you for your feedback!"
-                );
-
-                container.appendChild(successMessage);
+            if (!this.censorQuestions.includes(this.questionInProcess.id)) {
+                form.removeChild(form.childNodes[0]);
+                form.appendChild(this.history[this.progress][0].element);
+            } else {
+                this.renderNextQuestion(form);
             }
-
-            this.pushAnswers(true);
+        } else {
+            this.finish();
         }
     }
 
@@ -704,7 +736,8 @@ export class Form {
         if (this.progress === 0) return;
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
-        form.removeChild(form.childNodes[0]);
+
+        if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
 
         if (this.history[this.progress].length > 1) {
             // Delete the last question in the history array and load the previous one
@@ -715,9 +748,13 @@ export class Form {
         }
 
         // Get the last question in the history array
-        const question = this.history[this.progress][this.history[this.progress].length - 1];
-        // Update the question in process
-        this.questionInProcess = question.object;
-        form.appendChild(question.element);
+        let question = this.history[this.progress][this.history[this.progress].length - 1];
+        if (this.censorQuestions.includes(question.object.id)) {
+            this.back();
+        } else {
+            // Update the question in process
+            this.questionInProcess = question.object;
+            form.appendChild(question.element);
+        }
     }
 }

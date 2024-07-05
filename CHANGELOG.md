@@ -8,14 +8,22 @@ Please refer to the specific version number for detailed information.
 
 ## 🚀 [1.2.5] - 2024-05-26
 - New widgets: Added a new widget type:
-  - Matrix selected: A widget that allows users to select multiple options from a matrix.
-  - Priority list: A widget that allows users to rank a list of items by priority.
-  - Percentage list values: A widget that allows users to assign percentage values to a list of items.
+    - Matrix selected: A widget that allows users to select multiple options from a matrix.
+    - Priority list: A widget that allows users to rank a list of items by priority.
+    - Percentage list values: A widget that allows users to assign percentage values to a list of items.
 - Increased the number of options in the multiple choice widget to form 0 or 1 to 2 to 10
 - Added a new option to the boolean widget to allow users to select "N/A" as an option.
 - Added a new option to the multiple choice widget to allow users to select "Other" as an option.
 - Added a new option to the longtext widget to allow users to select "Skip" as an option.
 - Init and end page with a new design, include the option to render a custom html.
+
+## 🚀 [1.2.4] - 2024-06-11
+### New Features
+- Added dynamic conditional options:
+  - Finish conditional: A new option that allows users to finish the feedback flow based on a condition.
+  - Skip conditional: A new option that allows users to skip a question based on a condition.
+  - Redirect conditional: A new option that allows users to redirect to a specific question based on a condition.
+- Get default values by params: new possibility to get the default values of the feedback by params.
 
 ## 🚀 [1.1.16] - 2024-04-26
 - Added image in inputs, now you can add images in the feedback inputs to make it more interactive.
@@ -24,7 +32,7 @@ Please refer to the specific version number for detailed information.
     - Multiple choice image: A widget that allows users to select multiple image options from a list.
     - Contact form: A widget that allows users to submit their contact information.
     - Yes/No: A widget that allows users to answer a yes/no question.
--Fixed bugs:
+- Fixed bugs:
     - Resolved a bug with stars rating widget on save data 
 
 
