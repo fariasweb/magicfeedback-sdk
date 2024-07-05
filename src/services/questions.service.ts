@@ -21,7 +21,6 @@ export function renderQuestions(
         if (question?.questionType?.conf?.length > 0) {
             let elementContainer: HTMLElement = document.createElement("div");
             elementContainer.classList.add("magicfeedback-div");
-            console.log(question)
             question.questionType.conf.forEach((conf: any) => {
                 conf.ref = question.ref
                 if (question.assets[conf.id]) {
@@ -84,6 +83,8 @@ function getBooleanOptions(lang: string): string[] {
             return ['Ja', 'Nei'];
         case 'ar':
             return ['نعم', 'لا'];
+        case 'bn':
+            return ['হ্যাঁ', 'না'];
         default:
             return ['Yes', 'No'];
 
@@ -96,7 +97,7 @@ function renderContainer(
     language: string,
     send?: () => void
 ): HTMLElement {
-    const {
+    let {
         id,
         title,
         type,
@@ -171,7 +172,7 @@ function renderContainer(
                 input.id = `rating-${ref}-${index}`;
                 input.type = type === "MULTIPLECHOICE" ? "checkbox" : "radio";
                 input.name = ref;
-                input.value = '-';
+                input.value = option;
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
@@ -537,81 +538,103 @@ function renderContainer(
                 case 5:
                 case 6:
                     itemsPerColumn = 2;
-                    itemsPerRow = Math.ceil(maxItems / 2);
+                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
+                    break;
+                case 7:
+                case 8:
+                case 9:
+                    itemsPerColumn = 3;
+                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
                     break;
                 default:
-                    itemsPerColumn = 3;
-                    itemsPerRow = Math.ceil(maxItems / 3);
+                    itemsPerColumn = 4;
+                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
                     break;
             }
 
             const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
             const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
+            const randomPosition = assets?.randomPosition === undefined ? false : assets.randomPosition;
+            const extraOption = assets?.extraOption === undefined ? false : assets.extraOption;
+
+
+            // reorder the options if randomPosition is true
+            if (randomPosition) {
+                value = value.sort(() => Math.random() - 0.5);
+            }
+
+        function generateOption(option: any) {
+            try {
+                const {position, url, value} = option;
+
+                const container = document.createElement("label");
+                container.classList.add("magicfeedback-multiple-choice-image-option");
+                container.style.width = `calc( ${100 / itemsPerRow}% - 10px)`;
+                container.style.height = `calc( ${100 / itemsPerColumn}% - 10px)`;
+                container.style.margin = "5px";
+
+                const containerLabel = document.createElement('label');
+                containerLabel.htmlFor = `rating-${ref}-${position}`;
+                containerLabel.classList.add('magicfeedback-image-option-label-container');
+                containerLabel.style.display = "flex";
+                containerLabel.style.flexDirection = "column";
+
+                // Add a effect on hover and on select
+                containerLabel.addEventListener("mouseover", () => {
+                    containerLabel.style.border = "2px solid #000";
+                });
+                containerLabel.addEventListener("mouseout", () => {
+                    containerLabel.style.border = "none";
+                });
+                containerLabel.addEventListener("click", () => {
+                    containerLabel.style.border = "2px solid #000";
+                });
+
+
+                const label = document.createElement("label");
+                label.textContent = value;
+                label.classList.add("magicfeedback-multiple-choice-image-label");
+
+                const input = document.createElement("input");
+                input.id = `rating-${ref}-${position}`;
+                input.type = multiOptions ? "checkbox" : "radio";
+                input.name = ref;
+                input.value = value;
+                input.style.position = "absolute";
+                input.style.opacity = "0";
+                input.style.width = "0";
+                input.style.height = "0";
+                input.classList.add("magicfeedback-input");
+
+                // Add max size to the image
+                const image = document.createElement("img");
+                image.classList.add("magicfeedback-multiple-choice-image-image");
+                image.src = url;
+                image.style.cursor = "pointer";
+                image.style.backgroundSize = "cover";
+                image.style.backgroundPosition = "center";
+                image.style.width = "100%";
+                image.style.height = "100%";
+                image.style.objectFit = "cover";
+                image.style.margin = "auto";
+
+                containerLabel.appendChild(input);
+                containerLabel.appendChild(image);
+                if (useLabel) containerLabel.appendChild(label);
+                container.appendChild(containerLabel);
+                multipleChoiceImageContainer.appendChild(container);
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
             // The image is the only input but can have a title
-            value.forEach((option) => {
-                try {
-                    const {position, url, value} = JSON.parse(option);
+            value.forEach((option) => generateOption(JSON.parse(option)));
 
-                    const container = document.createElement("label");
-                    container.classList.add("magicfeedback-multiple-choice-image-option");
-                    container.style.width = `calc( ${100 / itemsPerRow}% - 10px)`;
-                    container.style.height = `calc( ${100 / itemsPerColumn}% - 10px)`;
-                    container.style.margin = "5px";
-
-                    const containerLabel = document.createElement('label');
-                    containerLabel.htmlFor = `rating-${ref}-${position}`;
-                    containerLabel.classList.add('magicfeedback-image-option-label-container');
-                    containerLabel.style.display = "flex";
-                    containerLabel.style.flexDirection = "column";
-
-                    // Add a effect on hover and on select
-                    containerLabel.addEventListener("mouseover", () => {
-                        containerLabel.style.border = "2px solid #000";
-                    });
-                    containerLabel.addEventListener("mouseout", () => {
-                        containerLabel.style.border = "none";
-                    });
-                    containerLabel.addEventListener("click", () => {
-                        containerLabel.style.border = "2px solid #000";
-                    });
-
-
-                    const label = document.createElement("label");
-                    label.textContent = value;
-                    label.classList.add("magicfeedback-multiple-choice-image-label");
-
-                    const input = document.createElement("input");
-                    input.id = `rating-${ref}-${position}`;
-                    input.type = multiOptions ? "checkbox" : "radio";
-                    input.name = ref;
-                    input.value = value;
-                    input.style.position = "absolute";
-                    input.style.opacity = "0";
-                    input.style.width = "0";
-                    input.style.height = "0";
-                    input.classList.add("magicfeedback-input");
-
-                    // Add max size to the image
-                    const image = document.createElement("img");
-                    image.classList.add("magicfeedback-multiple-choice-image-image");
-                    image.src = url;
-                    image.style.cursor = "pointer";
-                    image.style.backgroundSize = "cover";
-                    image.style.width = "100%";
-                    image.style.height = "100%";
-                    image.style.margin = "auto";
-
-                    containerLabel.appendChild(input);
-                    containerLabel.appendChild(image);
-                    if (useLabel) containerLabel.appendChild(label);
-                    container.appendChild(containerLabel);
-                    multipleChoiceImageContainer.appendChild(container);
-
-                } catch (e) {
-                    console.error(e);
-                }
-            });
+            if (extraOption && assets.extraOptionValue && assets.extraOptionValue.length > 0) {
+                generateOption(assets.extraOptionValue[0])
+            }
 
             element.appendChild(multipleChoiceImageContainer);
             break;

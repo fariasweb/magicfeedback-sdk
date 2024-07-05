@@ -15,6 +15,8 @@ export const placeholder = {
                 return 'Skriv svaret ditt her...';
             case 'ar':
                 return 'اكتب إجابتك هنا...';
+            case 'bn':
+                return 'এখানে আপনার';
             default:
                 return "Write your answer here...";
         }
@@ -35,6 +37,8 @@ export const placeholder = {
                 return 'Skriv nummeret ditt her...';
             case 'ar':
                 return 'اكتب رقمك هنا...';
+            case 'bn':
+                return 'এখানে আপনার';
             default:
                 return "Write your number here...";
         }
@@ -55,6 +59,8 @@ export const placeholder = {
                 return 'Skriv e-posten din her...';
             case 'ar':
                 return 'اكتب بريدك الإلكتروني هنا...';
+            case 'bn':
+                return 'এখানে আপনার';
             default:
                 return "Write your email here...";
         }
@@ -75,6 +81,8 @@ export const placeholder = {
                 return 'Skriv datoen din her...';
             case 'ar':
                 return 'اكتب تاريخك هنا...';
+            case 'bn':
+                return 'এখানে আপনার';
             default:
                 return "Write your date here...";
         }
@@ -95,6 +103,8 @@ export const placeholder = {
                 return 'Skriv passordet ditt her...';
             case 'ar':
                 return 'اكتب كلمة المرور الخاصة بك هنا...';
+            case 'bn':
+                return 'এখানে আপনার';
             default:
                 return "Write your password here...";
         }
