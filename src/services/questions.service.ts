@@ -121,6 +121,8 @@ function renderContainer(
     // Look if exist the value in a query param with the ref like a key
     const urlParamValue = params(id);
 
+    const maxCharacters = assets.maxCharacters || 300
+
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
             // Create a text input field
@@ -135,7 +137,7 @@ function renderContainer(
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
-            (element as HTMLTextAreaElement).maxLength = 300; // Set the max length of the text area
+            if (maxCharacters > 0) (element as HTMLTextAreaElement).maxLength = maxCharacters; // Set the max length of the text area
             (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
@@ -176,6 +178,16 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
+                if (type === FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE && assets.maxOptions && assets.maxOptions > 0) {
+                    input.addEventListener("change", () => {
+                        const checkboxes = document.querySelectorAll(`input[name="${ref}"]:checked`);
+                        if (checkboxes.length > assets.maxOptions) {
+                            (input as HTMLInputElement).checked = false;
+                        }
+                    });
+                }
+
+
                 if (option === defaultValue || option === urlParamValue) {
                     input.checked = true;
                 }
@@ -183,18 +195,18 @@ function renderContainer(
                 label.textContent = option;
                 label.htmlFor = `rating-${ref}-${index}`;
 
-                if (assets.extraOption && option === assets.extraOptionText) {
-                    input.addEventListener("change", (event) => {
-                        const extraOption = document.getElementById(`extra-option-${ref}`);
-                        if (extraOption) {
-                            if ((event.target as HTMLInputElement).checked) {
+
+                input.addEventListener("change", (event) => {
+                    const extraOption = document.getElementById(`extra-option-${ref}`);
+                    if (extraOption && assets.extraOption) {
+                        if ((event.target as HTMLInputElement).checked && option === assets.extraOptionText) {
                                 extraOption.style.display = "block";
                             } else {
                                 extraOption.style.display = "none";
                             }
                         }
                     });
-                }
+
 
                 container.appendChild(input);
                 container.appendChild(label);
@@ -204,7 +216,7 @@ function renderContainer(
                 if (assets.extraOption && option === assets.extraOptionText) {
                     const inputText = document.createElement("input");
                     inputText.type = "text";
-                    inputText.placeholder = "Custom value";
+                    inputText.placeholder = assets.extraOptionPlaceholder || placeholder.answer(language || 'en')
                     inputText.classList.add("magicfeedback-extra-option");
                     inputText.classList.add("magicfeedback-input");
                     inputText.id = `extra-option-${ref}`;
@@ -286,32 +298,7 @@ function renderContainer(
             const maxRating = assets.max ? Number(assets.max) : 5;
             const minRating = assets.min ? Number(assets.min) : 1;
 
-            const ratingPlaceholder = document.createElement('div');
-            ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
-            ratingPlaceholder.style.display = "flex";
-            ratingPlaceholder.style.justifyContent = "space-between";
-            ratingPlaceholder.style.width = "90%";
-            ratingPlaceholder.style.margin = "auto";
-
-            if (assets.minPlaceholder) {
-                const ratingPlaceholderMin = document.createElement('span');
-                ratingPlaceholderMin.textContent = assets.minPlaceholder;
-                ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-min');
-                ratingPlaceholderMin.style.fontStyle = "italic";
-                ratingPlaceholderMin.style.fontSize = "0.8em";
-
-                ratingPlaceholder.appendChild(ratingPlaceholderMin);
-            }
-
-            if (assets.maxPlaceholder) {
-                const ratingPlaceholderMax = document.createElement('span');
-                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
-                ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-max');
-                ratingPlaceholderMax.style.fontStyle = "italic";
-                ratingPlaceholderMax.style.fontSize = "0.8em";
-
-                ratingPlaceholder.appendChild(ratingPlaceholderMax);
-            }
+            const ratingPlaceholder = createRatingPlaceholder(minRating, maxRating, assets.minPlaceholder, assets.maxPlaceholder, assets.extraOption);
 
             for (let i = minRating; i <= maxRating; i++) {
                 const ratingOption = document.createElement('div');
@@ -418,32 +405,7 @@ function renderContainer(
             const maxRatingNumber = assets.max ? Number(assets.max) : 5;
             const minRatingNumber = assets.min ? Number(assets.min) : 1;
 
-            const ratingNumberPlaceholder = document.createElement('div');
-            ratingNumberPlaceholder.classList.add('magicfeedback-rating-number-placeholder');
-            ratingNumberPlaceholder.style.display = "flex";
-            ratingNumberPlaceholder.style.justifyContent = "space-between";
-            ratingNumberPlaceholder.style.width = "90%";
-            ratingNumberPlaceholder.style.margin = "auto";
-
-            if (assets.minPlaceholder) {
-                const ratingPlaceholderMin = document.createElement('span');
-                ratingPlaceholderMin.textContent = assets.minPlaceholder;
-                ratingPlaceholderMin.classList.add('magicfeedback-rating-number-placeholder-min');
-                ratingPlaceholderMin.style.fontStyle = "italic";
-                ratingPlaceholderMin.style.fontSize = "0.8em";
-
-                ratingNumberPlaceholder.appendChild(ratingPlaceholderMin);
-            }
-
-            if (assets.maxPlaceholder) {
-                const ratingPlaceholderMax = document.createElement('span');
-                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
-                ratingPlaceholderMax.classList.add('magicfeedback-rating-number-placeholder-max');
-                ratingPlaceholderMax.style.fontStyle = "italic";
-                ratingPlaceholderMax.style.fontSize = "0.8em";
-
-                ratingNumberPlaceholder.appendChild(ratingPlaceholderMax);
-            }
+            const ratingNumberPlaceholder = createRatingPlaceholder(minRatingNumber, maxRatingNumber, assets.minPlaceholder, assets.maxPlaceholder, assets.extraOption);
 
             for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                 // Create a input button element for each value in the question's value array
@@ -506,7 +468,7 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-star';
 
-            const ratingStarContainer = createStarRating(ref);
+            const ratingStarContainer = createStarRating(ref, assets.minPlaceholder, assets.maxPlaceholder);
 
             element.appendChild(ratingStarContainer);
             break;
@@ -726,7 +688,7 @@ function renderContainer(
             const body = document.createElement("tbody");
 
             if (assets?.options?.length > 0) {
-                assets.options.split(',').forEach((o: string) => {
+                assets.options.split('|').forEach((o: string) => {
                     const row = document.createElement("tr");
                     row.style.paddingBottom = "15px";
                     const rowLabel = document.createElement("td");
@@ -1021,17 +983,16 @@ function renderContainer(
             }
         }
 
-        if (type === "LONGTEXT") {
+        if (type === "LONGTEXT" && maxCharacters > 0) {
             const counter = document.createElement("div");
             counter.classList.add("magicfeedback-counter");
-            counter.textContent = "0/300";
+            counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`
             counter.style.textAlign = "right";
             counter.style.fontSize = "0.8em";
             counter.style.color = "#999";
             counter.style.marginTop = "5px";
-
             element.addEventListener("input", () => {
-                counter.textContent = `${(element as HTMLTextAreaElement).value.length}/300`;
+                counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`;
             });
 
             elementContainer.appendChild(element);
@@ -1113,13 +1074,15 @@ export function renderActions(identity: string = '',
     return actionContainer;
 }
 
-function createStarRating(ref: string) {
+function createStarRating(ref: string, minPlaceholder: string, maxPlaceholder: string) {
     const size = 40;
     const selectedClass = "magicfeedback-rating-star-selected";
     const starFilled = "★";
 
     const ratingContainer = document.createElement("div");
     ratingContainer.classList.add("magicfeedback-rating-star-container");
+    ratingContainer.style.maxWidth = "300px";
+    ratingContainer.style.margin = "auto";
 
     for (let i = 1; i <= 5; i++) {
         const ratingOption = document.createElement("label");
@@ -1164,11 +1127,66 @@ function createStarRating(ref: string) {
         // Add hover effect
         ratingOption.appendChild(starElement);
 
-
         ratingContainer.appendChild(ratingOption);
     }
 
+    ratingContainer.appendChild(createRatingPlaceholder(1, 5, minPlaceholder, maxPlaceholder, false, false));
+
     return ratingContainer;
+}
+
+function createRatingPlaceholder(
+    min: number,
+    max: number,
+    minPlaceholder: string,
+    maxPlaceholder: string,
+    extraOption: boolean,
+    mobile: boolean = true
+) {
+    const ratingPlaceholder = document.createElement('div');
+    ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
+    ratingPlaceholder.style.display = "flex";
+    ratingPlaceholder.style.justifyContent = "space-between";
+    ratingPlaceholder.style.width = extraOption ? `calc(100% - (100% / ${max + 1}))` : "100%";
+    ratingPlaceholder.style.marginRight = "auto";
+
+    if (mobile && window.innerWidth < 600) ratingPlaceholder.style.flexDirection = "column";
+
+    const ratingPlaceholderMin = document.createElement('span');
+    ratingPlaceholderMin.textContent = minPlaceholder;
+    ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-value');
+    ratingPlaceholderMin.style.fontStyle = "italic";
+    ratingPlaceholderMin.style.fontSize = "14px";
+    ratingPlaceholderMin.style.textAlign = "left";
+    ratingPlaceholderMin.style.width = `50%`;
+
+    if (mobile && window.innerWidth < 600) {
+        ratingPlaceholderMin.textContent = `${min} ➜ ${minPlaceholder}`;
+        ratingPlaceholderMin.style.width = '100%'
+        ratingPlaceholderMin.style.textAlign = "left";
+        ratingPlaceholderMin.style.marginBottom = "5px";
+    }
+
+    ratingPlaceholder.appendChild(ratingPlaceholderMin);
+
+    const ratingPlaceholderMax = document.createElement('span');
+    ratingPlaceholderMax.textContent = maxPlaceholder;
+    ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-value');
+    ratingPlaceholderMax.style.fontStyle = "italic";
+    ratingPlaceholderMax.style.fontSize = "14px";
+    ratingPlaceholderMax.style.textAlign = "right";
+    ratingPlaceholderMax.style.width = `50%`;
+
+    if (mobile && window.innerWidth < 600) {
+        ratingPlaceholderMax.textContent = `${max} ➜ ${maxPlaceholder}`;
+        ratingPlaceholderMax.style.width = '100%'
+        ratingPlaceholderMax.style.textAlign = "left";
+        ratingPlaceholderMax.style.marginBottom = "5px";
+    }
+
+    ratingPlaceholder.appendChild(ratingPlaceholderMax);
+
+    return ratingPlaceholder
 }
 
 export function renderError(error: string): HTMLElement {
@@ -1210,3 +1228,4 @@ export function renderStartMessage(
 
     return startMessageContainer;
 }
+
