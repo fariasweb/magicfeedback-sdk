@@ -5,6 +5,11 @@ import {Log} from "../utils/log";
 import {getFollowUpQuestion, getForm, sendFeedback, validateEmail} from "../services/request.service";
 import {FormData} from "./formData";
 import {renderActions, renderQuestions, renderStartMessage, renderSuccess} from "../services/questions.service";
+import {PageGraph} from "./pageGrafs";
+import {Page} from "./page";
+import {OperatorType, PageRoute, TransitionType} from "./pageRoute";
+import {History} from "./History";
+import {PageNode} from "./pageNode";
 
 export class Form {
     /**
@@ -28,14 +33,11 @@ export class Form {
     private id: string;
     private readonly feedback: NativeFeedback;
 
-    // Questions
-    public questions: NativeQuestion[];
-    private questionInProcess: NativeQuestion | null;
-    private censorQuestions: string[];
+    // Graph
+    private graph: PageGraph
 
     // History of questions diccionary
-    private readonly history: Record<number, { object: NativeQuestion, element: HTMLElement }[]>;
-    private elementQuestions: HTMLElement[];
+    private history: History<PageNode>;
 
     // Count variables
     public progress: number;
@@ -74,6 +76,7 @@ export class Form {
         // Form completed data
         this.id = "";
         this.formData = null;
+        this.getDataFromStorage();
         this.feedback = {
             text: "",
             answers: [],
@@ -82,12 +85,9 @@ export class Form {
             metadata: [],
         };
 
-        // Questions and history
-        this.questions = [];
-        this.censorQuestions = [];
-        this.elementQuestions = [];
-        this.questionInProcess = null;
-        this.history = {};
+        this.history = new History<PageNode>();
+
+        this.graph = new PageGraph([]);
 
         // Count variables
         this.progress = 0;
@@ -95,46 +95,46 @@ export class Form {
     }
 
     /**
+     * Get data from the local storage, if the data is older than 24 hours, get the data from the server
+     * @private
+     **/
+    private getDataFromStorage() {
+        const localForm = localStorage.getItem(`magicfeedback-${this.appId}`);
+
+        if (localForm && new Date(JSON.parse(localForm).savedAt) < new Date(new Date().getTime() + 60 * 60 * 24 * 1000)) {
+            this.formData = JSON.parse(localForm);
+            getForm(this.url, this.appId, this.publicKey, this.log).then((form: FormData | null) => {
+                if (form?.updatedAt && this.formData?.savedAt && form?.updatedAt > this.formData?.savedAt) {
+                    console.log("Form updated");
+                    this.formData = form;
+                    this.formData.savedAt = new Date();
+
+                    localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
+                    // Create the form from the JSON
+                    this.formData.style?.startMessage ?
+                        this.generateWelcomeMessage(this.formData.style.startMessage) :
+                        this.startForm();
+                }
+            });
+        }
+    }
+
+    /**
      * Generate
-     * TODO: Check if is inside of a <form>
      * @param selector
      * @param options
      */
     public async generate(selector: string, options: generateFormOptions) {
-
         // Check options, and set default values if this is not defined
-
         try {
             // Set the options
             this.formOptionsConfig = {...this.formOptionsConfig, ...options};
-
             this.selector = selector;
 
-            // Check if the form is in the localstorage and the time is less than 1 day
-            const localForm = localStorage.getItem(`magicfeedback-${this.appId}`);
 
-            if (localForm && new Date(JSON.parse(localForm).savedAt) < new Date(new Date().getTime() + 60 * 60 * 24 * 1000)) {
-                this.formData = JSON.parse(localForm);
-                getForm(this.url, this.appId, this.publicKey, this.log).then((form: FormData | null) => {
-                    if (form?.updatedAt && this.formData?.savedAt && form?.updatedAt > this.formData?.savedAt) {
-                        console.log("Form updated");
-                        this.formData = form;
-                        this.formData.savedAt = new Date();
-                        if (this.formData.questions) {
-                            this.questions = this.formData.questions;
-                            this.total = this.questions.length;
-                        }
-                        localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
-                        // Create the form from the JSON
-                        this.formData.style?.startMessage ? this.generateWelcomeMessage(this.formData.style.startMessage) : this.generateForm();
-                    }
-                });
-            } else {
-                // Send the data to manage loadings and progress
-                this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
-            }
-
+            if (this.formData === undefined || !this.formData) this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
             if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
+
 
             if (!this.formData.savedAt) {
                 // Save formData in the localstorage to use it in the future
@@ -142,27 +142,16 @@ export class Form {
                 localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
             }
 
-            this.questions = this.formData.questions;
+            if (this.formData.questions === undefined || !this.formData.questions) throw new Error(`No questions for app ${this.appId}`);
 
-            if (this.questions === undefined || !this.questions) throw new Error(`No questions for app ${this.appId}`);
-
-            this.total = this.questions.length;
-
-            // Send the data to manage loadings and progress
-            if (this.formOptionsConfig.onLoadedEvent) {
-                await this.formOptionsConfig.onLoadedEvent({
-                    loading: false,
-                    progress: this.progress,
-                    total: this.total,
-                    formData: this.formData,
-                });
-            }
+            if (this.formData.pages?.length === 0) this.formatPages();
+            this.formData.questions?.sort((a, b) => a.position - b.position);
 
             if (this.formOptionsConfig.getMetaData) this.getMetaData();
 
             this.formData.style?.startMessage ?
-                this.generateWelcomeMessage(this.formData.style.startMessage) :
-                this.generateForm();
+                await this.generateWelcomeMessage(this.formData.style.startMessage) :
+                this.startForm();
 
         } catch (e) {
             this.log.err(e);
@@ -175,6 +164,53 @@ export class Form {
             }
 
             return;
+        }
+    }
+
+    /**
+     * Format pages in case of the survey don't have pages
+     * @private
+     */
+    private formatPages() {
+        if (this.formData) {
+            switch (this.formData.identity) {
+                case 'MAGICSURVEY':
+                    // In this case we will create a page for each question
+                    this.formData.pages = [];
+                    this.formData.questions?.forEach((question) => {
+                        const route: PageRoute = new PageRoute(
+                            question.id,
+                            question.ref,
+                            OperatorType.NOEQUAL,
+                            null,
+                            TransitionType.PAGE,
+                            (question.position + 1).toString(),
+                            question.position.toString(),
+                        )
+
+                        const page = new Page(
+                            question.position.toString(),
+                            question.position,
+                            this.appId,
+                            [question],
+                            [route]
+                        );
+
+                        this.formData?.pages?.push(page);
+                    });
+                    break;
+                case 'MAGICFORM':
+                    // In this case we will create a page with all the questions
+                    const page = new Page(
+                        '1',
+                        1,
+                        this.appId,
+                        this.formData.questions,
+                        []
+                    );
+                    this.formData.pages = [page];
+                    break;
+            }
         }
     }
 
@@ -197,73 +233,83 @@ export class Form {
     }
 
     /**
-     * Create
-     *
-     * TODO: Add option to generate in <form> or in other <tag>
+     * Generate form
+     * @private
+     * @returns void
      */
-    private generateForm() {
+    private async generateForm() {
         try {
-            // Order questions by position
-            this.questions.sort((a, b) => a.position - b.position);
-            // Select and prepare the container
-            let container: HTMLElement | null = this.generateContainer()
+            if (this.formData && this.formData.pages?.length > 0) {
+                this.graph = new PageGraph(this.formData.pages.sort(
+                    (a, b) => a.position - b.position
+                ));
 
-            // Create the form
-            const form = document.createElement("form");
-            form.classList.add("magicfeedback-form");
-            form.id = "magicfeedback-" + this.appId;
+                // Select and prepare the container
+                let container: HTMLElement | null = this.generateContainer()
 
-            // Create the questions container
-            const questionContainer = document.createElement("div");
-            questionContainer.classList.add("magicfeedback-questions");
-            questionContainer.id = "magicfeedback-questions-" + this.appId;
+                // Create the form
+                const form = document.createElement("form");
+                form.classList.add("magicfeedback-form");
+                form.id = "magicfeedback-" + this.appId;
 
-            // Process questions and create in the form
-            this.elementQuestions = renderQuestions(
-                this.questions,
-                this.formOptionsConfig.questionFormat,
-                this.formData?.lang[0],
-                () => this.send()
-            );
+                // Create the questions container
+                const questionContainer = document.createElement("div");
+                questionContainer.classList.add("magicfeedback-questions");
+                questionContainer.id = "magicfeedback-questions-" + this.appId;
 
-            switch (this.formData?.identity) {
-                case 'MAGICSURVEY':
-                    this.elementQuestions.forEach((element, index) =>
-                        this.history[index] = [{object: this.questions[index], element}]
-                    );
-                    this.questionInProcess = this.history[0][0].object;
-                    questionContainer.appendChild(this.history[0][0].element);
-                    break;
-                default:
-                    this.elementQuestions.forEach((element) =>
-                        questionContainer.appendChild(element));
-                    break;
-            }
+                const page = this.graph.getFirstPage()
 
-            form.appendChild(questionContainer);
+                if (!page) throw new Error("No page found");
 
-            // Add the form to the specified container
-            container.appendChild(form);
+                this.total = this.graph.findMaxDepth();
 
-            // Submit button
-            if (this.formOptionsConfig.addButton) {
-                // Create a container for the buttons
-                const actionContainer = renderActions(
-                    this.formData?.identity,
-                    () => this.back(),
-                    this.formOptionsConfig.sendButtonText,
-                    this.formOptionsConfig.backButtonText,
-                    this.formOptionsConfig.nextButtonText,
+                // Process questions and create in the form
+                page.elements = renderQuestions(
+                    page.questions,
+                    this.formOptionsConfig.questionFormat,
+                    this.formData?.lang[0],
+                    () => this.send()
                 );
 
-                form.appendChild(actionContainer);
-            }
+                page.elements?.forEach((element) =>
+                    questionContainer.appendChild(element));
+                form.appendChild(questionContainer);
 
-            // Submit event
-            form.addEventListener("submit", (event) => {
-                event.preventDefault();
-                this.send()
-            });
+                // Add the new page to the history
+                this.history.enqueue(page);
+                // Add the form to the specified container
+                container.appendChild(form);
+
+                // Submit button
+                if (this.formOptionsConfig.addButton) {
+                    // Create a container for the buttons
+                    const actionContainer = renderActions(
+                        this.formData?.identity,
+                        () => this.back(),
+                        this.formOptionsConfig.sendButtonText,
+                        this.formOptionsConfig.backButtonText,
+                        this.formOptionsConfig.nextButtonText,
+                    );
+
+                    form.appendChild(actionContainer);
+                }
+
+                // Submit event
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    this.send()
+                });
+
+                // Send the data to manage loadings and progress
+                if (this.formOptionsConfig.onLoadedEvent) {
+                    await this.formOptionsConfig.onLoadedEvent({
+                        loading: false,
+                        progress: this.progress,
+                        total: this.total,
+                        formData: this.formData,
+                    });
+                }
+            }
         } catch (e) {
             this.log.err(e);
 
@@ -289,7 +335,7 @@ export class Form {
      * Generate welcome message page if the form has a start message,with a button to start the form
      * @private
      */
-    private generateWelcomeMessage(startMessage: string) {
+    private async generateWelcomeMessage(startMessage: string) {
         try {
             // Select and prepare the container
             const container: HTMLElement | null = this.generateContainer()
@@ -298,6 +344,14 @@ export class Form {
             const initialMessage = renderStartMessage(startMessage, () => this.startForm(), this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText);
 
             container.appendChild(initialMessage)
+
+            // Send the data to manage loadings and progress
+            if (this.formOptionsConfig.onLoadedEvent) {
+                await this.formOptionsConfig.onLoadedEvent({
+                    loading: false,
+                    formData: this.formData,
+                });
+            }
         } catch (e) {
             this.log.err(e);
 
@@ -349,7 +403,6 @@ export class Form {
         metrics?: NativeAnswer[],
         profile?: NativeAnswer[]
     ) {
-        const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
         const questionContainer = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         try {
@@ -364,10 +417,22 @@ export class Form {
             if (this.formOptionsConfig.beforeSubmitEvent) {
                 await this.formOptionsConfig.beforeSubmitEvent({
                     loading: true,
-                    answer: this.feedback.answers,
+                    // answer: this.feedback.answers,
                     progress: this.progress,
                     total: this.total
                 });
+            }
+
+            // Check if the required questions are answered
+            const page = this.history.back();
+            if (!page) throw new Error("No page found");
+
+            const requiredQuestions = page.getRequiredQuestions();
+            for (const question of requiredQuestions) {
+                if (!this.feedback.answers.find((a) => a.key === question && a.value.length > 0)) {
+                    this.log.err(`The question ${question} is required`);
+                    return;
+                }
             }
 
             // SEND
@@ -377,7 +442,7 @@ export class Form {
 
             if (response) {
                 this.id = response;
-                await this.processNextQuestion(container, questionContainer);
+                await this.processNextQuestion(questionContainer);
             }
 
             // AFTER
@@ -387,7 +452,7 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
-                    answer: this.feedback.answers,
+                    // answer: this.feedback.answers,
                     error: response ? null : new Error("No response")
                 });
             }
@@ -403,19 +468,18 @@ export class Form {
             if (this.formOptionsConfig.afterSubmitEvent) {
                 await this.formOptionsConfig.afterSubmitEvent({
                     loading: false,
-                    progress: this.progress + this.censorQuestions.length,
-                    total: this.total - this.censorQuestions.length,
+                    progress: this.progress,
+                    total: this.total,
                     error
                 });
             }
         }
     }
 
-
     /**
-     * Update feedback.answers with the answers of the form in a JSON format
+     * Update feedback -> answers with the answers of the form in a JSON format
      * @returns
-     * TODO: Required
+     * @public
      */
     public answer() {
         const form: HTMLElement | null = document.getElementById(
@@ -562,37 +626,12 @@ export class Form {
     }
 
     /**
-     * Censure questions form the form
-     * @param questions
-     * @public
-     */
-    public censureQuestions(questions: string[]) {
-        this.censorQuestions = this.questions.filter((q) => questions.includes(q.id)).map((q) => q.id);
-    }
-
-    /**
      * Send
      * @param completed
      * @returns
      */
     private async pushAnswers(completed: boolean = false): Promise<string> {
         try {
-
-            if (this.formData?.identity === "MAGICFORM") {
-                if (this.feedback.answers.length === 0) throw new Error("No answers provided");
-                this.questions.forEach((question) => {
-                    if (question.require && !this.feedback.answers.find((a) => a.key === question.ref)) {
-                        throw new Error(`No answer provided for question ${question.title}`);
-                    }
-                });
-            } else {
-                if (
-                    !completed &&
-                    this.questionInProcess?.require &&
-                    this.feedback.answers.length === 0
-                ) throw new Error("No answers provided");
-            }
-
             // Define the URL and request payload
             const url = this.config.get("url");
             const body = {
@@ -635,7 +674,7 @@ export class Form {
             const url = this.config.get("url");
 
             const body = {
-                answer: this.feedback.answers[0].value[0],
+                answer: this.feedback.answers.find((a) => a.key === question.ref)?.value[0],
                 publicKey: this.publicKey,
                 sessionId: this.id,
                 question
@@ -659,51 +698,61 @@ export class Form {
 
     /**
      * Process next question
-     * @param container
      * @param form
      * @private
      */
 
-    private async processNextQuestion(container: HTMLElement, form: HTMLElement) {
-        switch (this.formData?.identity) {
-            case 'MAGICSURVEY':
-                if (!this.questionInProcess?.followup) {
-                    this.renderNextQuestion(form);
-                } else {
-                    const followUp = await this.callFollowUpQuestion(this.questionInProcess);
-                    if (followUp) {
-                        // Update the question in process
-                        this.questionInProcess = followUp;
+    private async processNextQuestion(form: HTMLElement) {
+        const page = this.history.back();
 
-                        // Add the follow up question to the history
-                        const question = renderQuestions([followUp], this.formOptionsConfig?.questionFormat, this.formData?.lang[0])[0];
-                        this.history[this.progress].push({object: followUp, element: question});
+        if (!page) throw new Error("No page found");
 
-                        form.removeChild(form.childNodes[0]);
-                        form.appendChild(question);
-                    } else {
-                        this.renderNextQuestion(form);
+        const followUpList = page.getFollowupQuestions()
+
+        if (followUpList?.length > 0) {
+            const followUpQuestions = [];
+            for (const followUp of followUpList) {
+                const question = page.questions.find((q) => q.ref === followUp);
+                if (question) {
+                    const followUpQuestion = await this.callFollowUpQuestion(question);
+                    if (followUpQuestion) followUpQuestions.push(followUpQuestion);
                     }
                 }
-                break;
-            default:
-                this.total = this.questions.length;
-                this.progress = this.questions.length;
 
-                if (this.formOptionsConfig.addSuccessScreen) {
-                    // Remove the form
-                    if (container.childNodes.length > 0) container.removeChild(container.childNodes[0]);
+            if (followUpQuestions.length > 0) {
+                // Create a new page with the follow up questions
+                const newPage = new Page(
+                    page.id,
+                    page.position,
+                    this.appId,
+                    followUpQuestions,
+                    page.edges
+                );
 
-                    // Show the success message
-                    const successMessage = renderSuccess(
-                        this.formOptionsConfig.successMessage ||
-                        "Thank you for your feedback!"
-                    );
+                const n = new PageNode(
+                    page.id,
+                    page.position,
+                    page.edges,
+                    newPage,
+                    followUpQuestions
+                );
 
-                    container.appendChild(successMessage);
-                }
+                n.elements = renderQuestions(
+                    followUpQuestions,
+                    this.formOptionsConfig.questionFormat,
+                    this.formData?.lang[0],
+                    () => this.send()
+                );
 
-                break;
+                this.history.enqueue(n);
+
+                form.removeChild(form.childNodes[0]);
+                n.elements?.forEach((element) => form.appendChild(element));
+            } else {
+                this.renderNextQuestion(form, page);
+            }
+        } else {
+            this.renderNextQuestion(form, page);
         }
 
     }
@@ -711,21 +760,30 @@ export class Form {
     /**
      * Render next question
      * @param form
+     * @param page
      * @private
      */
-    private renderNextQuestion(form: HTMLElement) {
-        this.progress++;
-        if (this.progress < this.total) {
-            this.questionInProcess = this.history[this.progress][0].object;
-            if (!this.censorQuestions.includes(this.questionInProcess.id)) {
-                form.removeChild(form.childNodes[0]);
-                form.appendChild(this.history[this.progress][0].element);
-            } else {
-                this.renderNextQuestion(form);
-            }
-        } else {
+    private renderNextQuestion(form: HTMLElement, page: PageNode) {
+        // Get next page from the graph
+        const nextPage = this.graph.getNextPage(page, this.feedback.answers);
+
+        if (!nextPage) {
             this.finish();
+            return;
         }
+
+        this.progress = this.total - this.graph.findDepth(nextPage.id);
+
+        nextPage.elements = renderQuestions(
+            nextPage.questions,
+            this.formOptionsConfig.questionFormat,
+            this.formData?.lang[0],
+            () => this.send()
+        );
+
+        form.removeChild(form.childNodes[0]);
+        nextPage.elements?.forEach((element) => form.appendChild(element));
+        this.history.enqueue(nextPage);
     }
 
     /**
@@ -733,28 +791,20 @@ export class Form {
      * @private
      */
     public back() {
-        if (this.progress === 0) return;
+        if (this.history.size() === 0) return;
+
+        console.log("Back", this.history);
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
 
-        if (this.history[this.progress].length > 1) {
-            // Delete the last question in the history array and load the previous one
-            this.history[this.progress].pop();
-        } else {
-            // Use the previous question in the history array
-            this.progress--;
-        }
+        this.history.rollback();
 
-        // Get the last question in the history array
-        let question = this.history[this.progress][this.history[this.progress].length - 1];
-        if (this.censorQuestions.includes(question.object.id)) {
-            this.back();
-        } else {
-            // Update the question in process
-            this.questionInProcess = question.object;
-            form.appendChild(question.element);
+        const page = this.history.back();
+
+        if (page) {
+            page.elements?.forEach((element) => form.appendChild(element));
         }
     }
 }

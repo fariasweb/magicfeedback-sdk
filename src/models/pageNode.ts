@@ -8,6 +8,7 @@ export class PageNode{
     edges: PageRoute[];
     data: Page;
     questions: NativeQuestion[];
+    elements: HTMLElement[];
     // level: number;
 
     constructor(id: string,
@@ -22,6 +23,7 @@ export class PageNode{
         this.edges = edges;
         this.data = data;
         this.questions = questions;
+        this.elements = [];
         // this.level = level;
     }
 

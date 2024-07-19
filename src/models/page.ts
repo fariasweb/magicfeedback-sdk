@@ -10,27 +10,22 @@ export class Page {
     integrationId: string;
     integrationQuestions: NativeQuestion[];
     integrationPageRoutes: PageRoute[];
-    questions: NativeQuestion[];
 
     constructor(
         id: string,
         position: number,
-        generatedAt: string,
-        updatedAt: number,
-        status: string,
         integrationId: string,
         integrationQuestions: NativeQuestion[],
         integrationPageRoutes: PageRoute[],
-        questions: NativeQuestion[]
+
     ) {
         this.id = id;
         this.position = position;
-        this.generatedAt = generatedAt;
-        this.updatedAt = updatedAt;
-        this.status = status;
+        this.generatedAt = new Date().toISOString();
+        this.updatedAt = new Date().getTime();
+        this.status = 'ACTIVE';
         this.integrationId = integrationId;
         this.integrationQuestions = integrationQuestions;
         this.integrationPageRoutes = integrationPageRoutes;
-        this.questions = questions;
     }
 }

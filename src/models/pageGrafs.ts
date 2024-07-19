@@ -1,5 +1,7 @@
 import {Page} from "./page";
 import {PageNode} from "./pageNode";
+import {NativeAnswer} from "./types";
+import {OperatorType} from "./pageRoute";
 
 export class PageGraph {
     private nodes: Map<string, PageNode>;
@@ -16,7 +18,7 @@ export class PageGraph {
                 page.position,
                 page.integrationPageRoutes || [],
                 page,
-                page.questions
+                page.integrationQuestions
             );
             this.nodes.set(node.id, node);
         });
@@ -26,8 +28,16 @@ export class PageGraph {
         return this.nodes.get(id);
     }
 
-    createNextEdgeByDefault() {
-
+    /**
+     * Get the next page position of the graph given the current page and the answer
+     * @param node
+     */
+    getNextEdgeByDefault(node: PageNode): string | undefined {
+        if (!node) return undefined;
+        for (const n of this.nodes.values()) {
+            if (n.position === (node.position + 1)) return n.id;
+        }
+        return undefined;
     }
 
     /**
@@ -50,27 +60,47 @@ export class PageGraph {
 
     /**
      * Get the next page of the graph given the current page and the answer
-     * @param currentPageId - id of the current page
+     * @param currentNode
      * @param answer - answer to the question in the current page
      * @returns page
      **/
-    getNextPage(currentPageId: string, answer: string): PageNode | undefined {
-        const currentNode = this.getNodeById(currentPageId);
+    getNextPage(currentNode: PageNode, answer: NativeAnswer[]): PageNode | undefined {
         if (!currentNode) {
             return undefined;
         }
-
         // Find the first route that matches the condition
         const route = currentNode.edges.find(edge => {
             // Check if the condition is met
-            if (edge.typeCondition === 'LOGICAL' && edge.typeOperator === 'EQUAL') {
-                return answer === edge.value;
+            const answerValue = answer?.filter(ans => ans.key === edge.questionRef);
+            if (!answerValue) return false;
+
+            switch (edge.typeOperator) {
+                case OperatorType.EQUAL:
+                    return answerValue.find(ans => ans.value?.includes(edge.value));
+                case OperatorType.NOEQUAL:
+                    return !answerValue.find(ans => ans.value?.includes(edge.value));
+                case OperatorType.GREATER:
+                    return answerValue.find(ans => ans.value.find(val => Number(val) > Number(edge.value)));
+                case OperatorType.LESS:
+                    return answerValue.find(ans => ans.value.find(val => Number(val) < Number(edge.value)));
+                case OperatorType.GREATEREQUAL:
+                    console.log(answerValue)
+                    return answerValue.find(ans => ans.value.find(val => Number(val) >= Number(edge.value)));
+                case OperatorType.LESSEQUAL:
+                    return answerValue.find(ans => ans.value.find(val => Number(val) <= Number(edge.value)));
+                case OperatorType.INQ:
+                    return answerValue.find(ans => edge.value.includes(ans.value));
+                case OperatorType.NINQ:
+                    return !answerValue.find(ans => edge.value.includes(ans.value));
+                default:
+                    return false;
             }
-            return false;
         });
 
         if (!route) {
-            return undefined;
+            const nextPage = this.getNextEdgeByDefault(currentNode);
+            if (!nextPage) return undefined;
+            return this.getNodeById(nextPage);
         }
 
         return this.getNodeById(route.transitionDestiny);
@@ -107,7 +137,12 @@ export class PageGraph {
     DFSUtil(v: PageNode, visited: Set<PageNode>, depth: number) {
         visited.add(v)
         let max_depth = depth
-        for (const neighbour of v.edges) {
+        //Add a default edge to the next page
+        const defaultEdge = this.getNextEdgeByDefault(v)
+
+        for (const neighbour of defaultEdge ? [...v.edges, {
+            transitionDestiny: defaultEdge,
+        }] : v.edges) {
             const node = this.getNodeById(neighbour.transitionDestiny)
             if (node && !visited.has(node)) {
                 max_depth = Math.max(max_depth, this.DFSUtil(node, visited, depth + 1))
