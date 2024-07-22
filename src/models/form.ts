@@ -42,6 +42,7 @@ export class Form {
     // Count variables
     public progress: number;
     public total: number;
+    public followup: boolean;
 
 
     /**
@@ -92,6 +93,7 @@ export class Form {
         // Count variables
         this.progress = 0;
         this.total = 0;
+        this.followup = false;
     }
 
     /**
@@ -144,7 +146,7 @@ export class Form {
 
             if (this.formData.questions === undefined || !this.formData.questions) throw new Error(`No questions for app ${this.appId}`);
 
-            if (this.formData.pages?.length === 0) this.formatPages();
+            if (!this.formData.pages || this.formData.pages?.length === 0) this.formatPages();
             this.formData.questions?.sort((a, b) => a.position - b.position);
 
             if (this.formOptionsConfig.getMetaData) this.getMetaData();
@@ -172,46 +174,47 @@ export class Form {
      * @private
      */
     private formatPages() {
-        if (this.formData) {
-            switch (this.formData.identity) {
-                case 'MAGICSURVEY':
-                    // In this case we will create a page for each question
-                    this.formData.pages = [];
-                    this.formData.questions?.forEach((question) => {
-                        const route: PageRoute = new PageRoute(
-                            question.id,
-                            question.ref,
-                            OperatorType.NOEQUAL,
-                            null,
-                            TransitionType.PAGE,
-                            (question.position + 1).toString(),
-                            question.position.toString(),
-                        )
+        if (!this.formData) return;
 
-                        const page = new Page(
-                            question.position.toString(),
-                            question.position,
-                            this.appId,
-                            [question],
-                            [route]
-                        );
+        switch (this.formData.identity) {
+            case 'MAGICSURVEY':
+                // In this case we will create a page for each question
+                this.formData.pages = [];
+                this.formData.questions?.forEach((question) => {
+                    const route: PageRoute = new PageRoute(
+                        question.id,
+                        question.ref,
+                        OperatorType.NOEQUAL,
+                        null,
+                        TransitionType.PAGE,
+                        (question.position + 1).toString(),
+                        question.position.toString(),
+                    )
 
-                        this.formData?.pages?.push(page);
-                    });
-                    break;
-                case 'MAGICFORM':
-                    // In this case we will create a page with all the questions
                     const page = new Page(
-                        '1',
-                        1,
+                        question.position.toString(),
+                        question.position,
                         this.appId,
-                        this.formData.questions,
-                        []
+                        [question],
+                        [route]
                     );
-                    this.formData.pages = [page];
-                    break;
-            }
+
+                    this.formData?.pages?.push(page);
+                });
+                break;
+            case 'MAGICFORM':
+                // In this case we will create a page with all the questions
+                const page = new Page(
+                    '1',
+                    1,
+                    this.appId,
+                    this.formData.questions,
+                    []
+                );
+                this.formData.pages = [page];
+                break;
         }
+
     }
 
     /**
@@ -239,76 +242,78 @@ export class Form {
      */
     private async generateForm() {
         try {
-            if (this.formData && this.formData.pages?.length > 0) {
-                this.graph = new PageGraph(this.formData.pages.sort(
-                    (a, b) => a.position - b.position
-                ));
+            if (!this.formData || !this.formData.pages || this.formData.pages.length === 0) {
+                throw new Error("No form data");
+            }
 
-                // Select and prepare the container
-                let container: HTMLElement | null = this.generateContainer()
+            this.graph = new PageGraph(this.formData.pages.sort(
+                (a, b) => a.position - b.position
+            ));
 
-                // Create the form
-                const form = document.createElement("form");
-                form.classList.add("magicfeedback-form");
-                form.id = "magicfeedback-" + this.appId;
+            // Select and prepare the container
+            let container: HTMLElement | null = this.generateContainer()
 
-                // Create the questions container
-                const questionContainer = document.createElement("div");
-                questionContainer.classList.add("magicfeedback-questions");
-                questionContainer.id = "magicfeedback-questions-" + this.appId;
+            // Create the form
+            const form = document.createElement("form");
+            form.classList.add("magicfeedback-form");
+            form.id = "magicfeedback-" + this.appId;
 
-                const page = this.graph.getFirstPage()
+            // Create the questions container
+            const questionContainer = document.createElement("div");
+            questionContainer.classList.add("magicfeedback-questions");
+            questionContainer.id = "magicfeedback-questions-" + this.appId;
 
-                if (!page) throw new Error("No page found");
+            const page = this.graph.getFirstPage()
 
-                this.total = this.graph.findMaxDepth();
+            if (!page) throw new Error("No page found");
 
-                // Process questions and create in the form
-                page.elements = renderQuestions(
-                    page.questions,
-                    this.formOptionsConfig.questionFormat,
-                    this.formData?.lang[0],
-                    () => this.send()
+            this.total = this.graph.findMaxDepth();
+
+            // Process questions and create in the form
+            page.elements = renderQuestions(
+                page.questions,
+                this.formOptionsConfig.questionFormat,
+                this.formData?.lang[0],
+                () => this.send()
+            );
+
+            page.elements?.forEach((element) =>
+                questionContainer.appendChild(element));
+            form.appendChild(questionContainer);
+
+            // Add the new page to the history
+            this.history.enqueue(page);
+            // Add the form to the specified container
+            container.appendChild(form);
+
+            // Submit button
+            if (this.formOptionsConfig.addButton) {
+                // Create a container for the buttons
+                const actionContainer = renderActions(
+                    this.formData?.identity,
+                    () => this.back(),
+                    this.formOptionsConfig.sendButtonText,
+                    this.formOptionsConfig.backButtonText,
+                    this.formOptionsConfig.nextButtonText,
                 );
 
-                page.elements?.forEach((element) =>
-                    questionContainer.appendChild(element));
-                form.appendChild(questionContainer);
+                form.appendChild(actionContainer);
+            }
 
-                // Add the new page to the history
-                this.history.enqueue(page);
-                // Add the form to the specified container
-                container.appendChild(form);
+            // Submit event
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                this.send()
+            });
 
-                // Submit button
-                if (this.formOptionsConfig.addButton) {
-                    // Create a container for the buttons
-                    const actionContainer = renderActions(
-                        this.formData?.identity,
-                        () => this.back(),
-                        this.formOptionsConfig.sendButtonText,
-                        this.formOptionsConfig.backButtonText,
-                        this.formOptionsConfig.nextButtonText,
-                    );
-
-                    form.appendChild(actionContainer);
-                }
-
-                // Submit event
-                form.addEventListener("submit", (event) => {
-                    event.preventDefault();
-                    this.send()
+            // Send the data to manage loadings and progress
+            if (this.formOptionsConfig.onLoadedEvent) {
+                await this.formOptionsConfig.onLoadedEvent({
+                    loading: false,
+                    progress: this.progress,
+                    total: this.total,
+                    formData: this.formData,
                 });
-
-                // Send the data to manage loadings and progress
-                if (this.formOptionsConfig.onLoadedEvent) {
-                    await this.formOptionsConfig.onLoadedEvent({
-                        loading: false,
-                        progress: this.progress,
-                        total: this.total,
-                        formData: this.formData,
-                    });
-                }
             }
         } catch (e) {
             this.log.err(e);
@@ -436,9 +441,7 @@ export class Form {
             }
 
             // SEND
-            const response = await this.pushAnswers(
-                this.formData?.identity !== 'MAGICSURVEY'
-            );
+            const response = await this.pushAnswers(false);
 
             if (response) {
                 this.id = response;
@@ -452,6 +455,7 @@ export class Form {
                     loading: false,
                     progress: this.progress,
                     total: this.total,
+                    followup: this.followup,
                     // answer: this.feedback.answers,
                     error: response ? null : new Error("No response")
                 });
@@ -720,6 +724,7 @@ export class Form {
                 }
 
             if (followUpQuestions.length > 0) {
+                this.followup = true;
                 // Create a new page with the follow up questions
                 const newPage = new Page(
                     page.id,
@@ -764,6 +769,7 @@ export class Form {
      * @private
      */
     private renderNextQuestion(form: HTMLElement, page: PageNode) {
+        this.followup = false;
         // Get next page from the graph
         const nextPage = this.graph.getNextPage(page, this.feedback.answers);
 

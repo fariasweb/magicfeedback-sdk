@@ -121,7 +121,9 @@ function renderContainer(
     // Look if exist the value in a query param with the ref like a key
     const urlParamValue = params(id);
 
-    const maxCharacters = assets.maxCharacters || 300
+    console.log('maxCharacters', assets?.maxCharacters)
+
+    const maxCharacters = assets?.maxCharacters || 300
 
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
@@ -162,7 +164,7 @@ function renderContainer(
             elementTypeClass =
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
 
-            if (assets.extraOption) value.push(assets.extraOptionText);
+            if (assets?.extraOption) value.push(assets?.extraOptionText);
 
             value.forEach((option, index) => {
                 const container = document.createElement("div");
@@ -178,10 +180,10 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
-                if (type === FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE && assets.maxOptions && assets.maxOptions > 0) {
+                if (type === FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE && assets?.maxOptions && assets?.maxOptions > 0) {
                     input.addEventListener("change", () => {
                         const checkboxes = document.querySelectorAll(`input[name="${ref}"]:checked`);
-                        if (checkboxes.length > assets.maxOptions) {
+                        if (checkboxes.length > assets?.maxOptions) {
                             (input as HTMLInputElement).checked = false;
                         }
                     });
@@ -198,8 +200,8 @@ function renderContainer(
 
                 input.addEventListener("change", (event) => {
                     const extraOption = document.getElementById(`extra-option-${ref}`);
-                    if (extraOption && assets.extraOption) {
-                        if ((event.target as HTMLInputElement).checked && option === assets.extraOptionText) {
+                    if (extraOption && assets?.extraOption) {
+                        if ((event.target as HTMLInputElement).checked && option === assets?.extraOptionText) {
                                 extraOption.style.display = "block";
                             } else {
                                 extraOption.style.display = "none";
@@ -213,10 +215,10 @@ function renderContainer(
                 element.appendChild(container);
 
                 // If is assets.extraOptionText add a input text after the label to add a custom value available only if is selected
-                if (assets.extraOption && option === assets.extraOptionText) {
+                if (assets?.extraOption && option === assets?.extraOptionText) {
                     const inputText = document.createElement("input");
                     inputText.type = "text";
-                    inputText.placeholder = assets.extraOptionPlaceholder || placeholder.answer(language || 'en')
+                    inputText.placeholder = assets?.extraOptionPlaceholder || placeholder.answer(language || 'en')
                     inputText.classList.add("magicfeedback-extra-option");
                     inputText.classList.add("magicfeedback-input");
                     inputText.id = `extra-option-${ref}`;
@@ -240,7 +242,7 @@ function renderContainer(
             booleanContainer.style.width = "70%";
             booleanContainer.style.margin = "auto";
 
-            const booleanOptions = assets.addIcon ? ['👍', '👎'] : getBooleanOptions(language);
+            const booleanOptions = assets?.addIcon ? ['👍', '👎'] : getBooleanOptions(language);
 
             // Create a input button element for each value in the question's value array
             booleanOptions.forEach((option, index) => {
@@ -295,10 +297,10 @@ function renderContainer(
             const ratingContainer = document.createElement('div');
             ratingContainer.classList.add('magicfeedback-rating-container');
 
-            const maxRating = assets.max ? Number(assets.max) : 5;
-            const minRating = assets.min ? Number(assets.min) : 1;
+            const maxRating = assets?.max ? Number(assets?.max) : 5;
+            const minRating = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingPlaceholder = createRatingPlaceholder(minRating, maxRating, assets.minPlaceholder, assets.maxPlaceholder, assets.extraOption);
+            const ratingPlaceholder = createRatingPlaceholder(minRating, maxRating, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
 
             for (let i = minRating; i <= maxRating; i++) {
                 const ratingOption = document.createElement('div');
@@ -358,7 +360,7 @@ function renderContainer(
                 ratingContainer.appendChild(ratingOption);
             }
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const extraOption = document.createElement('div');
                 extraOption.classList.add('magicfeedback-rating-option');
 
@@ -368,7 +370,7 @@ function renderContainer(
 
                 const ratingLabel = document.createElement('label');
                 ratingLabel.htmlFor = `rating-${ref}-extra`;
-                ratingLabel.textContent = assets.extraOptionText;
+                ratingLabel.textContent = assets?.extraOptionText;
 
                 // Add a question mark icon to the extra option
                 const ratingImage = document.createElement('img');
@@ -402,10 +404,10 @@ function renderContainer(
             const ratingNumberContainer = document.createElement('div');
             ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
 
-            const maxRatingNumber = assets.max ? Number(assets.max) : 5;
-            const minRatingNumber = assets.min ? Number(assets.min) : 1;
+            const maxRatingNumber = assets?.max ? Number(assets?.max) : 5;
+            const minRatingNumber = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingNumberPlaceholder = createRatingPlaceholder(minRatingNumber, maxRatingNumber, assets.minPlaceholder, assets.maxPlaceholder, assets.extraOption);
+            const ratingNumberPlaceholder = createRatingPlaceholder(minRatingNumber, maxRatingNumber, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
 
             for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                 // Create a input button element for each value in the question's value array
@@ -434,7 +436,7 @@ function renderContainer(
                 ratingNumberContainer.appendChild(ratingOption);
             }
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const extraOption = document.createElement('div');
                 extraOption.classList.add('magicfeedback-rating-number-option');
 
@@ -444,7 +446,7 @@ function renderContainer(
 
                 const ratingLabel = document.createElement('label');
                 ratingLabel.htmlFor = `rating-${ref}-extra`;
-                ratingLabel.textContent = assets.extraOptionText;
+                ratingLabel.textContent = assets?.extraOptionText;
 
                 const input = document.createElement("input");
                 input.id = `rating-${ref}-extra`;
@@ -468,7 +470,7 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-star';
 
-            const ratingStarContainer = createStarRating(ref, assets.minPlaceholder, assets.maxPlaceholder);
+            const ratingStarContainer = createStarRating(ref, assets?.minPlaceholder, assets?.maxPlaceholder);
 
             element.appendChild(ratingStarContainer);
             break;
@@ -514,10 +516,10 @@ function renderContainer(
                     break;
             }
 
-            const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
-            const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
-            const randomPosition = assets?.randomPosition === undefined ? false : assets.randomPosition;
-            const extraOption = assets?.extraOption === undefined ? false : assets.extraOption;
+            const useLabel = assets?.addTitle === undefined ? false : assets?.addTitle;
+            const multiOptions = assets?.multiOption === undefined ? false : assets?.multiOption;
+            const randomPosition = assets?.randomPosition === undefined ? false : assets?.randomPosition;
+            const extraOption = assets?.extraOption === undefined ? false : assets?.extraOption;
 
 
             // reorder the options if randomPosition is true
@@ -594,8 +596,8 @@ function renderContainer(
             // The image is the only input but can have a title
             value.forEach((option) => generateOption(JSON.parse(option)));
 
-            if (extraOption && assets.extraOptionValue && assets.extraOptionValue.length > 0) {
-                generateOption(assets.extraOptionValue[0])
+            if (extraOption && assets?.extraOptionValue && assets?.extraOptionValue.length > 0) {
+                generateOption(assets?.extraOptionValue[0])
             }
 
             element.appendChild(multipleChoiceImageContainer);
@@ -688,7 +690,7 @@ function renderContainer(
             const body = document.createElement("tbody");
 
             if (assets?.options?.length > 0) {
-                assets.options.split('|').forEach((o: string) => {
+                assets?.options.split('|').forEach((o: string) => {
                     const row = document.createElement("tr");
                     row.style.paddingBottom = "15px";
                     const rowLabel = document.createElement("td");
@@ -972,7 +974,7 @@ function renderContainer(
             if (assets?.general !== undefined && assets?.general !== "") {
                 // Add a image to the form
                 const image = document.createElement("img");
-                image.src = assets.general;
+                image.src = assets?.general;
                 image.classList.add("magicfeedback-image");
                 // Add a max default width to the image
                 image.style.maxWidth = "auto";
@@ -998,7 +1000,7 @@ function renderContainer(
             elementContainer.appendChild(element);
             elementContainer.appendChild(counter);
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const skipContainer = document.createElement("div");
                 skipContainer.classList.add("magicfeedback-skip-container");
                 skipContainer.classList.add(`magicfeedback-checkbox-container`);
@@ -1015,7 +1017,7 @@ function renderContainer(
 
                 const skipLabel = document.createElement("label");
                 skipLabel.htmlFor = `skip-${ref}`;
-                skipLabel.textContent = assets.extraOptionText;
+                skipLabel.textContent = assets?.extraOptionText;
                 skipLabel.style.fontSize = "0.8em";
                 skipLabel.style.color = "#999";
                 skipLabel.style.cursor = "pointer";
