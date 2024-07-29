@@ -121,8 +121,6 @@ function renderContainer(
     // Look if exist the value in a query param with the ref like a key
     const urlParamValue = params(id);
 
-    console.log('maxCharacters', assets?.maxCharacters)
-
     const maxCharacters = assets?.maxCharacters || 300
 
     switch (type) {
@@ -706,8 +704,8 @@ function renderContainer(
                     value.forEach((v) => {
                         const cell = document.createElement("td");
                         const input = document.createElement("input");
-                        input.type = "checkbox";
-                        input.name = ref;
+                        input.type = "radio";
+                        input.name = `${ref}-${o}`;
                         input.value = v;
                         input.id = `matrix-${o}`;
                         input.classList.add("magicfeedback-input");
@@ -876,11 +874,10 @@ function renderContainer(
             totalPointsContainer.classList.add("magicfeedback-point-system-total");
             totalPointsContainer.textContent = `0 / 100 %`;
             totalPointsContainer.style.textAlign = "right";
-            totalPointsContainer.style.fontSize = "0.8em";
-            totalPointsContainer.style.color = "#999";
+            totalPointsContainer.style.fontSize = "15px";
             totalPointsContainer.style.marginTop = "5px";
 
-            value.forEach((option) => {
+            value.forEach((option,index) => {
                 const item = document.createElement("li");
                 item.classList.add("magicfeedback-point-system-item");
                 item.style.display = "flex";
@@ -890,6 +887,7 @@ function renderContainer(
 
                 const itemLabel = document.createElement("label");
                 itemLabel.textContent = option;
+                itemLabel.style.fontSize = "15px";
                 item.appendChild(itemLabel);
 
                 const inputContainer = document.createElement("span");
@@ -907,6 +905,7 @@ function renderContainer(
                 itemInput.style.border = "0";
                 itemInput.style.textAlign = "center";
                 itemInput.style.margin = "0 5px";
+                itemInput.autofocus = index === 0;
                 // Add the % symbol to the input
                 const percentSymbol = document.createElement("span");
                 percentSymbol.textContent = "%";
@@ -926,7 +925,28 @@ function renderContainer(
                         total = total - Number((itemInput as HTMLInputElement).value);
                     }
 
+                    const submitButton = document.getElementById("magicfeedback-submit");
+                    if (submitButton) {
+                        if (total < 100) {
+                            // Disable the submit button if the total points are less than 100
+                            totalPointsContainer.style.color = "orange";
+                            submitButton.setAttribute("disabled", "true");
+                        } else {
+                            totalPointsContainer.style.color = "green";
+                            submitButton.removeAttribute("disabled");
+                        }
+                    }
+
                     totalPointsContainer.textContent = `${total} / 100 %`;
+                });
+
+                itemInput.addEventListener("focus", () => {
+                    if (index === 0 && itemInput.value === "0") {
+                        const submitButton = document.getElementById("magicfeedback-submit");
+                        if (submitButton) {
+                            submitButton.setAttribute("disabled", "true");
+                        }
+                    }
                 });
 
                 inputContainer.appendChild(itemInput);
@@ -935,7 +955,6 @@ function renderContainer(
                 item.appendChild(inputContainer);
                 pointSystemList.appendChild(item);
             });
-
 
             pointSystemContainer.appendChild(pointSystemList);
             pointSystemContainer.appendChild(totalPointsContainer);
@@ -990,8 +1009,7 @@ function renderContainer(
             counter.classList.add("magicfeedback-counter");
             counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`
             counter.style.textAlign = "right";
-            counter.style.fontSize = "0.8em";
-            counter.style.color = "#999";
+            counter.style.fontSize = "15px";
             counter.style.marginTop = "5px";
             element.addEventListener("input", () => {
                 counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`;
@@ -1018,8 +1036,7 @@ function renderContainer(
                 const skipLabel = document.createElement("label");
                 skipLabel.htmlFor = `skip-${ref}`;
                 skipLabel.textContent = assets?.extraOptionText;
-                skipLabel.style.fontSize = "0.8em";
-                skipLabel.style.color = "#999";
+                skipLabel.style.fontSize = "15px";
                 skipLabel.style.cursor = "pointer";
                 skipLabel.style.margin = "0 5px";
 
@@ -1157,8 +1174,7 @@ function createRatingPlaceholder(
     const ratingPlaceholderMin = document.createElement('span');
     ratingPlaceholderMin.textContent = minPlaceholder;
     ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-value');
-    ratingPlaceholderMin.style.fontStyle = "italic";
-    ratingPlaceholderMin.style.fontSize = "14px";
+    ratingPlaceholderMin.style.fontSize = "15px";
     ratingPlaceholderMin.style.textAlign = "left";
     ratingPlaceholderMin.style.width = `50%`;
 
@@ -1174,8 +1190,7 @@ function createRatingPlaceholder(
     const ratingPlaceholderMax = document.createElement('span');
     ratingPlaceholderMax.textContent = maxPlaceholder;
     ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-value');
-    ratingPlaceholderMax.style.fontStyle = "italic";
-    ratingPlaceholderMax.style.fontSize = "14px";
+    ratingPlaceholderMax.style.fontSize = "15px";
     ratingPlaceholderMax.style.textAlign = "right";
     ratingPlaceholderMax.style.width = `50%`;
 

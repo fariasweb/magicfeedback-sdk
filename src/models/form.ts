@@ -148,6 +148,8 @@ export class Form {
 
             if (!this.formData.pages || this.formData.pages?.length === 0) this.formatPages();
             this.formData.questions?.sort((a, b) => a.position - b.position);
+            // Clear pages without questions
+            this.formData.pages = this.formData.pages.filter((page) => page.integrationQuestions?.length > 0);
 
             if (this.formOptionsConfig.getMetaData) this.getMetaData();
 
@@ -514,85 +516,93 @@ export class Form {
                 (input as HTMLInputElement).checked.toString() :
                 (input as HTMLInputElement).value;
 
-            if (!ans.key || ans.key === "") {
-                return;
-            } else {
-                switch (inputType) {
-                    case "radio":
-                    case "checkbox":
-                        if (
-                            elementTypeClass === "magicfeedback-consent" ||
-                            (input as HTMLInputElement).checked
-                        ) {
-                            if (input.id.includes('matrix')) {
-                                const key = input.id.split("-")[input.id.split("-").length - 1];
-                                let v = '';
-                                inputs.forEach((i) => {
-                                    if ((i as HTMLInputElement).checked && i.id.includes(`matrix-${key}`)) {
-                                        v += (i as HTMLInputElement).value + ', '
-                                    }
-                                });
+            if (!ans.key || ans.key === "") return;
 
-                                // remove last comma
-                                v = v.slice(0, -2);
-                                ans.value.push(`${key}: ${v}`);
-                            } else {
-                            ans.value.push(value);
-                            }
+             switch (inputType) {
+                case "radio":
+                case "checkbox":
+                    if (
+                        elementTypeClass === "magicfeedback-consent" ||
+                        (input as HTMLInputElement).checked
+                    ) {
+                    ans.value.push(value);
 
-                            // check if the answer is already in the array and merge the values
-                            const index = surveyAnswers.findIndex(
-                                (a) => a.key === ans.key
-                            );
-                            if (index !== -1) {
-                                surveyAnswers[index].value = [
-                                    ...surveyAnswers[index].value,
-                                    ...ans.value,
-                                ];
-                            } else {
-                                surveyAnswers.push(ans);
-                            }
-                        }
-                        break;
-                    default:
-                        if (value !== "") {
-                            if (inputType === "email") {
-                                if (!validateEmail(value)) {
-                                    this.log.err("Invalid email");
-                                    hasError = true;
-                                    break;
-                                } else {
-                                    this.feedback.profile.push({
-                                        key: "email",
-                                        value: [value],
-                                    });
-                                }
-                            }
-
-                            if (input.id.includes('point-system')) {
-                                const key = input.id.split("-")[input.id.split("-").length - 1];
-                                ans.value.push(`${key}: ${value}%`);
-                            } else{
-                                ans.value.push(value);
-                            }
-
-                            // check if the answer is already in the array and merge the values
-                            const index = surveyAnswers.findIndex(
-                                (a) => a.key === ans.key
-                            );
-                            if (index !== -1) {
-                                surveyAnswers[index].value = [
-                                    ...surveyAnswers[index].value,
-                                    ...ans.value,
-                                ];
-                            } else {
-                                // Add the answer to the array
-                                surveyAnswers.push(ans);
-                            }
-
-
-                        }
+                    // check if the answer is already in the array and merge the values
+                    const index = surveyAnswers.findIndex(
+                        (a) => a.key === ans.key
+                    );
+                    if (index !== -1) {
+                        surveyAnswers[index].value = [
+                            ...surveyAnswers[index].value,
+                            ...ans.value,
+                        ];
+                    } else {
+                        surveyAnswers.push(ans);
+                    }
                 }
+                break;
+            default:
+                if (value !== "") {
+                    if (inputType === "email") {
+                        if (!validateEmail(value)) {
+                            this.log.err("Invalid email");
+                            hasError = true;
+                            break;
+                        } else {
+                            this.feedback.profile.push({
+                                key: "email",
+                                value: [value],
+                            });
+                        }
+                    }
+
+                    if (input.id.includes('point-system')) {
+                        const key = 'point-system-' + input.id.split("-")[input.id.split("-").length - 1];
+                        ans.value.push(`${key}: ${value}%`);
+                    } else{
+                        ans.value.push(value);
+                    }
+
+                    // check if the answer is already in the array and merge the values
+                    const index = surveyAnswers.findIndex(
+                        (a) => a.key === ans.key
+                    );
+                    if (index !== -1) {
+                        surveyAnswers[index].value = [
+                            ...surveyAnswers[index].value,
+                            ...ans.value,
+                        ];
+                    } else {
+                        // Add the answer to the array
+                        surveyAnswers.push(ans);
+                    }
+
+
+                }
+            }
+        });
+
+        console.log(surveyAnswers);
+        // Check if there's an error
+        // Check matrix questions
+        const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
+        // Merge the equal values of the matrix questions
+        matrixQuestions?.forEach((matrix) => {
+            const m = surveyAnswers.find((a) => a.key === matrix.key)
+            if (m) m.value = [... new Set(m.value)];
+        });
+
+        // Check point system questions
+        const pointSystemQuestions = surveyAnswers.filter((a) => a.key.includes('point-system'));
+        // Throw error if all the point system questions are not 100%
+        pointSystemQuestions?.forEach((pointSystem) => {
+            const sum = pointSystem.value.reduce((acc, val) => {
+                const value = val.split(": ")[1];
+                return acc + Number(value.replace('%', ''));
+            }, 0);
+            if (sum !== 100) {
+                this.log.err("The sum of the point system questions must be 100%");
+                hasError = true;
             }
         });
 
