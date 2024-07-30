@@ -108,5 +108,27 @@ export const placeholder = {
             default:
                 return "Write your password here...";
         }
+    },
+    pointsystemerror: (language: string) => {
+        switch (language) {
+            case "en":
+                return "The total points must be 100 %"
+            case "es":
+                return "El total de puntos debe ser 100 %"
+            case 'da':
+                return 'Samlet antal point skal være 100 %'
+            case 'fi':
+                return 'Kokonaispisteiden on oltava 100 %'
+            case 'sv':
+                return 'Totala poäng måste vara 100 %'
+            case 'no':
+                return 'Totalt antall poeng må være 100 %'
+            case 'ar':
+                return 'يجب أن تكون النقاط الإجمالية 100 %'
+            case 'bn':
+                return 'মোট পয়েন্ট 100 % হতে হবে'
+            default:
+                return "The total points must be 100 %"
+        }
     }
 };

@@ -121,7 +121,7 @@ function renderContainer(
     // Look if exist the value in a query param with the ref like a key
     const urlParamValue = params(id);
 
-    const maxCharacters = assets?.maxCharacters || 300
+    const maxCharacters = assets?.maxCharacters || 0
 
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
@@ -869,6 +869,17 @@ function renderContainer(
             const totalPoints = 100;
             const pointsPerItem = totalPoints / value.length;
 
+            // Add error message to say that the 100 % is mandatory
+            const errorMessage = document.createElement("div");
+            errorMessage.classList.add("magicfeedback-error");
+            errorMessage.textContent = placeholder.pointsystemerror(language || 'en');
+            errorMessage.style.color = "#C70039";
+            errorMessage.style.fontSize = "14px";
+            errorMessage.style.textAlign = "right";
+            errorMessage.style.width = "100%";
+            errorMessage.style.display = "none";
+
+
             //Add a total points counter
             const totalPointsContainer = document.createElement("div");
             totalPointsContainer.classList.add("magicfeedback-point-system-total");
@@ -911,7 +922,6 @@ function renderContainer(
                 percentSymbol.textContent = "%";
                 percentSymbol.style.color = "#000";
 
-
                 // Control the total points assigned to the items
                 itemInput.addEventListener("input", () => {
                     const allInputs = pointSystemList.querySelectorAll("input");
@@ -932,6 +942,7 @@ function renderContainer(
                             totalPointsContainer.style.color = "orange";
                             submitButton.setAttribute("disabled", "true");
                         } else {
+                            errorMessage.style.display = "none";
                             totalPointsContainer.style.color = "green";
                             submitButton.removeAttribute("disabled");
                         }
@@ -941,11 +952,17 @@ function renderContainer(
                 });
 
                 itemInput.addEventListener("focus", () => {
-                    if (index === 0 && itemInput.value === "0") {
-                        const submitButton = document.getElementById("magicfeedback-submit");
-                        if (submitButton) {
-                            submitButton.setAttribute("disabled", "true");
-                        }
+                    const submitButton = document.getElementById("magicfeedback-submit");
+                    if (submitButton) {
+                        submitButton.setAttribute("disabled", "true");
+                        submitButton.addEventListener("pointerover", () => {
+                            const allInputs = pointSystemList.querySelectorAll("input");
+                            let total = 0;
+                            allInputs.forEach((input) => {
+                                total += Number((input as HTMLInputElement).value);
+                            });
+                            if (total < 100) errorMessage.style.display = "block";
+                        })
                     }
                 });
 
@@ -958,6 +975,7 @@ function renderContainer(
 
             pointSystemContainer.appendChild(pointSystemList);
             pointSystemContainer.appendChild(totalPointsContainer);
+            pointSystemContainer.appendChild(errorMessage);
             element.appendChild(pointSystemContainer);
             break;
         default:
@@ -1054,7 +1072,6 @@ function renderContainer(
         } else {
             elementContainer.appendChild(element);
         }
-
     }
 
     return elementContainer;
@@ -1083,6 +1100,10 @@ export function renderActions(identity: string = '',
     backButton.classList.add("magicfeedback-back");
     backButton.textContent = backButtonText || "Back";
     backButton.addEventListener("click", backAction);
+
+    backButton.addEventListener("click", () => {
+        submitButton.removeAttribute("disabled");
+    })
 
     if (identity === 'MAGICSURVEY') {
         actionContainer.appendChild(backButton);
