@@ -1,4 +1,5 @@
 import {NativeQuestion} from "./types";
+import {Page} from "./page";
 
 export class FormData {
     id: string;
@@ -37,6 +38,8 @@ export class FormData {
 
     style: Record<string, any>;
 
+    pages: Page[];
+
     constructor(
         id: string,
         name: string,
@@ -54,7 +57,8 @@ export class FormData {
         conf: Record<string, any>,
         questions: NativeQuestion[],
         lang: string[],
-        style: Record<string, any>
+        style: Record<string, any>,
+        pages: Page[]
     ) {
         this.id = id
         this.name = name
@@ -73,5 +77,6 @@ export class FormData {
         this.questions = questions
         this.lang = lang
         this.style = style
+        this.pages = pages
     }
 }

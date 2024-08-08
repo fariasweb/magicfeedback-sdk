@@ -121,6 +121,8 @@ function renderContainer(
     // Look if exist the value in a query param with the ref like a key
     const urlParamValue = params(id);
 
+    const maxCharacters = assets?.maxCharacters || 0
+
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
             // Create a text input field
@@ -135,7 +137,7 @@ function renderContainer(
             // Create a textarea element for TEXT and LONGTEXT types
             element = document.createElement("textarea");
             (element as HTMLTextAreaElement).rows = 3; // Set the number of rows based on the type
-            (element as HTMLTextAreaElement).maxLength = 300; // Set the max length of the text area
+            if (maxCharacters > 0) (element as HTMLTextAreaElement).maxLength = maxCharacters; // Set the max length of the text area
             (element as HTMLInputElement).placeholder = placeholderText || placeholder.answer(language || 'en');
             elementTypeClass = "magicfeedback-longtext";
             break;
@@ -160,7 +162,7 @@ function renderContainer(
             elementTypeClass =
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
 
-            if (assets.extraOption) value.push(assets.extraOptionText);
+            if (assets?.extraOption) value.push(assets?.extraOptionText);
 
             value.forEach((option, index) => {
                 const container = document.createElement("div");
@@ -176,6 +178,16 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
+                if (type === FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE && assets?.maxOptions && assets?.maxOptions > 0) {
+                    input.addEventListener("change", () => {
+                        const checkboxes = document.querySelectorAll(`input[name="${ref}"]:checked`);
+                        if (checkboxes.length > assets?.maxOptions) {
+                            (input as HTMLInputElement).checked = false;
+                        }
+                    });
+                }
+
+
                 if (option === defaultValue || option === urlParamValue) {
                     input.checked = true;
                 }
@@ -183,28 +195,28 @@ function renderContainer(
                 label.textContent = option;
                 label.htmlFor = `rating-${ref}-${index}`;
 
-                if (assets.extraOption && option === assets.extraOptionText) {
-                    input.addEventListener("change", (event) => {
-                        const extraOption = document.getElementById(`extra-option-${ref}`);
-                        if (extraOption) {
-                            if ((event.target as HTMLInputElement).checked) {
+
+                input.addEventListener("change", (event) => {
+                    const extraOption = document.getElementById(`extra-option-${ref}`);
+                    if (extraOption && assets?.extraOption) {
+                        if ((event.target as HTMLInputElement).checked && option === assets?.extraOptionText) {
                                 extraOption.style.display = "block";
                             } else {
                                 extraOption.style.display = "none";
                             }
                         }
                     });
-                }
+
 
                 container.appendChild(input);
                 container.appendChild(label);
                 element.appendChild(container);
 
                 // If is assets.extraOptionText add a input text after the label to add a custom value available only if is selected
-                if (assets.extraOption && option === assets.extraOptionText) {
+                if (assets?.extraOption && option === assets?.extraOptionText) {
                     const inputText = document.createElement("input");
                     inputText.type = "text";
-                    inputText.placeholder = "Custom value";
+                    inputText.placeholder = assets?.extraOptionPlaceholder || placeholder.answer(language || 'en')
                     inputText.classList.add("magicfeedback-extra-option");
                     inputText.classList.add("magicfeedback-input");
                     inputText.id = `extra-option-${ref}`;
@@ -228,7 +240,7 @@ function renderContainer(
             booleanContainer.style.width = "70%";
             booleanContainer.style.margin = "auto";
 
-            const booleanOptions = assets.addIcon ? ['👍', '👎'] : getBooleanOptions(language);
+            const booleanOptions = assets?.addIcon ? ['👍', '👎'] : getBooleanOptions(language);
 
             // Create a input button element for each value in the question's value array
             booleanOptions.forEach((option, index) => {
@@ -283,35 +295,10 @@ function renderContainer(
             const ratingContainer = document.createElement('div');
             ratingContainer.classList.add('magicfeedback-rating-container');
 
-            const maxRating = assets.max ? Number(assets.max) : 5;
-            const minRating = assets.min ? Number(assets.min) : 1;
+            const maxRating = assets?.max ? Number(assets?.max) : 5;
+            const minRating = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingPlaceholder = document.createElement('div');
-            ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
-            ratingPlaceholder.style.display = "flex";
-            ratingPlaceholder.style.justifyContent = "space-between";
-            ratingPlaceholder.style.width = "90%";
-            ratingPlaceholder.style.margin = "auto";
-
-            if (assets.minPlaceholder) {
-                const ratingPlaceholderMin = document.createElement('span');
-                ratingPlaceholderMin.textContent = assets.minPlaceholder;
-                ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-min');
-                ratingPlaceholderMin.style.fontStyle = "italic";
-                ratingPlaceholderMin.style.fontSize = "0.8em";
-
-                ratingPlaceholder.appendChild(ratingPlaceholderMin);
-            }
-
-            if (assets.maxPlaceholder) {
-                const ratingPlaceholderMax = document.createElement('span');
-                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
-                ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-max');
-                ratingPlaceholderMax.style.fontStyle = "italic";
-                ratingPlaceholderMax.style.fontSize = "0.8em";
-
-                ratingPlaceholder.appendChild(ratingPlaceholderMax);
-            }
+            const ratingPlaceholder = createRatingPlaceholder(minRating, maxRating, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
 
             for (let i = minRating; i <= maxRating; i++) {
                 const ratingOption = document.createElement('div');
@@ -371,7 +358,7 @@ function renderContainer(
                 ratingContainer.appendChild(ratingOption);
             }
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const extraOption = document.createElement('div');
                 extraOption.classList.add('magicfeedback-rating-option');
 
@@ -381,7 +368,7 @@ function renderContainer(
 
                 const ratingLabel = document.createElement('label');
                 ratingLabel.htmlFor = `rating-${ref}-extra`;
-                ratingLabel.textContent = assets.extraOptionText;
+                ratingLabel.textContent = assets?.extraOptionText;
 
                 // Add a question mark icon to the extra option
                 const ratingImage = document.createElement('img');
@@ -415,35 +402,10 @@ function renderContainer(
             const ratingNumberContainer = document.createElement('div');
             ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
 
-            const maxRatingNumber = assets.max ? Number(assets.max) : 5;
-            const minRatingNumber = assets.min ? Number(assets.min) : 1;
+            const maxRatingNumber = assets?.max ? Number(assets?.max) : 5;
+            const minRatingNumber = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingNumberPlaceholder = document.createElement('div');
-            ratingNumberPlaceholder.classList.add('magicfeedback-rating-number-placeholder');
-            ratingNumberPlaceholder.style.display = "flex";
-            ratingNumberPlaceholder.style.justifyContent = "space-between";
-            ratingNumberPlaceholder.style.width = "90%";
-            ratingNumberPlaceholder.style.margin = "auto";
-
-            if (assets.minPlaceholder) {
-                const ratingPlaceholderMin = document.createElement('span');
-                ratingPlaceholderMin.textContent = assets.minPlaceholder;
-                ratingPlaceholderMin.classList.add('magicfeedback-rating-number-placeholder-min');
-                ratingPlaceholderMin.style.fontStyle = "italic";
-                ratingPlaceholderMin.style.fontSize = "0.8em";
-
-                ratingNumberPlaceholder.appendChild(ratingPlaceholderMin);
-            }
-
-            if (assets.maxPlaceholder) {
-                const ratingPlaceholderMax = document.createElement('span');
-                ratingPlaceholderMax.textContent = assets.maxPlaceholder;
-                ratingPlaceholderMax.classList.add('magicfeedback-rating-number-placeholder-max');
-                ratingPlaceholderMax.style.fontStyle = "italic";
-                ratingPlaceholderMax.style.fontSize = "0.8em";
-
-                ratingNumberPlaceholder.appendChild(ratingPlaceholderMax);
-            }
+            const ratingNumberPlaceholder = createRatingPlaceholder(minRatingNumber, maxRatingNumber, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
 
             for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                 // Create a input button element for each value in the question's value array
@@ -472,7 +434,7 @@ function renderContainer(
                 ratingNumberContainer.appendChild(ratingOption);
             }
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const extraOption = document.createElement('div');
                 extraOption.classList.add('magicfeedback-rating-number-option');
 
@@ -482,7 +444,7 @@ function renderContainer(
 
                 const ratingLabel = document.createElement('label');
                 ratingLabel.htmlFor = `rating-${ref}-extra`;
-                ratingLabel.textContent = assets.extraOptionText;
+                ratingLabel.textContent = assets?.extraOptionText;
 
                 const input = document.createElement("input");
                 input.id = `rating-${ref}-extra`;
@@ -506,7 +468,7 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-star';
 
-            const ratingStarContainer = createStarRating(ref);
+            const ratingStarContainer = createStarRating(ref, assets?.minPlaceholder, assets?.maxPlaceholder);
 
             element.appendChild(ratingStarContainer);
             break;
@@ -552,10 +514,10 @@ function renderContainer(
                     break;
             }
 
-            const useLabel = assets?.addTitle === undefined ? false : assets.addTitle;
-            const multiOptions = assets?.multiOption === undefined ? false : assets.multiOption;
-            const randomPosition = assets?.randomPosition === undefined ? false : assets.randomPosition;
-            const extraOption = assets?.extraOption === undefined ? false : assets.extraOption;
+            const useLabel = assets?.addTitle === undefined ? false : assets?.addTitle;
+            const multiOptions = assets?.multiOption === undefined ? false : assets?.multiOption;
+            const randomPosition = assets?.randomPosition === undefined ? false : assets?.randomPosition;
+            const extraOption = assets?.extraOption === undefined ? false : assets?.extraOption;
 
 
             // reorder the options if randomPosition is true
@@ -632,8 +594,8 @@ function renderContainer(
             // The image is the only input but can have a title
             value.forEach((option) => generateOption(JSON.parse(option)));
 
-            if (extraOption && assets.extraOptionValue && assets.extraOptionValue.length > 0) {
-                generateOption(assets.extraOptionValue[0])
+            if (extraOption && assets?.extraOptionValue && assets?.extraOptionValue.length > 0) {
+                generateOption(assets?.extraOptionValue[0])
             }
 
             element.appendChild(multipleChoiceImageContainer);
@@ -726,7 +688,7 @@ function renderContainer(
             const body = document.createElement("tbody");
 
             if (assets?.options?.length > 0) {
-                assets.options.split(',').forEach((o: string) => {
+                assets?.options.split('|').forEach((o: string) => {
                     const row = document.createElement("tr");
                     row.style.paddingBottom = "15px";
                     const rowLabel = document.createElement("td");
@@ -742,8 +704,8 @@ function renderContainer(
                     value.forEach((v) => {
                         const cell = document.createElement("td");
                         const input = document.createElement("input");
-                        input.type = "checkbox";
-                        input.name = ref;
+                        input.type = "radio";
+                        input.name = `${ref}-${o}`;
                         input.value = v;
                         input.id = `matrix-${o}`;
                         input.classList.add("magicfeedback-input");
@@ -907,16 +869,26 @@ function renderContainer(
             const totalPoints = 100;
             const pointsPerItem = totalPoints / value.length;
 
+            // Add error message to say that the 100 % is mandatory
+            const errorMessage = document.createElement("div");
+            errorMessage.classList.add("magicfeedback-error");
+            errorMessage.textContent = placeholder.pointsystemerror(language || 'en');
+            errorMessage.style.color = "#C70039";
+            errorMessage.style.fontSize = "14px";
+            errorMessage.style.textAlign = "right";
+            errorMessage.style.width = "100%";
+            errorMessage.style.display = "none";
+
+
             //Add a total points counter
             const totalPointsContainer = document.createElement("div");
             totalPointsContainer.classList.add("magicfeedback-point-system-total");
             totalPointsContainer.textContent = `0 / 100 %`;
             totalPointsContainer.style.textAlign = "right";
-            totalPointsContainer.style.fontSize = "0.8em";
-            totalPointsContainer.style.color = "#999";
+            totalPointsContainer.style.fontSize = "15px";
             totalPointsContainer.style.marginTop = "5px";
 
-            value.forEach((option) => {
+            value.forEach((option,index) => {
                 const item = document.createElement("li");
                 item.classList.add("magicfeedback-point-system-item");
                 item.style.display = "flex";
@@ -926,6 +898,7 @@ function renderContainer(
 
                 const itemLabel = document.createElement("label");
                 itemLabel.textContent = option;
+                itemLabel.style.fontSize = "15px";
                 item.appendChild(itemLabel);
 
                 const inputContainer = document.createElement("span");
@@ -943,11 +916,11 @@ function renderContainer(
                 itemInput.style.border = "0";
                 itemInput.style.textAlign = "center";
                 itemInput.style.margin = "0 5px";
+                itemInput.autofocus = index === 0;
                 // Add the % symbol to the input
                 const percentSymbol = document.createElement("span");
                 percentSymbol.textContent = "%";
                 percentSymbol.style.color = "#000";
-
 
                 // Control the total points assigned to the items
                 itemInput.addEventListener("input", () => {
@@ -962,7 +935,35 @@ function renderContainer(
                         total = total - Number((itemInput as HTMLInputElement).value);
                     }
 
+                    const submitButton = document.getElementById("magicfeedback-submit");
+                    if (submitButton) {
+                        if (total < 100) {
+                            // Disable the submit button if the total points are less than 100
+                            totalPointsContainer.style.color = "orange";
+                            submitButton.setAttribute("disabled", "true");
+                        } else {
+                            errorMessage.style.display = "none";
+                            totalPointsContainer.style.color = "green";
+                            submitButton.removeAttribute("disabled");
+                        }
+                    }
+
                     totalPointsContainer.textContent = `${total} / 100 %`;
+                });
+
+                itemInput.addEventListener("focus", () => {
+                    const submitButton = document.getElementById("magicfeedback-submit");
+                    if (submitButton) {
+                        submitButton.setAttribute("disabled", "true");
+                        submitButton.addEventListener("pointerover", () => {
+                            const allInputs = pointSystemList.querySelectorAll("input");
+                            let total = 0;
+                            allInputs.forEach((input) => {
+                                total += Number((input as HTMLInputElement).value);
+                            });
+                            if (total < 100) errorMessage.style.display = "block";
+                        })
+                    }
                 });
 
                 inputContainer.appendChild(itemInput);
@@ -972,9 +973,9 @@ function renderContainer(
                 pointSystemList.appendChild(item);
             });
 
-
             pointSystemContainer.appendChild(pointSystemList);
             pointSystemContainer.appendChild(totalPointsContainer);
+            pointSystemContainer.appendChild(errorMessage);
             element.appendChild(pointSystemContainer);
             break;
         default:
@@ -1010,7 +1011,7 @@ function renderContainer(
             if (assets?.general !== undefined && assets?.general !== "") {
                 // Add a image to the form
                 const image = document.createElement("img");
-                image.src = assets.general;
+                image.src = assets?.general;
                 image.classList.add("magicfeedback-image");
                 // Add a max default width to the image
                 image.style.maxWidth = "auto";
@@ -1021,23 +1022,21 @@ function renderContainer(
             }
         }
 
-        if (type === "LONGTEXT") {
+        if (type === "LONGTEXT" && maxCharacters > 0) {
             const counter = document.createElement("div");
             counter.classList.add("magicfeedback-counter");
-            counter.textContent = "0/300";
+            counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`
             counter.style.textAlign = "right";
-            counter.style.fontSize = "0.8em";
-            counter.style.color = "#999";
+            counter.style.fontSize = "15px";
             counter.style.marginTop = "5px";
-
             element.addEventListener("input", () => {
-                counter.textContent = `${(element as HTMLTextAreaElement).value.length}/300`;
+                counter.textContent = `${(element as HTMLTextAreaElement).value.length}/${maxCharacters}`;
             });
 
             elementContainer.appendChild(element);
             elementContainer.appendChild(counter);
 
-            if (assets.extraOption && assets.extraOptionText) {
+            if (assets?.extraOption && assets?.extraOptionText) {
                 const skipContainer = document.createElement("div");
                 skipContainer.classList.add("magicfeedback-skip-container");
                 skipContainer.classList.add(`magicfeedback-checkbox-container`);
@@ -1054,9 +1053,8 @@ function renderContainer(
 
                 const skipLabel = document.createElement("label");
                 skipLabel.htmlFor = `skip-${ref}`;
-                skipLabel.textContent = assets.extraOptionText;
-                skipLabel.style.fontSize = "0.8em";
-                skipLabel.style.color = "#999";
+                skipLabel.textContent = assets?.extraOptionText;
+                skipLabel.style.fontSize = "15px";
                 skipLabel.style.cursor = "pointer";
                 skipLabel.style.margin = "0 5px";
 
@@ -1074,7 +1072,6 @@ function renderContainer(
         } else {
             elementContainer.appendChild(element);
         }
-
     }
 
     return elementContainer;
@@ -1104,6 +1101,10 @@ export function renderActions(identity: string = '',
     backButton.textContent = backButtonText || "Back";
     backButton.addEventListener("click", backAction);
 
+    backButton.addEventListener("click", () => {
+        submitButton.removeAttribute("disabled");
+    })
+
     if (identity === 'MAGICSURVEY') {
         actionContainer.appendChild(backButton);
     }
@@ -1113,13 +1114,15 @@ export function renderActions(identity: string = '',
     return actionContainer;
 }
 
-function createStarRating(ref: string) {
+function createStarRating(ref: string, minPlaceholder: string, maxPlaceholder: string) {
     const size = 40;
     const selectedClass = "magicfeedback-rating-star-selected";
     const starFilled = "★";
 
     const ratingContainer = document.createElement("div");
     ratingContainer.classList.add("magicfeedback-rating-star-container");
+    ratingContainer.style.maxWidth = "300px";
+    ratingContainer.style.margin = "auto";
 
     for (let i = 1; i <= 5; i++) {
         const ratingOption = document.createElement("label");
@@ -1164,11 +1167,64 @@ function createStarRating(ref: string) {
         // Add hover effect
         ratingOption.appendChild(starElement);
 
-
         ratingContainer.appendChild(ratingOption);
     }
 
+    ratingContainer.appendChild(createRatingPlaceholder(1, 5, minPlaceholder, maxPlaceholder, false, false));
+
     return ratingContainer;
+}
+
+function createRatingPlaceholder(
+    min: number,
+    max: number,
+    minPlaceholder: string,
+    maxPlaceholder: string,
+    extraOption: boolean,
+    mobile: boolean = true
+) {
+    const ratingPlaceholder = document.createElement('div');
+    ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
+    ratingPlaceholder.style.display = "flex";
+    ratingPlaceholder.style.justifyContent = "space-between";
+    ratingPlaceholder.style.width = extraOption ? `calc(100% - (100% / ${max + 1}))` : "100%";
+    ratingPlaceholder.style.marginRight = "auto";
+
+    if (mobile && window.innerWidth < 600) ratingPlaceholder.style.flexDirection = "column";
+
+    const ratingPlaceholderMin = document.createElement('span');
+    ratingPlaceholderMin.textContent = minPlaceholder;
+    ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-value');
+    ratingPlaceholderMin.style.fontSize = "15px";
+    ratingPlaceholderMin.style.textAlign = "left";
+    ratingPlaceholderMin.style.width = `50%`;
+
+    if (mobile && window.innerWidth < 600) {
+        ratingPlaceholderMin.textContent = `${min} ➜ ${minPlaceholder}`;
+        ratingPlaceholderMin.style.width = '100%'
+        ratingPlaceholderMin.style.textAlign = "left";
+        ratingPlaceholderMin.style.marginBottom = "5px";
+    }
+
+    ratingPlaceholder.appendChild(ratingPlaceholderMin);
+
+    const ratingPlaceholderMax = document.createElement('span');
+    ratingPlaceholderMax.textContent = maxPlaceholder;
+    ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-value');
+    ratingPlaceholderMax.style.fontSize = "15px";
+    ratingPlaceholderMax.style.textAlign = "right";
+    ratingPlaceholderMax.style.width = `50%`;
+
+    if (mobile && window.innerWidth < 600) {
+        ratingPlaceholderMax.textContent = `${max} ➜ ${maxPlaceholder}`;
+        ratingPlaceholderMax.style.width = '100%'
+        ratingPlaceholderMax.style.textAlign = "left";
+        ratingPlaceholderMax.style.marginBottom = "5px";
+    }
+
+    ratingPlaceholder.appendChild(ratingPlaceholderMax);
+
+    return ratingPlaceholder
 }
 
 export function renderError(error: string): HTMLElement {
@@ -1210,3 +1266,4 @@ export function renderStartMessage(
 
     return startMessageContainer;
 }
+
