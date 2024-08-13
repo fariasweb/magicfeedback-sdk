@@ -91,6 +91,16 @@ export default function main() {
         return new Form(config, appId, publicKey);
     }
 
+    /**
+     *
+     * @param sessionId
+     * @returns
+     */
+    function session(sessionId: string) {
+        if (!sessionId) log.err("No sessionId provided");
+        return new Form(config, sessionId);
+    }
+
     //===============================================
     // Return
     //===============================================
@@ -101,5 +111,6 @@ export default function main() {
         // requests
         send,
         form,
+        session,
     };
 }

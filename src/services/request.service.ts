@@ -47,6 +47,34 @@ export async function getForm(url: string, appId: string, publicKey: string, log
     }
 }
 
+export async function getSessionForm(url: string, sessionId: string, log: Log): Promise<FormData | null> {
+    try {
+        const response = await fetch(url + endpoints.sdk.session(sessionId), {
+            method: "GET",
+            headers: header
+        });
+
+        if (response.ok) {
+            // Handle success response
+            const json = await response.json();
+            log.log(`Received form for session ${sessionId}`, json);
+            return json;
+        } else {
+            // Handle error response
+            log.err(
+                `Failed to get questions for session ${sessionId}:`,
+                response.status,
+                response.statusText
+            );
+            throw new Error("[MagicFeedback] Bad response from server");
+        }
+    }
+    catch (e) {
+        log.err(e);
+        return null;
+    }
+}
+
 export async function getQuestions(url: string, appId: string, publicKey: string, log: Log): Promise<NativeQuestion[]> {
     try {
         const response = await fetch(url + endpoints.sdk.app(appId, publicKey), {

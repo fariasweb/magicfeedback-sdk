@@ -83,6 +83,7 @@ export type generateFormOptions = {
     tag?: generateFormOptionsTag;
     afterSubmitEvent?: Function;
     beforeSubmitEvent?: Function;
+    onFinishEvent?: Function;
     onLoadedEvent?: Function;
 };
 
