@@ -6,6 +6,10 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.2.9] - 2024-07-19
+- Conditional logic: Added a new conditional logic feature that allows users to create complex feedback flows based on user responses.
+- Sessions: Added a new session feature that allows users to save and resume feedback sessions.
+
 ## 🚀 [1.2.5] - 2024-05-26
 - New widgets: Added a new widget type:
     - Matrix selected: A widget that allows users to select multiple options from a matrix.

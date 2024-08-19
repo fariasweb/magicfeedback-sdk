@@ -78,7 +78,7 @@ export class Form {
         // Form completed data
         this.id = "";
         this.formData = null;
-        this.getDataFromStorage();
+        if (this.publicKey !== '') this.getDataFromStorage();
         this.feedback = {
             text: "",
             answers: [],
@@ -135,8 +135,8 @@ export class Form {
             this.formOptionsConfig = {...this.formOptionsConfig, ...options};
             this.selector = selector;
 
-
             if (this.formData === undefined || !this.formData)
+                console.log('this.publicKey', this.publicKey)
                 this.formData = this.publicKey !== '' ?
                     await getForm(this.url, this.appId, this.publicKey, this.log) :
                     await getSessionForm(this.url, this.appId, this.log);
