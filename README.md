@@ -70,6 +70,10 @@ let form = window.magicfeedback.form(
     "$_APP_ID",
     "$_PUBLIC_KEY"
 );
+// or 
+let form = window.magicfeedback.session(
+    "$_SESSION_ID",
+);
 
 form.generate(
     "demo_form_div",

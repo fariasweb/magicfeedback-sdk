@@ -2,7 +2,7 @@ import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from 
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
-import {getFollowUpQuestion, getForm, sendFeedback, validateEmail} from "../services/request.service";
+import {getFollowUpQuestion, getForm, getSessionForm, sendFeedback, validateEmail} from "../services/request.service";
 import {FormData} from "./formData";
 import {renderActions, renderQuestions, renderStartMessage, renderSuccess} from "../services/questions.service";
 import {PageGraph} from "./pageGrafs";
@@ -43,6 +43,7 @@ export class Form {
     public progress: number;
     public total: number;
     public followup: boolean;
+    public completed: boolean;
 
 
     /**
@@ -51,7 +52,7 @@ export class Form {
      * @param appId
      * @param publicKey
      */
-    constructor(config: Config, appId: string, publicKey: string) {
+    constructor(config: Config, appId: string, publicKey?: string) {
         // SDK Config
         this.config = config;
         this.log = new Log(config);
@@ -71,13 +72,13 @@ export class Form {
 
         // Attributes
         this.appId = appId;
-        this.publicKey = publicKey;
+        this.publicKey = publicKey || '';
         this.url = config.get("url") as string;
 
         // Form completed data
         this.id = "";
         this.formData = null;
-        this.getDataFromStorage();
+        if (this.publicKey !== '') this.getDataFromStorage();
         this.feedback = {
             text: "",
             answers: [],
@@ -94,6 +95,7 @@ export class Form {
         this.progress = 0;
         this.total = 0;
         this.followup = false;
+        this.completed = false;
     }
 
     /**
@@ -133,10 +135,13 @@ export class Form {
             this.formOptionsConfig = {...this.formOptionsConfig, ...options};
             this.selector = selector;
 
+            if (this.formData === undefined || !this.formData)
+                console.log('this.publicKey', this.publicKey)
+                this.formData = this.publicKey !== '' ?
+                    await getForm(this.url, this.appId, this.publicKey, this.log) :
+                    await getSessionForm(this.url, this.appId, this.log);
 
-            if (this.formData === undefined || !this.formData) this.formData = await getForm(this.url, this.appId, this.publicKey, this.log)
             if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
-
 
             if (!this.formData.savedAt) {
                 // Save formData in the localstorage to use it in the future
@@ -396,6 +401,11 @@ export class Form {
         this.feedback.metadata.push({key: "screen-width", value: [window.screen.width.toString()]});
         this.feedback.metadata.push({key: "screen-height", value: [window.screen.height.toString()]});
 
+        if (this.appId && this.publicKey === '') {
+            // Add the session id to the metadata
+            this.feedback.metadata.push({key: "MAGICFEEDBACK_SESSION", value: [this.appId]});
+        }
+
     }
 
     /**
@@ -438,7 +448,7 @@ export class Form {
             for (const question of requiredQuestions) {
                 if (!this.feedback.answers.find((a) => a.key === question && a.value.length > 0)) {
                     this.log.err(`The question ${question} is required`);
-                    return;
+                    throw new Error(`No response`);
                 }
             }
 
@@ -458,6 +468,7 @@ export class Form {
                     progress: this.progress,
                     total: this.total,
                     followup: this.followup,
+                    completed: this.completed,
                     // answer: this.feedback.answers,
                     error: response ? null : new Error("No response")
                 });
@@ -582,7 +593,6 @@ export class Form {
             }
         });
 
-        console.log(surveyAnswers);
         // Check if there's an error
         // Check matrix questions
         const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
@@ -620,6 +630,7 @@ export class Form {
      */
 
     public finish() {
+        this.completed = true;
         if (this.formOptionsConfig.addSuccessScreen) {
             const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
             // Remove the form
