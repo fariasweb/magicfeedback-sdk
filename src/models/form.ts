@@ -114,6 +114,14 @@ export class Form {
                     this.formData.savedAt = new Date();
 
                     localStorage.setItem(`magicfeedback-${this.appId}`, JSON.stringify(this.formData));
+
+                    if (this.formData.questions === undefined || !this.formData.questions) throw new Error(`No questions for app ${this.appId}`);
+
+                    if (!this.formData.pages || this.formData.pages?.length === 0) this.formatPages();
+                    this.formData.questions?.sort((a, b) => a.position - b.position);
+                    // Clear pages without questions
+                    this.formData.pages = this.formData.pages.filter((page) => page.integrationQuestions?.length > 0);
+
                     // Create the form from the JSON
                     this.formData.style?.startMessage ?
                         this.generateWelcomeMessage(this.formData.style.startMessage) :
@@ -136,7 +144,6 @@ export class Form {
             this.selector = selector;
 
             if (this.formData === undefined || !this.formData)
-                console.log('this.publicKey', this.publicKey)
                 this.formData = this.publicKey !== '' ?
                     await getForm(this.url, this.appId, this.publicKey, this.log) :
                     await getSessionForm(this.url, this.appId, this.log);
