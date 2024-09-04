@@ -776,6 +776,7 @@ export class Form {
                 n.elements?.forEach((element) => form.appendChild(element));
             } else {
                 this.renderNextQuestion(form, page);
+                this.renderNextQuestion(form, page);
             }
         } else {
             this.renderNextQuestion(form, page);
