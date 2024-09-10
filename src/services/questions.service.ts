@@ -162,7 +162,7 @@ function renderContainer(
             elementTypeClass =
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
 
-            if (assets?.extraOption) value.push(assets?.extraOptionText);
+            if (assets?.extraOption && !value.includes(assets?.extraOptionText)) value.push(assets?.extraOptionText);
 
             value.forEach((option, index) => {
                 const container = document.createElement("div");
@@ -200,10 +200,20 @@ function renderContainer(
                     const extraOption = document.getElementById(`extra-option-${ref}`);
                     if (extraOption && assets?.extraOption) {
                         if ((event.target as HTMLInputElement).checked && option === assets?.extraOptionText) {
-                                extraOption.style.display = "block";
-                            } else {
-                                extraOption.style.display = "none";
-                            }
+                            // Remove the checke of the other options
+                            value.forEach((v, i) => {
+                                if (v !== assets?.extraOptionText) {
+                                    const input = document.getElementById(`rating-${ref}-${i}`) as HTMLInputElement;
+                                    input.checked = false;
+                                }
+                            });
+                            extraOption.style.display = "block";
+                        } else {
+                            // Remove the checke of the extra option
+                            const input = document.getElementById(`rating-${ref}-${value.length-1}`) as HTMLInputElement;
+                            input.checked = false;
+                            extraOption.style.display = "none";
+                        }
                         }
                     });
 
