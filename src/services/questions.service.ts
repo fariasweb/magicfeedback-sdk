@@ -7,20 +7,31 @@ const params = (a: string) => {
     return searchParams.get(a);
 }
 
+const defaultUrl = `https://survey-dev.magicfeedback.io/assets/emojis`;
+
 export function renderQuestions(
     appQuestions: NativeQuestion[],
     format: string = "standard",
     language: string = "en",
+    product: any = {customIcons: false},
     send?: () => void
 ): HTMLElement[] {
     if (!appQuestions) throw new Error("[MagicFeedback] No questions provided");
     const questions: HTMLElement[] = [];
+    const {customIcons, id} = product;
 
     appQuestions.forEach((question) => {
 
         if (question?.questionType?.conf?.length > 0) {
             let elementContainer: HTMLElement = document.createElement("div");
             elementContainer.classList.add("magicfeedback-div");
+
+            const label = document.createElement("label");
+            label.setAttribute("for", `magicfeedback-${question.id}`);
+            label.textContent = parseTitle(question.title, language);
+            label.classList.add("magicfeedback-label");
+            elementContainer.appendChild(label);
+
             question.questionType.conf.forEach((conf: any) => {
                 conf.ref = question.ref
                 if (question.assets[conf.id]) {
@@ -29,14 +40,15 @@ export function renderQuestions(
                     }
                 }
             });
-            const elements = renderQuestions(question.questionType.conf, format, language, send);
+            const elements = renderQuestions(question.questionType.conf, format, language, product, send);
             elements.forEach((element) => {
                 elementContainer.appendChild(element);
             });
             questions.push(elementContainer);
         } else {
             // Create a container for each question
-            const elementContainer = renderContainer(question, format, language, send);
+            const url = `${defaultUrl}${customIcons ? `/${id}` : ''}`;
+            const elementContainer = renderContainer(question, format, language, url, send);
             questions.push(elementContainer);
         }
     });
@@ -95,6 +107,7 @@ function renderContainer(
     question: NativeQuestion,
     format: string,
     language: string,
+    url: string,
     send?: () => void
 ): HTMLElement {
     let {
@@ -327,29 +340,36 @@ function renderContainer(
                 ratingImage.className = `rating-image${i}`;
 
                 if (minRating === 0 && maxRating === 10) {
-                    ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${i}.svg`;
+                    ratingImage.src = `${url}/${i}.svg`;
+                    ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/${i}.svg`;
                 } else if (minRating === 1 && maxRating === 5) {
                     switch (i) {
                         case 1:
-                            ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/1.svg";
+                            ratingImage.src = `${url}/1.svg`;
+
+                            ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/1.svg`;
                             break;
                         case 2:
-                            ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/2.svg";
+                            ratingImage.src = `${url}/2.svg`;
+                            ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/2.svg`;
                             break;
                         case 3:
-                            ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/6.svg";
+                            ratingImage.src = `${url}/6.svg`;
+                            ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/6.svg`;
                             break;
                         case 4:
-                            ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/9.svg";
+                            ratingImage.src = `${url}/9.svg`;
+                            ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/9.svg`;
                             break;
                         case 5:
-                            ratingImage.src = "https://magicfeedback-c6458-dev.web.app/assets/10.svg";
+                            ratingImage.src = `${url}/10.svg`;
+                            ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/10.svg`;
                             break;
                     }
                 } else {
                     const ratingNum = Math.round((i - minRating) * (10 / (maxRating - minRating)));
-
-                    ratingImage.src = `https://magicfeedback-c6458-dev.web.app/assets/${ratingNum}.svg`;
+                    ratingImage.src = `${url}/${ratingNum}.svg`;
+                    ratingImage.onerror = () => ratingImage.src = `${defaultUrl}/${ratingNum}.svg`;
                 }
 
                 const input = document.createElement("input");

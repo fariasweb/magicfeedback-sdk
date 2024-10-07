@@ -288,6 +288,7 @@ export class Form {
                 page.questions,
                 this.formOptionsConfig.questionFormat,
                 this.formData?.lang[0],
+                this.formData?.product,
                 () => this.send()
             );
 
@@ -774,6 +775,7 @@ export class Form {
                     followUpQuestions,
                     this.formOptionsConfig.questionFormat,
                     this.formData?.lang[0],
+                    this.formData?.product,
                     () => this.send()
                 );
 
@@ -813,6 +815,7 @@ export class Form {
             nextPage.questions,
             this.formOptionsConfig.questionFormat,
             this.formData?.lang[0],
+            this.formData?.product,
             () => this.send()
         );
 

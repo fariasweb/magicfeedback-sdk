@@ -156,7 +156,8 @@ export class PageGraph {
         }] : v.edges) {
             const node = this.getNodeById(neighbour.transitionDestiny)
             if (node && !visited.has(node)) {
-                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, depth + 1))
+                const haveFollowup = node.questions.find(question => question.followup)
+                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, haveFollowup? depth + 2 : depth + 1))
             }
         }
 
