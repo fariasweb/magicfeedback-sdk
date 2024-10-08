@@ -106,7 +106,7 @@ export class Form {
             this.formData = JSON.parse(localForm);
             getForm(this.url, this.appId, this.publicKey, this.log).then((form: FormData | null) => {
                 if (form?.updatedAt && this.formData?.savedAt && form?.updatedAt > this.formData?.savedAt) {
-                    console.log("Form updated");
+                    // console.log("Form updated");
                     this.formData = form;
                     this.formData.savedAt = new Date();
 

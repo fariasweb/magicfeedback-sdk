@@ -137,9 +137,7 @@ export class PageGraph {
         let max_depth: number = 1;
         this.nodes.forEach(node => {
             if (!visited.has(node)){
-                console.log(max_depth, node)
                 max_depth = Math.max(max_depth, this.DFSUtil(node, visited, 1))
-                console.log(max_depth)
             }
         } )
         return max_depth
