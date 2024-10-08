@@ -85,6 +85,7 @@ export type generateFormOptions = {
     beforeSubmitEvent?: Function;
     onFinishEvent?: Function;
     onLoadedEvent?: Function;
+    onBackEvent?: Function;
 };
 
 enum generateFormOptionsTag {

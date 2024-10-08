@@ -17,7 +17,6 @@ export class Page {
         integrationId: string,
         integrationQuestions: NativeQuestion[],
         integrationPageRoutes: PageRoute[],
-
     ) {
         this.id = id;
         this.position = position;

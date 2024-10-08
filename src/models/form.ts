@@ -42,9 +42,7 @@ export class Form {
     // Count variables
     public progress: number;
     public total: number;
-    public followup: boolean;
     public completed: boolean;
-
 
     /**
      *
@@ -94,7 +92,6 @@ export class Form {
         // Count variables
         this.progress = 0;
         this.total = 0;
-        this.followup = false;
         this.completed = false;
     }
 
@@ -300,6 +297,8 @@ export class Form {
             this.history.enqueue(page);
             // Add the form to the specified container
             container.appendChild(form);
+            // Update the progress
+            this.progress = this.history.size();
 
             // Submit button
             if (this.formOptionsConfig.addButton) {
@@ -315,11 +314,13 @@ export class Form {
                 form.appendChild(actionContainer);
             }
 
-            // Submit event
-            form.addEventListener("submit", (event) => {
-                event.preventDefault();
-                this.send()
-            });
+            if (this.formOptionsConfig.addButton) {
+                // Submit event
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    this.send()
+                });
+            }
 
             // Send the data to manage loadings and progress
             if (this.formOptionsConfig.onLoadedEvent) {
@@ -463,26 +464,10 @@ export class Form {
             // SEND
             const response = await this.pushAnswers(false);
 
-            if (response) {
-                this.id = response;
-                await this.processNextQuestion(questionContainer);
-            }
+            if (!response) throw new Error("No response");
 
-            // AFTER
-            if (this.formOptionsConfig.afterSubmitEvent) {
-                await this.formOptionsConfig.afterSubmitEvent({
-                    response,
-                    loading: false,
-                    progress: this.progress,
-                    total: this.total,
-                    followup: this.followup,
-                    completed: this.completed,
-                    // answer: this.feedback.answers,
-                    error: response ? null : new Error("No response")
-                });
-            }
-
-
+            this.id = response;
+            await this.processNextQuestion(questionContainer);
         } catch (error) {
             // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
             this.log.err(
@@ -637,7 +622,7 @@ export class Form {
      * @public
      */
 
-    public finish() {
+    public async finish() {
         this.completed = true;
         if (this.formOptionsConfig.addSuccessScreen) {
             const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
@@ -655,7 +640,23 @@ export class Form {
 
         this.answer();
 
-        this.pushAnswers(true);
+        const response = await this.pushAnswers(true);
+
+        if (!response) throw new Error("No response");
+
+        this.id = response;
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                completed: this.completed,
+                error: null
+            });
+        }
     }
 
     /**
@@ -742,53 +743,70 @@ export class Form {
 
         const followUpList = page.getFollowupQuestions()
 
-        if (followUpList?.length > 0) {
-            const followUpQuestions = [];
-            for (const followUp of followUpList) {
-                const question = page.questions.find((q) => q.ref === followUp);
-                if (question) {
-                    const followUpQuestion = await this.callFollowUpQuestion(question);
-                    if (followUpQuestion) followUpQuestions.push(followUpQuestion);
-                    }
-                }
+        if (followUpList?.length === 0) {
+            await this.renderNextQuestion(form, page);
+            return;
+        }
 
-            if (followUpQuestions.length > 0) {
-                this.followup = true;
-                // Create a new page with the follow up questions
-                const newPage = new Page(
-                    page.id,
-                    page.position,
-                    this.appId,
-                    followUpQuestions,
-                    page.edges
-                );
-
-                const n = new PageNode(
-                    page.id,
-                    page.position,
-                    page.edges,
-                    newPage,
-                    followUpQuestions
-                );
-
-                n.elements = renderQuestions(
-                    followUpQuestions,
-                    this.formOptionsConfig.questionFormat,
-                    this.formData?.lang[0],
-                    this.formData?.product,
-                    () => this.send()
-                );
-
-                this.history.enqueue(n);
-
-                form.removeChild(form.childNodes[0]);
-                n.elements?.forEach((element) => form.appendChild(element));
-            } else {
-                this.renderNextQuestion(form, page);
-                this.renderNextQuestion(form, page);
+        const followUpQuestions = [];
+        for (const followUp of followUpList) {
+            const question = page.questions.find((q) => q.ref === followUp);
+            if (question) {
+                const followUpQuestion = await this.callFollowUpQuestion(question);
+                if (followUpQuestion) followUpQuestions.push(followUpQuestion);
             }
-        } else {
-            this.renderNextQuestion(form, page);
+        }
+
+        if (followUpQuestions.length === 0) {
+            await this.renderNextQuestion(form, page);
+            return;
+        }
+
+        // Create a new page with the follow up questions
+        const newPage = new Page(
+            page.id,
+            page.position,
+            this.appId,
+            followUpQuestions,
+            page.edges
+        );
+
+        const n = new PageNode(
+            page.id,
+            page.position,
+            page.edges,
+            newPage,
+            followUpQuestions,
+            true
+        );
+
+        n.elements = renderQuestions(
+            followUpQuestions,
+            this.formOptionsConfig.questionFormat,
+            this.formData?.lang[0],
+            this.formData?.product,
+            () => this.send()
+        );
+
+        // Update the progress +1, because the follow up questions are
+        // not included in the graph and one page with follow up questions is considered as 2
+        this.history.enqueue(n);
+        this.progress = this.history.size();
+
+        form.removeChild(form.childNodes[0]);
+        n.elements?.forEach((element) => form.appendChild(element));
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                followup: n.isFollowup,
+                completed: this.completed,
+                error: null
+            });
         }
 
     }
@@ -799,8 +817,7 @@ export class Form {
      * @param page
      * @private
      */
-    private renderNextQuestion(form: HTMLElement, page: PageNode) {
-        this.followup = false;
+    private async renderNextQuestion(form: HTMLElement, page: PageNode) {
         // Get next page from the graph
         const nextPage = this.graph.getNextPage(page, this.feedback.answers);
 
@@ -808,8 +825,6 @@ export class Form {
             this.finish();
             return;
         }
-
-        this.progress = this.total - this.graph.findDepth(nextPage.id);
 
         nextPage.elements = renderQuestions(
             nextPage.questions,
@@ -821,28 +836,52 @@ export class Form {
 
         form.removeChild(form.childNodes[0]);
         nextPage.elements?.forEach((element) => form.appendChild(element));
+
         this.history.enqueue(nextPage);
+        this.progress = this.history.size();
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                followup: nextPage.isFollowup,
+                completed: this.completed,
+                error: null
+            });
+        }
     }
 
     /**
      * Render back question
      * @private
      */
-    public back() {
+    public async back() {
         if (this.history.size() === 0) return;
-
-        console.log("Back", this.history);
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
         if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
 
         this.history.rollback();
+        this.progress = this.history.size();
 
         const page = this.history.back();
 
         if (page) {
             page.elements?.forEach((element) => form.appendChild(element));
+        }
+
+        // AFTER
+        if (this.formOptionsConfig.onBackEvent) {
+            await this.formOptionsConfig.onBackEvent({
+                loading: false,
+                progress: this.progress,
+                followup: page?.isFollowup || false,
+                error: !page ? "No page found" : null
+            });
         }
     }
 }

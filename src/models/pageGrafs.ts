@@ -82,9 +82,8 @@ export class PageGraph {
             const answerValue = answer?.filter(ans => ans.key === edge.questionRef);
             if (!answerValue) return false;
 
-            if (edge.typeCondition === 'DIRECT') {
-                return true;
-            } else {
+            if (edge.typeCondition === 'DIRECT') return true;
+
             switch (edge.typeOperator) {
                 case OperatorType.EQUAL:
                     return answerValue.find(ans => ans.value?.includes(edge.value));
@@ -105,7 +104,7 @@ export class PageGraph {
                 default:
                     return false;
             }
-            }
+
         });
 
         if (!route) {
@@ -135,10 +134,12 @@ export class PageGraph {
 
     findMaxDepth(){
         const visited: Set<PageNode> = new Set()
-        let max_depth: number = 0;
+        let max_depth: number = 1;
         this.nodes.forEach(node => {
             if (!visited.has(node)){
-                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, 0))
+                console.log(max_depth, node)
+                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, 1))
+                console.log(max_depth)
             }
         } )
         return max_depth
@@ -147,7 +148,8 @@ export class PageGraph {
     // A function used by DFS
     DFSUtil(v: PageNode, visited: Set<PageNode>, depth: number) {
         visited.add(v)
-        let max_depth = depth
+        const haveFollowup = !!v.questions.find(q => q.followup)
+        let max_depth = haveFollowup ? depth + 1 : depth
         //Add a default edge to the next page
         const defaultEdge = this.getNextEdgeByDefault(v)
 
@@ -155,14 +157,18 @@ export class PageGraph {
             transitionDestiny: defaultEdge,
         }] : v.edges) {
             const node = this.getNodeById(neighbour.transitionDestiny)
+
             if (node && !visited.has(node)) {
-                const haveFollowup = node.questions.find(question => question.followup)
-                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, haveFollowup? depth + 2 : depth + 1))
+                max_depth = Math.max(
+                    max_depth,
+                    this.DFSUtil(
+                        node,
+                        visited,
+                        max_depth + 1)
+                )
             }
         }
 
         return max_depth
     }
-
-    // Other methods for graph traversal, finding paths, etc.
 }

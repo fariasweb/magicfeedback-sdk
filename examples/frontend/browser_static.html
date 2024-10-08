@@ -60,6 +60,7 @@
 <script src="../../dist/magicfeedback-sdk.browser.js"></script>
 <script>
     const countQuestions = document.getElementById('count-questions');
+    let total = 0;
     window.magicfeedback.init({
         debug: true,
         env: "dev"
@@ -83,15 +84,20 @@
             },
             afterSubmitEvent: function (response) {
                 console.log("AFTER", response);
+                total = response.total;
                 document.querySelector(".loading").style.visibility = "hidden";
-                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
                 if (response.error) alert(response.error);
-
             },
             onLoadedEvent: function (response) {
                 console.log("LOADED", response);
+                total = response.total;
                 document.querySelector(".loading").style.visibility = "hidden";
-                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
+            },
+            onBackEvent: function (response) {
+                console.log("BACK", response);
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
             },
         }
     );
