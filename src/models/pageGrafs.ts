@@ -68,12 +68,23 @@ export class PageGraph {
         if (!currentNode) {
             return undefined;
         }
+
+        // Order the edges by the type of condition. logical first and direct
+        currentNode.edges.sort((a, b) => {
+            if (a.typeCondition === 'DIRECT') return 1;
+            if (b.typeCondition === 'DIRECT') return -1;
+            return 0;
+        });
+
         // Find the first route that matches the condition
         const route = currentNode.edges.find(edge => {
             // Check if the condition is met
             const answerValue = answer?.filter(ans => ans.key === edge.questionRef);
             if (!answerValue) return false;
 
+            if (edge.typeCondition === 'DIRECT') {
+                return true;
+            } else {
             switch (edge.typeOperator) {
                 case OperatorType.EQUAL:
                     return answerValue.find(ans => ans.value?.includes(edge.value));
@@ -84,7 +95,6 @@ export class PageGraph {
                 case OperatorType.LESS:
                     return answerValue.find(ans => ans.value.find(val => Number(val) < Number(edge.value)));
                 case OperatorType.GREATEREQUAL:
-                    console.log(answerValue)
                     return answerValue.find(ans => ans.value.find(val => Number(val) >= Number(edge.value)));
                 case OperatorType.LESSEQUAL:
                     return answerValue.find(ans => ans.value.find(val => Number(val) <= Number(edge.value)));
@@ -94,6 +104,7 @@ export class PageGraph {
                     return !answerValue.find(ans => edge.value.includes(ans.value));
                 default:
                     return false;
+            }
             }
         });
 
@@ -145,7 +156,8 @@ export class PageGraph {
         }] : v.edges) {
             const node = this.getNodeById(neighbour.transitionDestiny)
             if (node && !visited.has(node)) {
-                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, depth + 1))
+                const haveFollowup = node.questions.find(question => question.followup)
+                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, haveFollowup? depth + 2 : depth + 1))
             }
         }
 

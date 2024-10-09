@@ -5,6 +5,7 @@ export enum TransitionType {
 
 export enum ConditionType {
     LOGICAL = 'LOGICAL',
+    DIRECT = 'DIRECT',
 }
 
 export enum OperatorType {

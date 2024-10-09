@@ -26,6 +26,8 @@ export class FormData {
 
     productId: string;
 
+    product?: any;
+
     userId: string;
 
     setting: Record<string, any>;
@@ -52,6 +54,7 @@ export class FormData {
         externalId: string | null,
         companyId: string,
         productId: string,
+        product: any,
         userId: string,
         setting: Record<string, any>,
         conf: Record<string, any>,
@@ -71,6 +74,7 @@ export class FormData {
         this.externalId = externalId
         this.companyId = companyId
         this.productId = productId
+        this.product = product
         this.userId = userId
         this.setting = setting
         this.conf = conf
