@@ -5,7 +5,7 @@ export class Page {
     id: string;
     position: number;
     generatedAt: string;
-    updatedAt: number;
+    updatedAt: string;
     status: string;
     integrationId: string;
     integrationQuestions: NativeQuestion[];
@@ -21,7 +21,7 @@ export class Page {
         this.id = id;
         this.position = position;
         this.generatedAt = new Date().toISOString();
-        this.updatedAt = new Date().getTime();
+        this.updatedAt = new Date().toISOString();
         this.status = 'ACTIVE';
         this.integrationId = integrationId;
         this.integrationQuestions = integrationQuestions;

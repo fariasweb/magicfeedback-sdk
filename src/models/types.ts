@@ -51,10 +51,13 @@ export type NativeQuestion = {
     external_id: string;
     value: string[];
     defaultValue: string;
-    appId: string;
+    appId?: string;
     followup: boolean;
     position: number;
     assets: any;
+    refMetric: string;
+    integrationId: string;
+    integrationPageId: string;
 };
 
 export type NativeAnswer = {

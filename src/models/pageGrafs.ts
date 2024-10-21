@@ -1,7 +1,7 @@
 import {Page} from "./page";
 import {PageNode} from "./pageNode";
 import {NativeAnswer} from "./types";
-import {OperatorType} from "./pageRoute";
+import {OperatorType, TransitionType} from "./pageRoute";
 
 export class PageGraph {
     private nodes: Map<string, PageNode>;
@@ -113,7 +113,17 @@ export class PageGraph {
             return this.getNodeById(nextPage);
         }
 
-        return this.getNodeById(route.transitionDestiny);
+        switch (route.transition) {
+            case TransitionType.PAGE:
+                return this.getNodeById(route.transitionDestiny);
+            case TransitionType.FINISH:
+                return undefined;
+            case TransitionType.REDIRECT:
+                window.location.href = route.transitionDestiny;
+                return undefined;
+            default:
+                return undefined;
+        }
     }
 
 
@@ -132,14 +142,15 @@ export class PageGraph {
         return this.DFSUtil(node, visited, 0);
     }
 
-    findMaxDepth(){
+    findMaxDepth(n?: PageNode): number {
+        // Find first node
+        if (!n) n = this.getFirstPage()
+        if (!n) return 0
+
         const visited: Set<PageNode> = new Set()
         let max_depth: number = 1;
-        this.nodes.forEach(node => {
-            if (!visited.has(node)){
-                max_depth = Math.max(max_depth, this.DFSUtil(node, visited, 1))
-            }
-        } )
+        max_depth = Math.max(max_depth, this.DFSUtil(n, visited, 1))
+
         return max_depth
     }
 
@@ -149,21 +160,15 @@ export class PageGraph {
         const haveFollowup = !!v.questions.find(q => q.followup)
         let max_depth = haveFollowup ? depth + 1 : depth
         //Add a default edge to the next page
-        const defaultEdge = this.getNextEdgeByDefault(v)
 
-        for (const neighbour of defaultEdge ? [...v.edges, {
-            transitionDestiny: defaultEdge,
-        }] : v.edges) {
+        const neighbours = v.edges || []
+
+        for (const neighbour of neighbours) {
             const node = this.getNodeById(neighbour.transitionDestiny)
 
             if (node && !visited.has(node)) {
-                max_depth = Math.max(
-                    max_depth,
-                    this.DFSUtil(
-                        node,
-                        visited,
-                        max_depth + 1)
-                )
+                const dfs = this.DFSUtil(node, visited, max_depth + 1)
+                max_depth = Math.max(max_depth, dfs)
             }
         }
 

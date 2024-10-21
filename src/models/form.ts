@@ -819,8 +819,10 @@ export class Form {
      */
     private async renderNextQuestion(form: HTMLElement, page: PageNode) {
         // Get next page from the graph
+        console.log(page, this.feedback.answers);
         const nextPage = this.graph.getNextPage(page, this.feedback.answers);
 
+        console.log(nextPage);
         if (!nextPage) {
             this.finish();
             return;

@@ -1,6 +1,7 @@
 export enum TransitionType {
     PAGE = "PAGE",
     FINISH = "FINISH",
+    REDIRECT = "REDIRECT",
 }
 
 export enum ConditionType {
@@ -20,7 +21,7 @@ export enum OperatorType {
     DEFAULT = "DEFAULT",
 }
 
-enum StatusType {
+export enum StatusType {
     ACTIVE = "ACTIVE",
     DEPRECATED = "DEPRECATED",
     DELETE = "DELETE",
@@ -47,10 +48,11 @@ export class PageRoute {
         transition: TransitionType,
         transitionDestiny: string,
         integrationPageId: string,
+        typeCondition?: ConditionType
     ) {
         this.id = id;
         this.questionRef = questionRef;
-        this.typeCondition = ConditionType.LOGICAL;
+        this.typeCondition = typeCondition || ConditionType.LOGICAL;
         this.typeOperator = typeOperator;
         this.value = value;
         this.transition = transition;
