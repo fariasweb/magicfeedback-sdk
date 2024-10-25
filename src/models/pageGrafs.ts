@@ -1,7 +1,7 @@
 import {Page} from "./page";
 import {PageNode} from "./pageNode";
 import {NativeAnswer} from "./types";
-import {OperatorType, TransitionType} from "./pageRoute";
+import {OperatorType, PageRoute, TransitionType} from "./pageRoute";
 
 export class PageGraph {
     private nodes: Map<string, PageNode>;
@@ -11,8 +11,26 @@ export class PageGraph {
         this.buildGraph(pages);
     }
 
+    /**
+     * Build the graph from the list of pages
+     * @param pages
+     * @private
+     * */
     private buildGraph(pages: Page[]) {
-        pages.forEach(page => {
+        pages.forEach((page, index) => {
+            if (!page.integrationPageRoutes && pages[index + 1]) {
+                const defaultEdge = new PageRoute(
+                    `${page.id}-default`,
+                    page.integrationQuestions[0]?.ref || '',
+                    OperatorType.DEFAULT,
+                    '',
+                    TransitionType.PAGE,
+                    pages[index + 1]?.id || '',
+                    page.id
+                );
+                page.integrationPageRoutes = [defaultEdge];
+            }
+
             const node: PageNode = new PageNode(
                 page.id,
                 page.position,
@@ -142,36 +160,50 @@ export class PageGraph {
         return this.DFSUtil(node, visited, 0);
     }
 
+    /**
+     * Get the max depth of the graph
+     * @param n - node
+     * @returns max depth
+     */
     findMaxDepth(n?: PageNode): number {
         // Find first node
         if (!n) n = this.getFirstPage()
         if (!n) return 0
 
+        // Start DFS from the first node
         const visited: Set<PageNode> = new Set()
-        let max_depth: number = 1;
-        max_depth = Math.max(max_depth, this.DFSUtil(n, visited, 1))
+        const haveFollowup = !!n.questions.find(q => q.followup);
+
+        // If the first node have followup questions, the depth is 2
+        let max_depth: number = haveFollowup ? 2 : 1;
+        max_depth = Math.max(max_depth, this.DFSUtil(n, visited, max_depth))
 
         return max_depth
     }
 
-    // A function used by DFS
-    DFSUtil(v: PageNode, visited: Set<PageNode>, depth: number) {
-        visited.add(v)
-        const haveFollowup = !!v.questions.find(q => q.followup)
-        let max_depth = haveFollowup ? depth + 1 : depth
-        //Add a default edge to the next page
+    /**
+    * A function used by DFS
+    * @param v - node
+    * @param visited - set of visited nodes
+    * @param depth - current depth
+    */
+    DFSUtil(v: PageNode, visited: Set<PageNode>, depth: number): number {
+        visited.add(v);
+        let max_depth = depth;
 
-        const neighbours = v.edges || []
+        const neighbours = v.edges || [];
 
         for (const neighbour of neighbours) {
-            const node = this.getNodeById(neighbour.transitionDestiny)
+            const node = this.getNodeById(neighbour.transitionDestiny);
 
             if (node && !visited.has(node)) {
-                const dfs = this.DFSUtil(node, visited, max_depth + 1)
-                max_depth = Math.max(max_depth, dfs)
+                const haveFollowup = !!node.questions.find(q => q.followup);
+                const new_depth = haveFollowup ? depth + 2 : depth + 1;
+                const dfs = this.DFSUtil(node, visited, new_depth);
+                max_depth = Math.max(max_depth, dfs);
             }
         }
 
-        return max_depth
+        return max_depth;
     }
 }

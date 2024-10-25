@@ -57,6 +57,7 @@ export function renderQuestions(
 }
 
 function parseTitle(title: string, lang: string): string {
+    if (!title) return '';
     return typeof title === "object" ? (title[lang] || title['en']) : title;
 }
 
@@ -135,6 +136,7 @@ function renderContainer(
     const urlParamValue = params(id);
 
     const maxCharacters = assets?.maxCharacters || 0
+    const randomPosition = assets?.randomPosition === undefined ? false : assets?.randomPosition;
 
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
@@ -176,6 +178,11 @@ function renderContainer(
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
 
             if (assets?.extraOption && !value.includes(assets?.extraOptionText)) value.push(assets?.extraOptionText);
+
+            // reorder the options if randomPosition is true
+            if (randomPosition) {
+                value = value.sort(() => Math.random() - 0.5);
+            }
 
             value.forEach((option, index) => {
                 const container = document.createElement("div");
@@ -514,39 +521,42 @@ function renderContainer(
             multipleChoiceImageContainer.style.flexWrap = "wrap";
             multipleChoiceImageContainer.style.justifyContent = "center";
 
-
             const maxItems = value.length;
             let itemsPerRow = 1;
             let itemsPerColumn = 1;
 
-            switch (maxItems) {
-                case 1:
-                case 2:
-                case 3:
-                    itemsPerRow = maxItems;
-                    itemsPerColumn = 1;
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                    itemsPerColumn = 2;
-                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
-                    break;
-                case 7:
-                case 8:
-                case 9:
-                    itemsPerColumn = 3;
-                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
-                    break;
-                default:
-                    itemsPerColumn = 4;
-                    itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
-                    break;
+            if (window.innerWidth < 600) {
+                itemsPerRow = 1;
+                itemsPerColumn = maxItems;
+            }else {
+                switch (maxItems) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        itemsPerRow = maxItems;
+                        itemsPerColumn = 1;
+                        break;
+                    case 4:
+                    case 5:
+                    case 6:
+                        itemsPerColumn = 2;
+                        itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
+                        break;
+                    case 7:
+                    case 8:
+                    case 9:
+                        itemsPerColumn = 3;
+                        itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
+                        break;
+                    default:
+                        itemsPerColumn = 4;
+                        itemsPerRow = Math.ceil(maxItems / itemsPerColumn);
+                        break;
+                }
             }
 
             const useLabel = assets?.addTitle === undefined ? false : assets?.addTitle;
             const multiOptions = assets?.multiOption === undefined ? false : assets?.multiOption;
-            const randomPosition = assets?.randomPosition === undefined ? false : assets?.randomPosition;
             const extraOption = assets?.extraOption === undefined ? false : assets?.extraOption;
 
 
@@ -705,50 +715,60 @@ function renderContainer(
             header.style.paddingBottom = "15px";
             const headerRow = document.createElement("tr");
 
-            ["", ...value].forEach((option) => {
+            // Add an empty cell for the question column
+            const emptyHeaderCell = document.createElement("th");
+            headerRow.appendChild(emptyHeaderCell);
+
+            if (randomPosition) {
+                value = value.sort(() => Math.random() - 0.5);
+            }
+
+            // Add the options as column headers
+            value.forEach((option) => {
                 const headerCell = document.createElement("th");
                 headerCell.textContent = option;
-                headerCell.style.padding = "0 10px 10px 10px ";
                 headerRow.appendChild(headerCell);
             });
 
             header.appendChild(headerRow);
+            table.appendChild(header);
+
 
             // Create the body of the table
             const body = document.createElement("tbody");
 
-            if (assets?.options?.length > 0) {
-                assets?.options.split('|').forEach((o: string) => {
-                    const row = document.createElement("tr");
-                    row.style.paddingBottom = "15px";
-                    const rowLabel = document.createElement("td");
-                    rowLabel.classList.add("magicfeedback-multi-question-matrix-row-label");
-                    const label = document.createElement("label");
-                    label.classList.add("magicfeedback-multi-question-matrix-label");
-                    label.style.paddingRight = "15px";
-                    label.textContent = o;
+            // Add the questions as rows
+            assets?.options.split('|').forEach((question:string) => {
+                const row = document.createElement("tr");
+                row.classList.add("magicfeedback-multi-question-matrix-row-tr");
+                // Add the question label as the first cell
+                const questionCell = document.createElement("td");
+                questionCell.style.minWidth = "200px";
+                const label = document.createElement("label");
+                label.classList.add("magicfeedback-multi-question-matrix-label");
+                label.style.paddingRight = "20px";
+                label.textContent = question;
 
-                    rowLabel.appendChild(label);
-                    row.appendChild(rowLabel);
+                questionCell.appendChild(label);
+                row.appendChild(questionCell);
 
-                    value.forEach((v) => {
-                        const cell = document.createElement("td");
-                        const input = document.createElement("input");
-                        input.type = "radio";
-                        input.name = `${ref}-${o}`;
-                        input.value = v;
-                        input.id = `matrix-${o}`;
-                        input.classList.add("magicfeedback-input");
-                        input.style.padding = "0 10px";
-                        cell.appendChild(input);
-                        row.appendChild(cell);
-                    });
+                // Add the options as radio buttons or checkboxes
+                value.forEach((option) => {
+                    const optionCell = document.createElement("td");
+                    const input = document.createElement("input");
+                    input.type = "radio";
+                    input.name = `matrix-${ref}-${question}`;
+                    input.value = option;
+                    input.id = `matrix-${ref}-${question}-${option}`;
+                    input.classList.add("magicfeedback-input");
 
-                    body.appendChild(row);
+                    optionCell.appendChild(input);
+                    row.appendChild(optionCell);
                 });
-            }
 
-            table.appendChild(header);
+                body.appendChild(row);
+            });
+
             table.appendChild(body);
             matrixContainer.appendChild(table);
             element.appendChild(matrixContainer);
@@ -765,6 +785,10 @@ function renderContainer(
             // arrow up and down to change the position of the item
             const list = document.createElement("ul");
             list.classList.add("magicfeedback-priority-list-list");
+
+            if (randomPosition) {
+                value = value.sort(() => Math.random() - 0.5);
+            }
 
             value.forEach((option, index) => {
                 const item = document.createElement("li");
@@ -1008,6 +1032,16 @@ function renderContainer(
             pointSystemContainer.appendChild(errorMessage);
             element.appendChild(pointSystemContainer);
             break;
+        case FEEDBACKAPPANSWERTYPE.INFO_PAGE:
+            element = document.createElement("div");
+            elementTypeClass = "magicfeedback-info-page";
+
+            const infoMessageElement = document.createElement("div");
+            infoMessageElement.classList.add("magicfeedback-info-message");
+            infoMessageElement.innerHTML = placeholderText;
+
+            element.appendChild(infoMessageElement);
+            break;
         default:
             return elementContainer;
     }
@@ -1031,13 +1065,22 @@ function renderContainer(
     label.textContent = parseTitle(title, language);
     label.classList.add("magicfeedback-label");
 
+    const subLabel = document.createElement("label");
+    subLabel.textContent = parseTitle(assets?.subtitle, language);
+    subLabel.classList.add("magicfeedback-sublabel");
+
+
     if (["CONSENT"].includes(type)) {
         elementContainer.classList.add("magicfeedback-consent-container");
         elementContainer.appendChild(element);
         elementContainer.appendChild(label);
+        elementContainer.appendChild(subLabel);
     } else {
         if (format !== 'slim') {
-            elementContainer.appendChild(label);
+            if (![FEEDBACKAPPANSWERTYPE.INFO_PAGE].includes(type)) {
+                elementContainer.appendChild(label);
+                elementContainer.appendChild(subLabel);
+            }
             if (assets?.general !== undefined && assets?.general !== "") {
                 // Add a image to the form
                 const image = document.createElement("img");
@@ -1273,9 +1316,9 @@ export function renderSuccess(success: string): HTMLElement {
 
 export function renderStartMessage(
     startMessage: string,
-    startEvent: () => void,
     addButton: boolean = false,
     startButtonText: string = "Go!",
+    startEvent: () => void = () => {},
 ): HTMLElement {
     const startMessageContainer = document.createElement("div");
     startMessageContainer.classList.add("magicfeedback-start-message-container");
@@ -1284,15 +1327,17 @@ export function renderStartMessage(
     startMessageElement.classList.add("magicfeedback-start-message");
     startMessageElement.innerHTML = startMessage;
 
-    const startMessageButton = document.createElement("button");
-    startMessageButton.id = "magicfeedback-start-message-button";
-    startMessageButton.classList.add("magicfeedback-start-message-button");
-    startMessageButton.textContent = startButtonText;
-
-    startMessageButton.addEventListener("click", () => startEvent());
-
     startMessageContainer.appendChild(startMessageElement);
-    if (addButton) startMessageContainer.appendChild(startMessageButton);
+
+    if (addButton){
+        const startMessageButton = document.createElement("button");
+        startMessageButton.id = "magicfeedback-start-message-button";
+        startMessageButton.classList.add("magicfeedback-start-message-button");
+        startMessageButton.textContent = startButtonText;
+
+        startMessageButton.addEventListener("click", () => startEvent());
+        startMessageContainer.appendChild(startMessageButton);
+    }
 
     return startMessageContainer;
 }

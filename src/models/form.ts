@@ -1,4 +1,4 @@
-import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from "./types";
+import {FEEDBACKAPPANSWERTYPE, generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from "./types";
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
@@ -361,8 +361,7 @@ export class Form {
             // Select and prepare the container
             const container: HTMLElement | null = this.generateContainer()
 
-
-            const initialMessage = renderStartMessage(startMessage, () => this.startForm(), this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText);
+            const initialMessage = renderStartMessage(startMessage, this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText, () => this.startForm());
 
             container.appendChild(initialMessage)
 
@@ -453,11 +452,24 @@ export class Form {
             const page = this.history.back();
             if (!page) throw new Error("No page found");
 
-            const requiredQuestions = page.getRequiredQuestions();
-            for (const question of requiredQuestions) {
-                if (!this.feedback.answers.find((a) => a.key === question && a.value.length > 0)) {
-                    this.log.err(`The question ${question} is required`);
+            for (const question of page.questions.filter(question => question.require)) {
+
+                const ans = this.feedback.answers.filter((a) => a.key.includes(question.ref) && !a.key.includes('extra-option'));
+
+                if (
+                    ans.length === 0 ||
+                    ans.find((a) => a.value.length === 0)
+                ) {
+                    this.log.err(`The question ${question.ref} is required`);
                     throw new Error(`No response`);
+                }
+
+                if (question.assets?.minOptions) {
+                    // console.log(question.assets?.minOptions, question.assets?.extraOptionText);
+                    if (!ans[0].value.includes(question.assets?.extraOptionText || "") && ans[0].value.length < question.assets?.minOptions) {
+                        this.log.err(`The question ${question.ref} requires at least ${question.assets?.minOptions} options`);
+                        throw new Error(`No response`);
+                    }
                 }
             }
 
@@ -502,12 +514,17 @@ export class Form {
             return;
         }
 
+        // Check if the required questions are answered
+        const page = this.history.back();
+        if (!page) throw new Error("No page found");
+
         const surveyAnswers: NativeAnswer[] = [];
         let hasError = false; // Flag to track if an error has occurred
 
         const inputs = form.querySelectorAll(".magicfeedback-input");
 
         inputs.forEach((input) => {
+            const question = page.questions.find(q => (input as HTMLInputElement).name?.includes(q.ref));
             const inputType = (input as HTMLInputElement).type;
             const elementTypeClass = (input as HTMLInputElement).classList[0];
 
@@ -522,77 +539,147 @@ export class Form {
 
             if (!ans.key || ans.key === "") return;
 
-             switch (inputType) {
+            switch (question?.type) {
+                case FEEDBACKAPPANSWERTYPE.EMAIL:
+                case FEEDBACKAPPANSWERTYPE.TEXT:
+                case FEEDBACKAPPANSWERTYPE.LONGTEXT:
+                case FEEDBACKAPPANSWERTYPE.NUMBER:
+                case FEEDBACKAPPANSWERTYPE.DATE:
+                case FEEDBACKAPPANSWERTYPE.CONTACT:
+                    if (value !== "") {
+                        if (inputType === "email") {
+                            if (!validateEmail(value)) {
+                                this.log.err("Invalid email");
+                                hasError = true;
+                                break;
+                            } else {
+                                this.feedback.profile.push({
+                                    key: "email",
+                                    value: [value],
+                                });
+                            }
+                        }
+                        ans.value.push(value);
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.CONSENT:
+                    ans.value.push(String((input as HTMLInputElement).checked));
+                    break;
+                case FEEDBACKAPPANSWERTYPE.POINT_SYSTEM:
+                    const key = 'point-system-' + (input as HTMLInputElement).id.split("-")[input.id.split("-").length - 1];
+                    ans.value.push(`${key}: ${value}%`);
+                    break;
+
+                case FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE:
+                case FEEDBACKAPPANSWERTYPE.MULTIPLECHOISE_IMAGE:
+                case FEEDBACKAPPANSWERTYPE.RATING_STAR:
+                case FEEDBACKAPPANSWERTYPE.RADIO:
+                case FEEDBACKAPPANSWERTYPE.RATING_EMOJI:
+                case FEEDBACKAPPANSWERTYPE.RATING_NUMBER:
+                    if ((input as HTMLInputElement).checked) {
+                        ans.value.push(value);
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.SELECT:
+                    ans.value.push(value);
+                    break;
+                case FEEDBACKAPPANSWERTYPE.BOOLEAN:
+                    if ((input as HTMLInputElement).checked) {
+                        ans.value.push(String((input as HTMLInputElement).checked));
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.MULTI_QUESTION_MATRIX:
+                    if ((input as HTMLInputElement).checked) {
+                        ans.value.push(value);
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.PRIORITY_LIST:
+                    ans.value.push(value);
+                    break;
+                default:
+                    break;
+
+
+            }
+
+            if (surveyAnswers?.length > 0 && surveyAnswers?.find(a => a.key === ans.key)) {
+                const index = surveyAnswers.findIndex(a => a.key === ans.key);
+                surveyAnswers[index].value = [...surveyAnswers[index].value, ...ans.value];
+            } else {
+                surveyAnswers.push(ans);
+            }
+
+            /*switch (inputType) {
                 case "radio":
                 case "checkbox":
                     if (
                         elementTypeClass === "magicfeedback-consent" ||
                         (input as HTMLInputElement).checked
                     ) {
-                    ans.value.push(value);
+                        ans.value.push(value);
 
-                    // check if the answer is already in the array and merge the values
-                    const index = surveyAnswers.findIndex(
-                        (a) => a.key === ans.key
-                    );
-                    if (index !== -1) {
-                        surveyAnswers[index].value = [
-                            ...surveyAnswers[index].value,
-                            ...ans.value,
-                        ];
-                    } else {
-                        surveyAnswers.push(ans);
-                    }
-                }
-                break;
-            default:
-                if (value !== "") {
-                    if (inputType === "email") {
-                        if (!validateEmail(value)) {
-                            this.log.err("Invalid email");
-                            hasError = true;
-                            break;
+                        // check if the answer is already in the array and merge the values
+                        const index = surveyAnswers.findIndex(
+                            (a) => a.key === ans.key
+                        );
+                        if (index !== -1) {
+                            surveyAnswers[index].value = [
+                                ...surveyAnswers[index].value,
+                                ...ans.value,
+                            ];
                         } else {
-                            this.feedback.profile.push({
-                                key: "email",
-                                value: [value],
-                            });
+                            surveyAnswers.push(ans);
                         }
                     }
+                    break;
+                default:
+                    if (value !== "") {
+                        if (inputType === "email") {
+                            if (!validateEmail(value)) {
+                                this.log.err("Invalid email");
+                                hasError = true;
+                                break;
+                            } else {
+                                this.feedback.profile.push({
+                                    key: "email",
+                                    value: [value],
+                                });
+                            }
+                        }
 
-                    if (input.id.includes('point-system')) {
-                        const key = 'point-system-' + input.id.split("-")[input.id.split("-").length - 1];
-                        ans.value.push(`${key}: ${value}%`);
-                    } else{
-                        ans.value.push(value);
+                        if (input.id.includes('point-system')) {
+                            const key = 'point-system-' + input.id.split("-")[input.id.split("-").length - 1];
+                            ans.value.push(`${key}: ${value}%`);
+                        } else {
+                            ans.value.push(value);
+                        }
+
+                        // check if the answer is already in the array and merge the values
+                        const index = surveyAnswers.findIndex(
+                            (a) => a.key === ans.key
+                        );
+                        if (index !== -1) {
+                            surveyAnswers[index].value = [
+                                ...surveyAnswers[index].value,
+                                ...ans.value,
+                            ];
+                        } else {
+                            // Add the answer to the array
+                            surveyAnswers.push(ans);
+                        }
+
+
                     }
-
-                    // check if the answer is already in the array and merge the values
-                    const index = surveyAnswers.findIndex(
-                        (a) => a.key === ans.key
-                    );
-                    if (index !== -1) {
-                        surveyAnswers[index].value = [
-                            ...surveyAnswers[index].value,
-                            ...ans.value,
-                        ];
-                    } else {
-                        // Add the answer to the array
-                        surveyAnswers.push(ans);
-                    }
-
-
-                }
-            }
+            }*/
         });
 
         // Check if there's an error
         // Check matrix questions
-        const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
+        /*const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
         // Merge the equal values of the matrix questions
         matrixQuestions?.forEach((matrix) => {
             const m = surveyAnswers.find((a) => a.key === matrix.key)
-            if (m) m.value = [... new Set(m.value)];
+            if (m) m.value = [...new Set(m.value)];
         });
 
         // Check point system questions
@@ -607,7 +694,7 @@ export class Form {
                 this.log.err("The sum of the point system questions must be 100%");
                 hasError = true;
             }
-        });
+        });*/
 
         if (hasError) {
             this.feedback.answers = []; // Stop the process if there's an error
@@ -819,10 +906,10 @@ export class Form {
      */
     private async renderNextQuestion(form: HTMLElement, page: PageNode) {
         // Get next page from the graph
-        console.log(page, this.feedback.answers);
+        //console.log(page, this.feedback.answers);
         const nextPage = this.graph.getNextPage(page, this.feedback.answers);
 
-        console.log(nextPage);
+        //console.log(nextPage);
         if (!nextPage) {
             this.finish();
             return;

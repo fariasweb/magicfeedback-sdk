@@ -5,6 +5,16 @@ This document outlines the changes and updates made to the [@magicfeedback/nativ
 We recommend keeping your SDK up-to-date to benefit from the latest features, bug fixes, and security improvements.
 
 Please refer to the specific version number for detailed information.
+## 🚀 [1.3.2] - 2024-10-22
+- Implemented new question types:
+    - Multiple matrix: Option to add image to the matrix.
+    - Information: A widget that displays information to the user.
+
+## 🚀 [1.3.1] - 2024-10-21
+- New conditional logic: Added a new conditional logic feature that allows users to create complex feedback flows based on user responses.
+- New conditional types: Added a external redirect and finish conditional logic.
+- Fixed bugs:
+    - Increased the deepness of the conditional logic.
 
 ## 🚀 [1.2.9] - 2024-07-19
 - Conditional logic: Added a new conditional logic feature that allows users to create complex feedback flows based on user responses.
