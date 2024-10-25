@@ -566,8 +566,8 @@ export class Form {
                     ans.value.push(String((input as HTMLInputElement).checked));
                     break;
                 case FEEDBACKAPPANSWERTYPE.POINT_SYSTEM:
-                    const key = 'point-system-' + (input as HTMLInputElement).id.split("-")[input.id.split("-").length - 1];
-                    ans.value.push(`${key}: ${value}%`);
+                    const key = (input as HTMLInputElement).id;
+                    ans.value.push(`${key}:${value}%`);
                     break;
 
                 case FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE:

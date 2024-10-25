@@ -757,9 +757,9 @@ function renderContainer(
                     const optionCell = document.createElement("td");
                     const input = document.createElement("input");
                     input.type = "radio";
-                    input.name = `matrix-${ref}-${question}`;
+                    input.name = `${ref}-${question}`;
                     input.value = option;
-                    input.id = `matrix-${ref}-${question}-${option}`;
+                    input.id = `${ref}-${question}-${option}`;
                     input.classList.add("magicfeedback-input");
 
                     optionCell.appendChild(input);
@@ -960,7 +960,7 @@ function renderContainer(
 
                 const itemInput = document.createElement("input");
                 itemInput.name = ref;
-                itemInput.id = `point-system-${option}`;
+                itemInput.id = `${option}`;
                 itemInput.type = "number";
                 itemInput.min = "0";
                 itemInput.max = `${totalPoints}`;
