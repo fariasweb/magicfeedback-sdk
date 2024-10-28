@@ -9,7 +9,7 @@ export class Page {
     status: string;
     integrationId: string;
     integrationQuestions: NativeQuestion[];
-    integrationPageRoutes: PageRoute[];
+    integrationPageRoutes?: PageRoute[];
 
     constructor(
         id: string,

@@ -36,8 +36,8 @@ export class PageRoute {
     transition: TransitionType;
     transitionDestiny: string;
     status: StatusType;
-    generatedAt: Date;
-    updatedAt: Date;
+    generatedAt?: Date;
+    updatedAt?: Date;
     integrationPageId: string;
 
     constructor(
