@@ -137,7 +137,7 @@ export class PageGraph {
             case TransitionType.FINISH:
                 return undefined;
             case TransitionType.REDIRECT:
-                window.location.href = route.transitionDestiny;
+                window.location.href = `${route.transitionDestiny}${window.location.search}`
                 return undefined;
             default:
                 return undefined;

@@ -453,7 +453,7 @@ export class Form {
             if (!page) throw new Error("No page found");
 
             for (const question of page.questions.filter(question => question.require)) {
-
+                const assets = question.assets;
                 const ans = this.feedback.answers.filter((a) => a.key.includes(question.ref) && !a.key.includes('extra-option'));
 
                 if (
@@ -464,10 +464,24 @@ export class Form {
                     throw new Error(`No response`);
                 }
 
-                if (question.assets?.minOptions) {
-                    // console.log(question.assets?.minOptions, question.assets?.extraOptionText);
-                    if (!ans[0].value.includes(question.assets?.extraOptionText || "") && ans[0].value.length < question.assets?.minOptions) {
-                        this.log.err(`The question ${question.ref} requires at least ${question.assets?.minOptions} options`);
+                if (assets?.minOptions) {
+                    let exclusiveAnswers: string[] = [];
+
+                    if (assets?.exclusiveAnswers) {
+                        exclusiveAnswers = assets?.exclusiveAnswers.split("|");
+                    }
+
+                    if (assets?.extraOption) {
+                        exclusiveAnswers.push(assets?.extraOptionText);
+                    }
+
+                    // Check if the question has the minimum number of options selected and the exclusiveAnswers if it exists
+
+                    if (
+                        !ans[0].value.find((a) => exclusiveAnswers.includes(a)) &&
+                        ans[0].value.length < assets?.minOptions
+                    ) {
+                        this.log.err(`The question ${question.ref} requires at least ${assets?.minOptions} options`);
                         throw new Error(`No response`);
                     }
                 }
@@ -608,93 +622,7 @@ export class Form {
             } else {
                 surveyAnswers.push(ans);
             }
-
-            /*switch (inputType) {
-                case "radio":
-                case "checkbox":
-                    if (
-                        elementTypeClass === "magicfeedback-consent" ||
-                        (input as HTMLInputElement).checked
-                    ) {
-                        ans.value.push(value);
-
-                        // check if the answer is already in the array and merge the values
-                        const index = surveyAnswers.findIndex(
-                            (a) => a.key === ans.key
-                        );
-                        if (index !== -1) {
-                            surveyAnswers[index].value = [
-                                ...surveyAnswers[index].value,
-                                ...ans.value,
-                            ];
-                        } else {
-                            surveyAnswers.push(ans);
-                        }
-                    }
-                    break;
-                default:
-                    if (value !== "") {
-                        if (inputType === "email") {
-                            if (!validateEmail(value)) {
-                                this.log.err("Invalid email");
-                                hasError = true;
-                                break;
-                            } else {
-                                this.feedback.profile.push({
-                                    key: "email",
-                                    value: [value],
-                                });
-                            }
-                        }
-
-                        if (input.id.includes('point-system')) {
-                            const key = 'point-system-' + input.id.split("-")[input.id.split("-").length - 1];
-                            ans.value.push(`${key}: ${value}%`);
-                        } else {
-                            ans.value.push(value);
-                        }
-
-                        // check if the answer is already in the array and merge the values
-                        const index = surveyAnswers.findIndex(
-                            (a) => a.key === ans.key
-                        );
-                        if (index !== -1) {
-                            surveyAnswers[index].value = [
-                                ...surveyAnswers[index].value,
-                                ...ans.value,
-                            ];
-                        } else {
-                            // Add the answer to the array
-                            surveyAnswers.push(ans);
-                        }
-
-
-                    }
-            }*/
         });
-
-        // Check if there's an error
-        // Check matrix questions
-        /*const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
-        // Merge the equal values of the matrix questions
-        matrixQuestions?.forEach((matrix) => {
-            const m = surveyAnswers.find((a) => a.key === matrix.key)
-            if (m) m.value = [...new Set(m.value)];
-        });
-
-        // Check point system questions
-        const pointSystemQuestions = surveyAnswers.filter((a) => a.key.includes('point-system'));
-        // Throw error if all the point system questions are not 100%
-        pointSystemQuestions?.forEach((pointSystem) => {
-            const sum = pointSystem.value.reduce((acc, val) => {
-                const value = val.split(": ")[1];
-                return acc + Number(value.replace('%', ''));
-            }, 0);
-            if (sum !== 100) {
-                this.log.err("The sum of the point system questions must be 100%");
-                hasError = true;
-            }
-        });*/
 
         if (hasError) {
             this.feedback.answers = []; // Stop the process if there's an error
