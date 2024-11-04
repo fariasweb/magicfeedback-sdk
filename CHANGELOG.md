@@ -5,6 +5,11 @@ This document outlines the changes and updates made to the [@magicfeedback/nativ
 We recommend keeping your SDK up-to-date to benefit from the latest features, bug fixes, and security improvements.
 
 Please refer to the specific version number for detailed information.
+
+## 🚀 [1.3.3] - 2024-11-04
+- Increase the deepness of the conditional logic.
+- Added randomize option to seme widget.
+- More personalization options for the extra options widget.
 ## 🚀 [1.3.2] - 2024-10-22
 - Implemented new question types:
     - Multiple matrix: Option to add image to the matrix.
