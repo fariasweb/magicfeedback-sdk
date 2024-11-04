@@ -177,10 +177,11 @@ function renderContainer(
             elementTypeClass =
                 `magicfeedback-${(type === "MULTIPLECHOICE" ? "checkbox" : "radio")}`;
 
+            let opt = value || [];
 
             // reorder the options if randomPosition is true
             if (randomPosition) {
-                value = value.sort(() => Math.random() - 0.5);
+                opt = opt.sort(() => Math.random() - 0.5);
             }
 
             let exclusiveAnswers: string[] = [];
@@ -188,16 +189,16 @@ function renderContainer(
             if (assets?.exclusiveAnswers) {
                 exclusiveAnswers = assets?.exclusiveAnswers.split("|");
                 exclusiveAnswers?.forEach((answer) => {
-                    if (!value.includes(answer)) value.push(answer);
+                    if (!opt.includes(answer)) opt.push(answer);
                 });
             }
 
             if (assets?.extraOption) {
                 exclusiveAnswers.push(assets?.extraOptionText);
-                if (!value.includes(assets?.extraOptionText)) value.push(assets?.extraOptionText);
+                if (!opt.includes(assets?.extraOptionText)) opt.push(assets?.extraOptionText);
             }
 
-            value.forEach((option, index) => {
+            opt.forEach((option, index) => {
                 const container = document.createElement("div");
                 container.classList.add(
                     `magicfeedback-${type === "MULTIPLECHOICE" ? "checkbox" : "radio"}-container`
@@ -232,7 +233,7 @@ function renderContainer(
                 input.addEventListener("change", (event) => {
                     const extraOption = document.getElementById(`extra-option-${ref}`);
                     if ((event.target as HTMLInputElement).checked && exclusiveAnswers.includes(option)) {
-                        value.forEach((answer) => {
+                        opt.forEach((answer) => {
                             if (answer !== option) {
                                 const input = document.querySelector(`input[value="${answer}"]`) as HTMLInputElement;
                                 input.checked = false;
@@ -312,7 +313,7 @@ function renderContainer(
                 input.id = `rating-${ref}-${index}`;
                 input.type = "radio";
                 input.name = ref;
-                input.value = option;
+                input.value = index === 0 ? 'true' : 'false';
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
                 input.style.position = "absolute";
@@ -720,10 +721,19 @@ function renderContainer(
             matrixContainer.classList.add("magicfeedback-multi-question-matrix-container");
 
             let options = assets?.options?.split('|');
+            let values = [...value];
+            let exclusiveValues: string[] = [];
 
             if (randomPosition) {
                 options = options?.sort(() => Math.random() - 0.5);
-                value = value.sort(() => Math.random() - 0.5);
+                values = [...values].sort(() => Math.random() - 0.5);
+            }
+
+            if (assets?.exclusiveAnswers) {
+                exclusiveValues = assets?.exclusiveAnswers.split("|");
+                exclusiveValues?.forEach((answer) => {
+                    if (!values.includes(answer)) values.push(answer);
+                });
             }
 
             if (window.innerWidth < 600) {
@@ -746,7 +756,7 @@ function renderContainer(
                     row.appendChild(label);
 
                     // Add the options as radio buttons, one by line
-                    value.forEach((option) => {
+                    values.forEach((option) => {
                         const container = document.createElement("div");
                         container.classList.add(`magicfeedback-radio-container`);
                         container.style.display = "flex";
@@ -821,7 +831,7 @@ function renderContainer(
                     row.appendChild(questionCell);
 
                     // Add the options as radio buttons or checkboxes
-                    value.forEach((option) => {
+                    values.forEach((option) => {
                         const optionCell = document.createElement("td");
                         const input = document.createElement("input");
                         input.type = "radio";

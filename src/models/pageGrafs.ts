@@ -137,7 +137,8 @@ export class PageGraph {
             case TransitionType.FINISH:
                 return undefined;
             case TransitionType.REDIRECT:
-                window.location.href = `${route.transitionDestiny}${window.location.search}`
+                window.location.href = route.transitionDestiny.includes('?') ? `${route.transitionDestiny}&${window.location.search.slice(1)}`
+                    : `${route.transitionDestiny}${window.location.search}`
                 return undefined;
             default:
                 return undefined;

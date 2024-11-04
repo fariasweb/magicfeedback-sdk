@@ -599,7 +599,7 @@ export class Form {
                     break;
                 case FEEDBACKAPPANSWERTYPE.BOOLEAN:
                     if ((input as HTMLInputElement).checked) {
-                        ans.value.push(String((input as HTMLInputElement).checked));
+                        ans.value.push(value);
                     }
                     break;
                 case FEEDBACKAPPANSWERTYPE.MULTI_QUESTION_MATRIX:
