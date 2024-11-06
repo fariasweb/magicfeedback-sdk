@@ -47,7 +47,7 @@ export class QuestionType{
 export type NativeQuestion = {
     id: string;
     title: string;
-    type: FEEDBACKAPPANSWERTYPE;
+    type: FEEDBACKAPPANSWERTYPE | string;
     questionType: QuestionType;
     ref: string;
     require: boolean;

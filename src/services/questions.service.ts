@@ -802,7 +802,7 @@ function renderContainer(
                 headerRow.appendChild(emptyHeaderCell);
 
                 // Add the options as column headers
-                value.forEach((option) => {
+                values.forEach((option) => {
                     const headerCell = document.createElement("th");
                     headerCell.textContent = option;
                     headerRow.appendChild(headerCell);

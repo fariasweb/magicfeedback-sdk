@@ -30,14 +30,14 @@ export enum StatusType {
 export class PageRoute {
     id: string;
     questionRef: string;
-    typeCondition: ConditionType;
-    typeOperator: OperatorType;
+    typeCondition: ConditionType | string;
+    typeOperator: OperatorType | string;
     value: string | any; // Adjust type based on typeCondition
-    transition: TransitionType;
+    transition: TransitionType | string;
     transitionDestiny: string;
-    status: StatusType;
-    generatedAt?: Date;
-    updatedAt?: Date;
+    status: StatusType | string;
+    generatedAt?: Date | string;
+    updatedAt?: Date | string;
     integrationPageId: string;
 
     constructor(
