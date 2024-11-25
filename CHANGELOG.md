@@ -6,6 +6,11 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.3.4] - 2024-11-25
+- Fixed bugs:
+    - Increased the deepness of the conditional logic.
+    - Fixed a bug.
+
 ## 🚀 [1.3.3] - 2024-11-04
 - Increase the deepness of the conditional logic.
 - Added randomize option to seme widget.

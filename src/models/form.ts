@@ -590,7 +590,7 @@ export class Form {
                 case FEEDBACKAPPANSWERTYPE.RADIO:
                 case FEEDBACKAPPANSWERTYPE.RATING_EMOJI:
                 case FEEDBACKAPPANSWERTYPE.RATING_NUMBER:
-                    if ((input as HTMLInputElement).checked) {
+                    if ((input as HTMLInputElement).checked || (input as HTMLInputElement).id === "extra-option-select") {
                         ans.value.push(value);
                     }
                     break;
