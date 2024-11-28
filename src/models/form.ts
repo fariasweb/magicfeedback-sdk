@@ -76,7 +76,7 @@ export class Form {
         // Form completed data
         this.id = "";
         this.formData = null;
-        if (this.publicKey !== '') this.getDataFromStorage();
+        // if (this.publicKey !== '') this.getDataFromStorage();
         this.feedback = {
             text: "",
             answers: [],
@@ -98,7 +98,7 @@ export class Form {
     /**
      * Get data from the local storage, if the data is older than 24 hours, get the data from the server
      * @private
-     **/
+
     private getDataFromStorage() {
         const localForm = localStorage.getItem(`magicfeedback-${this.appId}`);
 
@@ -127,7 +127,7 @@ export class Form {
             });
         }
     }
-
+**/
     /**
      * Generate
      * @param selector
@@ -590,7 +590,7 @@ export class Form {
                 case FEEDBACKAPPANSWERTYPE.RADIO:
                 case FEEDBACKAPPANSWERTYPE.RATING_EMOJI:
                 case FEEDBACKAPPANSWERTYPE.RATING_NUMBER:
-                    if ((input as HTMLInputElement).checked || (input as HTMLInputElement).id === "extra-option-select") {
+                    if ((input as HTMLInputElement).checked || (input as HTMLInputElement).id.includes("extra-option-")){
                         ans.value.push(value);
                     }
                     break;
