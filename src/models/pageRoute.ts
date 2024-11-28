@@ -34,7 +34,7 @@ export class PageRoute {
     typeOperator: OperatorType | string;
     value: string | any; // Adjust type based on typeCondition
     transition: TransitionType | string;
-    transitionDestiny: string;
+    transitionDestiny: string | null;
     status: StatusType | string;
     generatedAt?: Date | string;
     updatedAt?: Date | string;

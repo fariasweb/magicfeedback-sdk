@@ -61,6 +61,9 @@ export type NativeQuestion = {
     refMetric: string;
     integrationId: string;
     integrationPageId: string;
+    generatedAt?: string | null;
+    updatedAt?: string | null;
+    status?: string;
 };
 
 export type NativeAnswer = {

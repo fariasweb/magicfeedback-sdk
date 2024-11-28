@@ -133,11 +133,12 @@ export class PageGraph {
 
         switch (route.transition) {
             case TransitionType.PAGE:
+                if (!route.transitionDestiny) return undefined;
                 return this.getNodeById(route.transitionDestiny);
             case TransitionType.FINISH:
                 return undefined;
             case TransitionType.REDIRECT:
-                window.location.href = route.transitionDestiny.includes('?') ? `${route.transitionDestiny}&${window.location.search.slice(1)}`
+                window.location.href = route.transitionDestiny?.includes('?') ? `${route.transitionDestiny}&${window.location.search.slice(1)}`
                     : `${route.transitionDestiny}${window.location.search}`
                 return undefined;
             default:
@@ -195,12 +196,15 @@ export class PageGraph {
         const neighbours = v.edges || [];
 
         for (const neighbour of neighbours) {
+            if (!neighbour.transitionDestiny) continue;
             const node = this.getNodeById(neighbour.transitionDestiny);
 
             if (node && !visited.has(node)) {
                 const haveFollowup = !!node.questions.find(q => q.followup);
                 const new_depth = haveFollowup ? depth + 2 : depth + 1;
-                const dfs = this.DFSUtil(node, visited, new_depth);
+                // Make a copy of the visited set to only for this branch
+                const visitedBranch = new Set(visited);
+                const dfs = this.DFSUtil(node, visitedBranch, new_depth);
                 max_depth = Math.max(max_depth, dfs);
             }
         }
