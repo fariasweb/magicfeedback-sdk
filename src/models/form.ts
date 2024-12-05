@@ -298,7 +298,7 @@ export class Form {
             // Add the form to the specified container
             container.appendChild(form);
             // Update the progress
-            this.progress = this.history.size();
+            this.progress = this.total - this.graph.findMaxDepth(page)
 
             // Submit button
             if (this.formOptionsConfig.addButton) {
@@ -468,7 +468,7 @@ export class Form {
                     let exclusiveAnswers: string[] = [];
 
                     if (assets?.exclusiveAnswers) {
-                        exclusiveAnswers = assets?.exclusiveAnswers.split("|");
+                        exclusiveAnswers = assets?.exclusiveAnswers
                     }
 
                     if (assets?.extraOption) {
@@ -806,7 +806,7 @@ export class Form {
         // Update the progress +1, because the follow up questions are
         // not included in the graph and one page with follow up questions is considered as 2
         this.history.enqueue(n);
-        this.progress = this.history.size();
+        this.progress++;
 
         form.removeChild(form.childNodes[0]);
         n.elements?.forEach((element) => form.appendChild(element));
@@ -855,7 +855,7 @@ export class Form {
         nextPage.elements?.forEach((element) => form.appendChild(element));
 
         this.history.enqueue(nextPage);
-        this.progress = this.history.size();
+        this.progress = this.total - this.graph.findMaxDepth(nextPage)
 
         // AFTER
         if (this.formOptionsConfig.afterSubmitEvent) {
@@ -883,12 +883,15 @@ export class Form {
         if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
 
         this.history.rollback();
-        this.progress = this.history.size();
+
 
         const page = this.history.back();
 
         if (page) {
             page.elements?.forEach((element) => form.appendChild(element));
+            this.progress = this.total - this.graph.findMaxDepth(page)
+        } else{
+            this.progress = this.history.size();
         }
 
         // AFTER

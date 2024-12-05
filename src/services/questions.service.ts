@@ -187,7 +187,7 @@ function renderContainer(
             let exclusiveAnswers: string[] = [];
 
             if (assets?.exclusiveAnswers) {
-                exclusiveAnswers = assets?.exclusiveAnswers.split("|");
+                exclusiveAnswers = assets?.exclusiveAnswers
                 exclusiveAnswers?.forEach((answer) => {
                     if (!opt.includes(answer)) opt.push(answer);
                 });
@@ -720,7 +720,7 @@ function renderContainer(
             const matrixContainer = document.createElement("div");
             matrixContainer.classList.add("magicfeedback-multi-question-matrix-container");
 
-            let options = assets?.options?.split('|');
+            let options = assets?.options || [];
             let values = [...value];
             let exclusiveValues: string[] = [];
 
@@ -730,7 +730,7 @@ function renderContainer(
             }
 
             if (assets?.exclusiveAnswers) {
-                exclusiveValues = assets?.exclusiveAnswers.split("|");
+                exclusiveValues = assets?.exclusiveAnswers
                 exclusiveValues?.forEach((answer) => {
                     if (!values.includes(answer)) values.push(answer);
                 });
@@ -912,7 +912,7 @@ function renderContainer(
                 upArrow.addEventListener("click", () => {
                     const previous = item.previousElementSibling;
                     if (previous) {
-                        const position = Number(input.value.split(".")[0]) - 1;
+                        const position = Number(input.value?.split(".")[0]) - 1;
                         input.value = `${position}. ${option}`;
                         itemLabel.textContent = `${position}. ${option}`;
                         upArrow.style.visibility = position === 1 ? "hidden" : "visible";
@@ -925,7 +925,7 @@ function renderContainer(
                         const previousArrowDown = previous.querySelector(".magicfeedback-priority-list-arrow-down");
 
                         if (previousInput && previousLabel && previousArrowUp && previousArrowDown) {
-                            const newPosition = Number((previousInput as HTMLInputElement).value.split(".")[0]) + 1;
+                            const newPosition = Number((previousInput as HTMLInputElement).value?.split(".")[0]) + 1;
                             (previousInput as HTMLInputElement).value = `${newPosition}.${previousLabel.textContent?.split(".")[1]}`;
                             previousLabel.textContent = `${newPosition}.${previousLabel.textContent?.split(".")[1]}`;
                             (previousArrowUp as HTMLInputElement).style.visibility = newPosition === 1 ? "hidden" : "visible";
@@ -955,7 +955,7 @@ function renderContainer(
                 downArrow.addEventListener("click", () => {
                     const next = item.nextElementSibling;
                     if (next) {
-                        const position = Number(input.value.split(".")[0]) + 1;
+                        const position = Number(input.value?.split(".")[0]) + 1;
                         input.value = position.toString();
                         itemLabel.textContent = `${position.toString()}. ${option}`;
                         upArrow.style.visibility = position === 1 ? "hidden" : "visible";
