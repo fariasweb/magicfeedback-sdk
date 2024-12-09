@@ -6,6 +6,11 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.3.5] - 2024-12-09
+- Updated progress count in the progress bar by conditional logic.
+- Fixed bugs:
+    - Radio extra options widget: Fixed a bug that caused the widget to don't save correctly.
+
 ## 🚀 [1.3.4] - 2024-11-25
 - Fixed bugs:
     - Increased the deepness of the conditional logic.

@@ -31,9 +31,17 @@ export class PageGraph {
                 page.integrationPageRoutes = [defaultEdge];
             }
 
+            // Sort by created date and then by type of transition (logical first)
+            if (page.integrationPageRoutes) page.integrationPageRoutes = page.integrationPageRoutes?.sort(
+                (a, b) =>
+                    (new Date(a?.generatedAt || '').getTime() - new Date(b?.generatedAt || '').getTime() || 0) &&
+                    (a.typeCondition === 'DIRECT' ? 1 : -1)
+            ) || [];
+
             const node: PageNode = new PageNode(
                 page.id,
                 page.position,
+
                 page.integrationPageRoutes || [],
                 page,
                 page.integrationQuestions
@@ -184,11 +192,11 @@ export class PageGraph {
     }
 
     /**
-    * A function used by DFS
-    * @param v - node
-    * @param visited - set of visited nodes
-    * @param depth - current depth
-    */
+     * A function used by DFS
+     * @param v - node
+     * @param visited - set of visited nodes
+     * @param depth - current depth
+     */
     DFSUtil(v: PageNode, visited: Set<PageNode>, depth: number): number {
         visited.add(v);
         let max_depth = depth;
