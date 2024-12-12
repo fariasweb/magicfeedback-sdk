@@ -139,13 +139,20 @@ export class Form {
             // Set the options
             this.formOptionsConfig = {...this.formOptionsConfig, ...options};
             this.selector = selector;
+            let resData:any = this.formData;
 
             if (this.formData === undefined || !this.formData)
-                this.formData = this.publicKey !== '' ?
+                resData = this.publicKey !== '' ?
                     await getForm(this.url, this.appId, this.publicKey, this.log) :
                     await getSessionForm(this.url, this.appId, this.log);
 
-            if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
+            console.log(resData)
+
+            if (resData === undefined || !resData) throw new Error(`No data for app ${this.appId}`);
+
+            if (resData.error?.message) throw new Error(resData.error.message);
+
+            this.formData = resData as FormData;
 
             if (!this.formData.savedAt) {
                 // Save formData in the localstorage to use it in the future

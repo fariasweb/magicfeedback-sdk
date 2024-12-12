@@ -8,7 +8,7 @@ import {FormData} from "../models/formData";
 const header = {
     Accept: "application/json",
     "Magicfeedback-Sdk-Version": modulePackage.version,
-    "x-magicfeedback-parameters": window.location.search  ,
+    "x-magicfeedback-parameters": window.location.search,
 }
 
 // @ts-ignore
@@ -21,58 +21,31 @@ export function validateEmail(email: string): boolean {
     return re.test(email);
 }
 
-export async function getForm(url: string, appId: string, publicKey: string, log: Log): Promise<FormData | null> {
+export async function getForm(url: string, appId: string, publicKey: string, log: Log): Promise<FormData | any> {
     try {
         const response = await fetch(url + endpoints.sdk.app_info(appId, publicKey), {
             method: "GET",
             headers: header
         });
 
-        if (response.ok) {
-            // Handle success response
-            const json = await response.json();
-            log.log(`Received form for app ${appId}`, json);
-            return json;
-        } else {
-            // Handle error response
-            log.err(
-                `Failed to get questions for app ${appId}:`,
-                response.status,
-                response.statusText
-            );
-            throw new Error("[MagicFeedback] Bad response from server");
-        }
+        // Handle success response
+        return await response.json();
     } catch (e) {
         log.err(e);
-        return null;
     }
 }
 
-export async function getSessionForm(url: string, sessionId: string, log: Log): Promise<FormData | null> {
+export async function getSessionForm(url: string, sessionId: string, log: Log): Promise<FormData | any> {
     try {
         const response = await fetch(url + endpoints.sdk.session(sessionId), {
             method: "GET",
             headers: header
         });
 
-        if (response.ok) {
-            // Handle success response
-            const json = await response.json();
-            log.log(`Received form for session ${sessionId}`, json);
-            return json;
-        } else {
-            // Handle error response
-            log.err(
-                `Failed to get questions for session ${sessionId}:`,
-                response.status,
-                response.statusText
-            );
-            throw new Error("[MagicFeedback] Bad response from server");
-        }
-    }
-    catch (e) {
+        // Handle success response
+        return await response.json();
+    } catch (e) {
         log.err(e);
-        return null;
     }
 }
 
