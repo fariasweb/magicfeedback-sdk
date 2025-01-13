@@ -815,7 +815,8 @@ export class Form {
         this.history.enqueue(n);
         this.progress++;
 
-        form.removeChild(form.childNodes[0]);
+        form.innerHTML = "";
+
         n.elements?.forEach((element) => form.appendChild(element));
 
         // AFTER
@@ -858,7 +859,8 @@ export class Form {
             () => this.send()
         );
 
-        form.removeChild(form.childNodes[0]);
+        form.innerHTML = "";
+
         nextPage.elements?.forEach((element) => form.appendChild(element));
 
         this.history.enqueue(nextPage);
@@ -887,7 +889,7 @@ export class Form {
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
-        if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
+        if (form && form.childNodes.length > 0) form.innerHTML = "";
 
         this.history.rollback();
 
