@@ -9,14 +9,14 @@ export class PageNode{
     data: Page;
     questions: NativeQuestion[];
     elements: HTMLElement[];
-    // level: number;
+    isFollowup: boolean;
 
     constructor(id: string,
                 position: number,
                 edges: PageRoute[],
                 data: Page,
                 questions: NativeQuestion[],
-                // level: number
+                isFollowup: boolean = false
     ){
         this.id = id;
         this.position = position;
@@ -24,7 +24,7 @@ export class PageNode{
         this.data = data;
         this.questions = questions;
         this.elements = [];
-        // this.level = level;
+        this.isFollowup = isFollowup;
     }
 
     /**

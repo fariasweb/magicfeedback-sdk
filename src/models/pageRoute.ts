@@ -1,6 +1,7 @@
 export enum TransitionType {
     PAGE = "PAGE",
     FINISH = "FINISH",
+    REDIRECT = "REDIRECT",
 }
 
 export enum ConditionType {
@@ -20,7 +21,7 @@ export enum OperatorType {
     DEFAULT = "DEFAULT",
 }
 
-enum StatusType {
+export enum StatusType {
     ACTIVE = "ACTIVE",
     DEPRECATED = "DEPRECATED",
     DELETE = "DELETE",
@@ -29,14 +30,14 @@ enum StatusType {
 export class PageRoute {
     id: string;
     questionRef: string;
-    typeCondition: ConditionType;
-    typeOperator: OperatorType;
+    typeCondition: ConditionType | string;
+    typeOperator: OperatorType | string;
     value: string | any; // Adjust type based on typeCondition
-    transition: TransitionType;
-    transitionDestiny: string;
-    status: StatusType;
-    generatedAt: Date;
-    updatedAt: Date;
+    transition: TransitionType | string;
+    transitionDestiny: string | null;
+    status: StatusType | string;
+    generatedAt?: Date | string;
+    updatedAt?: Date | string;
     integrationPageId: string;
 
     constructor(
@@ -47,10 +48,11 @@ export class PageRoute {
         transition: TransitionType,
         transitionDestiny: string,
         integrationPageId: string,
+        typeCondition?: ConditionType
     ) {
         this.id = id;
         this.questionRef = questionRef;
-        this.typeCondition = ConditionType.LOGICAL;
+        this.typeCondition = typeCondition || ConditionType.LOGICAL;
         this.typeOperator = typeOperator;
         this.value = value;
         this.transition = transition;

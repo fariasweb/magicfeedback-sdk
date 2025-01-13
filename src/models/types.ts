@@ -35,6 +35,9 @@ export enum FEEDBACKAPPANSWERTYPE {
     MULTI_QUESTION_MATRIX = "MULTI_QUESTION_MATRIX",
     POINT_SYSTEM= "POINT_SYSTEM",
     PRIORITY_LIST = "PRIORITY_LIST",
+    INFO_PAGE = "INFO_PAGE",
+    UPLOAD_FILE = "UPLOAD_FILE",
+    UPLOAD_IMAGE = "UPLOAD_IMAGE",
 }
 
 export class QuestionType{
@@ -44,17 +47,23 @@ export class QuestionType{
 export type NativeQuestion = {
     id: string;
     title: string;
-    type: FEEDBACKAPPANSWERTYPE;
+    type: FEEDBACKAPPANSWERTYPE | string;
     questionType: QuestionType;
     ref: string;
     require: boolean;
     external_id: string;
     value: string[];
     defaultValue: string;
-    appId: string;
+    appId?: string;
     followup: boolean;
     position: number;
     assets: any;
+    refMetric: string;
+    integrationId: string;
+    integrationPageId: string;
+    generatedAt?: string | null;
+    updatedAt?: string | null;
+    status?: string;
 };
 
 export type NativeAnswer = {
@@ -85,6 +94,7 @@ export type generateFormOptions = {
     beforeSubmitEvent?: Function;
     onFinishEvent?: Function;
     onLoadedEvent?: Function;
+    onBackEvent?: Function;
 };
 
 enum generateFormOptionsTag {

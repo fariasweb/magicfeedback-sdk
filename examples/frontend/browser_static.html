@@ -60,6 +60,7 @@
 <script src="../../dist/magicfeedback-sdk.browser.js"></script>
 <script>
     const countQuestions = document.getElementById('count-questions');
+    let total = 0;
     window.magicfeedback.init({
         debug: true,
         env: "dev"
@@ -67,8 +68,8 @@
 
     // Create the form
     let form = window.magicfeedback.form(
-        "85906cf0-7b11-11ef-8d03-3b5560f64934",
-        "3c75ebc69b72f7cf1e4a6774a8e78711"
+        "e4e65040-598b-11ef-8141-83c856c53aa7",
+        "546a0807b4855c3c491f22328d7338d6"
     );
 
     // Generate form
@@ -83,15 +84,20 @@
             },
             afterSubmitEvent: function (response) {
                 console.log("AFTER", response);
+                total = response.total;
                 document.querySelector(".loading").style.visibility = "hidden";
-                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
                 if (response.error) alert(response.error);
-
             },
             onLoadedEvent: function (response) {
                 console.log("LOADED", response);
+                total = response.total;
                 document.querySelector(".loading").style.visibility = "hidden";
-                countQuestions.innerHTML = `${response.progress} of ${response.total} answered`;
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
+            },
+            onBackEvent: function (response) {
+                console.log("BACK", response);
+                countQuestions.innerHTML = `${response.progress} of ${total} answered`;
             },
         }
     );

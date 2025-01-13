@@ -6,6 +6,31 @@ We recommend keeping your SDK up-to-date to benefit from the latest features, bu
 
 Please refer to the specific version number for detailed information.
 
+## 🚀 [1.3.5] - 2024-12-09
+- Updated progress count in the progress bar by conditional logic.
+- Fixed bugs:
+    - Radio extra options widget: Fixed a bug that caused the widget to don't save correctly.
+
+## 🚀 [1.3.4] - 2024-11-25
+- Fixed bugs:
+    - Increased the deepness of the conditional logic.
+    - Fixed a bug.
+
+## 🚀 [1.3.3] - 2024-11-04
+- Increase the deepness of the conditional logic.
+- Added randomize option to seme widget.
+- More personalization options for the extra options widget.
+## 🚀 [1.3.2] - 2024-10-22
+- Implemented new question types:
+    - Multiple matrix: Option to add image to the matrix.
+    - Information: A widget that displays information to the user.
+
+## 🚀 [1.3.1] - 2024-10-21
+- New conditional logic: Added a new conditional logic feature that allows users to create complex feedback flows based on user responses.
+- New conditional types: Added a external redirect and finish conditional logic.
+- Fixed bugs:
+    - Increased the deepness of the conditional logic.
+
 ## 🚀 [1.2.9] - 2024-07-19
 - Conditional logic: Added a new conditional logic feature that allows users to create complex feedback flows based on user responses.
 - Sessions: Added a new session feature that allows users to save and resume feedback sessions.

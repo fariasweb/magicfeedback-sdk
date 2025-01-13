@@ -1,4 +1,4 @@
-import {generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from "./types";
+import {FEEDBACKAPPANSWERTYPE, generateFormOptions, NativeAnswer, NativeFeedback, NativeQuestion} from "./types";
 
 import {Config} from "./config";
 import {Log} from "../utils/log";
@@ -42,9 +42,7 @@ export class Form {
     // Count variables
     public progress: number;
     public total: number;
-    public followup: boolean;
     public completed: boolean;
-
 
     /**
      *
@@ -78,7 +76,7 @@ export class Form {
         // Form completed data
         this.id = "";
         this.formData = null;
-        if (this.publicKey !== '') this.getDataFromStorage();
+        // if (this.publicKey !== '') this.getDataFromStorage();
         this.feedback = {
             text: "",
             answers: [],
@@ -94,14 +92,13 @@ export class Form {
         // Count variables
         this.progress = 0;
         this.total = 0;
-        this.followup = false;
         this.completed = false;
     }
 
     /**
      * Get data from the local storage, if the data is older than 24 hours, get the data from the server
      * @private
-     **/
+
     private getDataFromStorage() {
         const localForm = localStorage.getItem(`magicfeedback-${this.appId}`);
 
@@ -109,7 +106,7 @@ export class Form {
             this.formData = JSON.parse(localForm);
             getForm(this.url, this.appId, this.publicKey, this.log).then((form: FormData | null) => {
                 if (form?.updatedAt && this.formData?.savedAt && form?.updatedAt > this.formData?.savedAt) {
-                    console.log("Form updated");
+                    // console.log("Form updated");
                     this.formData = form;
                     this.formData.savedAt = new Date();
 
@@ -130,7 +127,7 @@ export class Form {
             });
         }
     }
-
+**/
     /**
      * Generate
      * @param selector
@@ -142,13 +139,20 @@ export class Form {
             // Set the options
             this.formOptionsConfig = {...this.formOptionsConfig, ...options};
             this.selector = selector;
+            let resData:any = this.formData;
 
             if (this.formData === undefined || !this.formData)
-                this.formData = this.publicKey !== '' ?
+                resData = this.publicKey !== '' ?
                     await getForm(this.url, this.appId, this.publicKey, this.log) :
                     await getSessionForm(this.url, this.appId, this.log);
 
-            if (this.formData === undefined || !this.formData) throw new Error(`No form for app ${this.appId}`);
+            console.log(resData)
+
+            if (resData === undefined || !resData) throw new Error(`No data for app ${this.appId}`);
+
+            if (resData.error?.message) throw new Error(resData.error.message);
+
+            this.formData = resData as FormData;
 
             if (!this.formData.savedAt) {
                 // Save formData in the localstorage to use it in the future
@@ -300,6 +304,8 @@ export class Form {
             this.history.enqueue(page);
             // Add the form to the specified container
             container.appendChild(form);
+            // Update the progress
+            this.progress = this.total - this.graph.findMaxDepth(page)
 
             // Submit button
             if (this.formOptionsConfig.addButton) {
@@ -315,11 +321,13 @@ export class Form {
                 form.appendChild(actionContainer);
             }
 
-            // Submit event
-            form.addEventListener("submit", (event) => {
-                event.preventDefault();
-                this.send()
-            });
+            if (this.formOptionsConfig.addButton) {
+                // Submit event
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    this.send()
+                });
+            }
 
             // Send the data to manage loadings and progress
             if (this.formOptionsConfig.onLoadedEvent) {
@@ -360,8 +368,7 @@ export class Form {
             // Select and prepare the container
             const container: HTMLElement | null = this.generateContainer()
 
-
-            const initialMessage = renderStartMessage(startMessage, () => this.startForm(), this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText);
+            const initialMessage = renderStartMessage(startMessage, this.formOptionsConfig.addButton, this.formOptionsConfig.startButtonText, () => this.startForm());
 
             container.appendChild(initialMessage)
 
@@ -452,37 +459,48 @@ export class Form {
             const page = this.history.back();
             if (!page) throw new Error("No page found");
 
-            const requiredQuestions = page.getRequiredQuestions();
-            for (const question of requiredQuestions) {
-                if (!this.feedback.answers.find((a) => a.key === question && a.value.length > 0)) {
-                    this.log.err(`The question ${question} is required`);
+            for (const question of page.questions.filter(question => question.require)) {
+                const assets = question.assets;
+                const ans = this.feedback.answers.filter((a) => a.key.includes(question.ref) && !a.key.includes('extra-option'));
+
+                if (
+                    ans.length === 0 ||
+                    ans.find((a) => a.value.length === 0)
+                ) {
+                    this.log.err(`The question ${question.ref} is required`);
                     throw new Error(`No response`);
+                }
+
+                if (assets?.minOptions) {
+                    let exclusiveAnswers: string[] = [];
+
+                    if (assets?.exclusiveAnswers) {
+                        exclusiveAnswers = assets?.exclusiveAnswers
+                    }
+
+                    if (assets?.extraOption) {
+                        exclusiveAnswers.push(assets?.extraOptionText);
+                    }
+
+                    // Check if the question has the minimum number of options selected and the exclusiveAnswers if it exists
+
+                    if (
+                        !ans[0].value.find((a) => exclusiveAnswers.includes(a)) &&
+                        ans[0].value.length < assets?.minOptions
+                    ) {
+                        this.log.err(`The question ${question.ref} requires at least ${assets?.minOptions} options`);
+                        throw new Error(`No response`);
+                    }
                 }
             }
 
             // SEND
             const response = await this.pushAnswers(false);
 
-            if (response) {
-                this.id = response;
-                await this.processNextQuestion(questionContainer);
-            }
+            if (!response) throw new Error("No response");
 
-            // AFTER
-            if (this.formOptionsConfig.afterSubmitEvent) {
-                await this.formOptionsConfig.afterSubmitEvent({
-                    response,
-                    loading: false,
-                    progress: this.progress,
-                    total: this.total,
-                    followup: this.followup,
-                    completed: this.completed,
-                    // answer: this.feedback.answers,
-                    error: response ? null : new Error("No response")
-                });
-            }
-
-
+            this.id = response;
+            await this.processNextQuestion(questionContainer);
         } catch (error) {
             // Handle error in beforeSubmitEvent, send(), or afterSubmitEvent
             this.log.err(
@@ -517,12 +535,17 @@ export class Form {
             return;
         }
 
+        // Check if the required questions are answered
+        const page = this.history.back();
+        if (!page) throw new Error("No page found");
+
         const surveyAnswers: NativeAnswer[] = [];
         let hasError = false; // Flag to track if an error has occurred
 
         const inputs = form.querySelectorAll(".magicfeedback-input");
 
         inputs.forEach((input) => {
+            const question = page.questions.find(q => (input as HTMLInputElement).name?.includes(q.ref));
             const inputType = (input as HTMLInputElement).type;
             const elementTypeClass = (input as HTMLInputElement).classList[0];
 
@@ -537,90 +560,74 @@ export class Form {
 
             if (!ans.key || ans.key === "") return;
 
-             switch (inputType) {
-                case "radio":
-                case "checkbox":
-                    if (
-                        elementTypeClass === "magicfeedback-consent" ||
-                        (input as HTMLInputElement).checked
-                    ) {
-                    ans.value.push(value);
-
-                    // check if the answer is already in the array and merge the values
-                    const index = surveyAnswers.findIndex(
-                        (a) => a.key === ans.key
-                    );
-                    if (index !== -1) {
-                        surveyAnswers[index].value = [
-                            ...surveyAnswers[index].value,
-                            ...ans.value,
-                        ];
-                    } else {
-                        surveyAnswers.push(ans);
-                    }
-                }
-                break;
-            default:
-                if (value !== "") {
-                    if (inputType === "email") {
-                        if (!validateEmail(value)) {
-                            this.log.err("Invalid email");
-                            hasError = true;
-                            break;
-                        } else {
-                            this.feedback.profile.push({
-                                key: "email",
-                                value: [value],
-                            });
+            switch (question?.type) {
+                case FEEDBACKAPPANSWERTYPE.EMAIL:
+                case FEEDBACKAPPANSWERTYPE.TEXT:
+                case FEEDBACKAPPANSWERTYPE.LONGTEXT:
+                case FEEDBACKAPPANSWERTYPE.NUMBER:
+                case FEEDBACKAPPANSWERTYPE.DATE:
+                case FEEDBACKAPPANSWERTYPE.CONTACT:
+                    if (value !== "") {
+                        if (inputType === "email") {
+                            if (!validateEmail(value)) {
+                                this.log.err("Invalid email");
+                                hasError = true;
+                                break;
+                            } else {
+                                this.feedback.profile.push({
+                                    key: "email",
+                                    value: [value],
+                                });
+                            }
                         }
-                    }
-
-                    if (input.id.includes('point-system')) {
-                        const key = 'point-system-' + input.id.split("-")[input.id.split("-").length - 1];
-                        ans.value.push(`${key}: ${value}%`);
-                    } else{
                         ans.value.push(value);
                     }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.CONSENT:
+                    ans.value.push(String((input as HTMLInputElement).checked));
+                    break;
+                case FEEDBACKAPPANSWERTYPE.POINT_SYSTEM:
+                    const key = (input as HTMLInputElement).id;
+                    ans.value.push(`${key}:${value}%`);
+                    break;
 
-                    // check if the answer is already in the array and merge the values
-                    const index = surveyAnswers.findIndex(
-                        (a) => a.key === ans.key
-                    );
-                    if (index !== -1) {
-                        surveyAnswers[index].value = [
-                            ...surveyAnswers[index].value,
-                            ...ans.value,
-                        ];
-                    } else {
-                        // Add the answer to the array
-                        surveyAnswers.push(ans);
+                case FEEDBACKAPPANSWERTYPE.MULTIPLECHOICE:
+                case FEEDBACKAPPANSWERTYPE.MULTIPLECHOISE_IMAGE:
+                case FEEDBACKAPPANSWERTYPE.RATING_STAR:
+                case FEEDBACKAPPANSWERTYPE.RADIO:
+                case FEEDBACKAPPANSWERTYPE.RATING_EMOJI:
+                case FEEDBACKAPPANSWERTYPE.RATING_NUMBER:
+                    if ((input as HTMLInputElement).checked || (input as HTMLInputElement).id.includes("extra-option-")){
+                        ans.value.push(value);
                     }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.SELECT:
+                    ans.value.push(value);
+                    break;
+                case FEEDBACKAPPANSWERTYPE.BOOLEAN:
+                    if ((input as HTMLInputElement).checked) {
+                        ans.value.push(value);
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.MULTI_QUESTION_MATRIX:
+                    if ((input as HTMLInputElement).checked) {
+                        ans.value.push(value);
+                    }
+                    break;
+                case FEEDBACKAPPANSWERTYPE.PRIORITY_LIST:
+                    ans.value.push(value);
+                    break;
+                default:
+                    break;
 
 
-                }
             }
-        });
 
-        // Check if there's an error
-        // Check matrix questions
-        const matrixQuestions = surveyAnswers.filter((a) => a.key.includes('matrix'));
-        // Merge the equal values of the matrix questions
-        matrixQuestions?.forEach((matrix) => {
-            const m = surveyAnswers.find((a) => a.key === matrix.key)
-            if (m) m.value = [... new Set(m.value)];
-        });
-
-        // Check point system questions
-        const pointSystemQuestions = surveyAnswers.filter((a) => a.key.includes('point-system'));
-        // Throw error if all the point system questions are not 100%
-        pointSystemQuestions?.forEach((pointSystem) => {
-            const sum = pointSystem.value.reduce((acc, val) => {
-                const value = val.split(": ")[1];
-                return acc + Number(value.replace('%', ''));
-            }, 0);
-            if (sum !== 100) {
-                this.log.err("The sum of the point system questions must be 100%");
-                hasError = true;
+            if (surveyAnswers?.length > 0 && surveyAnswers?.find(a => a.key === ans.key)) {
+                const index = surveyAnswers.findIndex(a => a.key === ans.key);
+                surveyAnswers[index].value = [...surveyAnswers[index].value, ...ans.value];
+            } else {
+                surveyAnswers.push(ans);
             }
         });
 
@@ -637,7 +644,7 @@ export class Form {
      * @public
      */
 
-    public finish() {
+    public async finish() {
         this.completed = true;
         if (this.formOptionsConfig.addSuccessScreen) {
             const container = document.getElementById("magicfeedback-container-" + this.appId) as HTMLElement;
@@ -655,7 +662,23 @@ export class Form {
 
         this.answer();
 
-        this.pushAnswers(true);
+        const response = await this.pushAnswers(true);
+
+        if (!response) throw new Error("No response");
+
+        this.id = response;
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                completed: this.completed,
+                error: null
+            });
+        }
     }
 
     /**
@@ -742,53 +765,71 @@ export class Form {
 
         const followUpList = page.getFollowupQuestions()
 
-        if (followUpList?.length > 0) {
-            const followUpQuestions = [];
-            for (const followUp of followUpList) {
-                const question = page.questions.find((q) => q.ref === followUp);
-                if (question) {
-                    const followUpQuestion = await this.callFollowUpQuestion(question);
-                    if (followUpQuestion) followUpQuestions.push(followUpQuestion);
-                    }
-                }
+        if (followUpList?.length === 0) {
+            await this.renderNextQuestion(form, page);
+            return;
+        }
 
-            if (followUpQuestions.length > 0) {
-                this.followup = true;
-                // Create a new page with the follow up questions
-                const newPage = new Page(
-                    page.id,
-                    page.position,
-                    this.appId,
-                    followUpQuestions,
-                    page.edges
-                );
-
-                const n = new PageNode(
-                    page.id,
-                    page.position,
-                    page.edges,
-                    newPage,
-                    followUpQuestions
-                );
-
-                n.elements = renderQuestions(
-                    followUpQuestions,
-                    this.formOptionsConfig.questionFormat,
-                    this.formData?.lang[0],
-                    this.formData?.product,
-                    () => this.send()
-                );
-
-                this.history.enqueue(n);
-
-                form.removeChild(form.childNodes[0]);
-                n.elements?.forEach((element) => form.appendChild(element));
-            } else {
-                this.renderNextQuestion(form, page);
-                this.renderNextQuestion(form, page);
+        const followUpQuestions = [];
+        for (const followUp of followUpList) {
+            const question = page.questions.find((q) => q.ref === followUp);
+            if (question) {
+                const followUpQuestion = await this.callFollowUpQuestion(question);
+                if (followUpQuestion) followUpQuestions.push(followUpQuestion);
             }
-        } else {
-            this.renderNextQuestion(form, page);
+        }
+
+        if (followUpQuestions.length === 0) {
+            await this.renderNextQuestion(form, page);
+            return;
+        }
+
+        // Create a new page with the follow up questions
+        const newPage = new Page(
+            page.id,
+            page.position,
+            this.appId,
+            followUpQuestions,
+            page.edges
+        );
+
+        const n = new PageNode(
+            page.id,
+            page.position,
+            page.edges,
+            newPage,
+            followUpQuestions,
+            true
+        );
+
+        n.elements = renderQuestions(
+            followUpQuestions,
+            this.formOptionsConfig.questionFormat,
+            this.formData?.lang[0],
+            this.formData?.product,
+            () => this.send()
+        );
+
+        // Update the progress +1, because the follow up questions are
+        // not included in the graph and one page with follow up questions is considered as 2
+        this.history.enqueue(n);
+        this.progress++;
+
+        form.innerHTML = "";
+
+        n.elements?.forEach((element) => form.appendChild(element));
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                followup: n.isFollowup,
+                completed: this.completed,
+                error: null
+            });
         }
 
     }
@@ -799,17 +840,16 @@ export class Form {
      * @param page
      * @private
      */
-    private renderNextQuestion(form: HTMLElement, page: PageNode) {
-        this.followup = false;
+    private async renderNextQuestion(form: HTMLElement, page: PageNode) {
         // Get next page from the graph
+        //console.log(page, this.feedback.answers);
         const nextPage = this.graph.getNextPage(page, this.feedback.answers);
 
+        //console.log(nextPage);
         if (!nextPage) {
             this.finish();
             return;
         }
-
-        this.progress = this.total - this.graph.findDepth(nextPage.id);
 
         nextPage.elements = renderQuestions(
             nextPage.questions,
@@ -819,30 +859,58 @@ export class Form {
             () => this.send()
         );
 
-        form.removeChild(form.childNodes[0]);
+        form.innerHTML = "";
+
         nextPage.elements?.forEach((element) => form.appendChild(element));
+
         this.history.enqueue(nextPage);
+        this.progress = this.total - this.graph.findMaxDepth(nextPage)
+
+        // AFTER
+        if (this.formOptionsConfig.afterSubmitEvent) {
+            await this.formOptionsConfig.afterSubmitEvent({
+                response: this.id,
+                loading: false,
+                progress: this.progress,
+                total: this.total,
+                followup: nextPage.isFollowup,
+                completed: this.completed,
+                error: null
+            });
+        }
     }
 
     /**
      * Render back question
      * @private
      */
-    public back() {
+    public async back() {
         if (this.history.size() === 0) return;
-
-        console.log("Back", this.history);
 
         const form = document.getElementById("magicfeedback-questions-" + this.appId) as HTMLElement;
 
-        if (form && form.childNodes.length > 0) form.removeChild(form.childNodes[0]);
+        if (form && form.childNodes.length > 0) form.innerHTML = "";
 
         this.history.rollback();
+
 
         const page = this.history.back();
 
         if (page) {
             page.elements?.forEach((element) => form.appendChild(element));
+            this.progress = this.total - this.graph.findMaxDepth(page)
+        } else{
+            this.progress = this.history.size();
+        }
+
+        // AFTER
+        if (this.formOptionsConfig.onBackEvent) {
+            await this.formOptionsConfig.onBackEvent({
+                loading: false,
+                progress: this.progress,
+                followup: page?.isFollowup || false,
+                error: !page ? "No page found" : null
+            });
         }
     }
 }

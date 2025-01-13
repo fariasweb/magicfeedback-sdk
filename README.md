@@ -87,17 +87,17 @@ form.generate(
         questionFormat: "standard" | "slim", // Default "standard", option to change the format of the questions.
         getMetaData: boolean, // Default true, option to get the metadata of the form  
         beforeSubmitEvent: ({
-                                loading: boolean,
-                                progress: number,
-                                total: number
+                              loading: boolean,
+                              progress: number,
+                              total: number
                             }) => {
         }, //Function to execute before send the form
         afterSubmitEvent: ({
-                               loading: boolean,
-                               progress: number,
-                               total: number,
-                               response: string, // Response of the server if everything is ok
-                               error: string, // Error of the server if something is wrong
+                             loading: boolean,
+                             progress: number,
+                             total: number,
+                             response: string, // Response of the server if everything is ok
+                             error: string, // Error of the server if something is wrong
                            }) => {
         }, //Function to execute after send the form with the response
         onLoadedEvent: ({
@@ -106,8 +106,14 @@ form.generate(
                             total: number,
                             formData: FormData
                         }) => {
-        } //Function to execute after load the form
-
+        }, //Function to execute after load the form
+        onBackEvent: ({
+                            loading: boolean,
+                            progress: number,
+                            followup: boolean,
+                            error: string, // Error of the server if something is wrong
+                        }) => {
+        } //Function to execute after back the form
         /*
         class FormData {
             id: string;
@@ -464,6 +470,14 @@ Feel free to adapt and expand upon the provided styles to match your desired des
 
 .magicfeedback-start-message-button {
   /* ... add your start message button styles here ... */
+}
+
+.magicfeedback-info-page {
+  /* ... add your info page styles here ... */
+}
+
+.magicfeedback-info-message{
+  /* ... add your info message styles here ... */ 
 }
 
 /* Success message (if applicable) */
