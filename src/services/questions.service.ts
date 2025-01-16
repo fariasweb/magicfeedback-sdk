@@ -130,6 +130,8 @@ function renderContainer(
     let elementContainer: HTMLElement = document.createElement("div");
     elementContainer.classList.add("magicfeedback-div");
 
+    const isPhone = window.innerWidth < 600;
+
     const placeholderText = format === 'slim' ? parseTitle(title, language) : assets?.placeholder
 
     // Look if exist the value in a query param with the ref like a key
@@ -137,6 +139,8 @@ function renderContainer(
 
     const maxCharacters = assets?.maxCharacters || 0
     const randomPosition = assets?.randomPosition === undefined ? false : assets?.randomPosition;
+    const direction = assets?.direction || "row";
+    const order = assets?.order || "ltr";
 
     switch (type) {
         case FEEDBACKAPPANSWERTYPE.TEXT:
@@ -343,7 +347,13 @@ function renderContainer(
             const maxRating = assets?.max ? Number(assets?.max) : 5;
             const minRating = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingPlaceholder = createRatingPlaceholder(minRating, maxRating, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
+            const ratingPlaceholder = createRatingPlaceholder(
+                minRating,
+                maxRating,
+                assets?.minPlaceholder,
+                assets?.maxPlaceholder,
+                assets?.extraOption,
+            );
 
             for (let i = minRating; i <= maxRating; i++) {
                 const ratingOption = document.createElement('div');
@@ -451,26 +461,71 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-number';
 
+            const numberContainerDirection = order === 'ltr' ? direction : `${direction}-reverse`;
             const ratingNumberContainer = document.createElement('div');
             ratingNumberContainer.classList.add('magicfeedback-rating-number-container');
+            ratingNumberContainer.classList.add(`magicfeedback-rating-number-container-${order}`);
+            ratingNumberContainer.classList.add(`magicfeedback-rating-number-container-${direction}`);
+            ratingNumberContainer.style.display = "flex";
+            ratingNumberContainer.style.flexDirection = numberContainerDirection;
 
-            const maxRatingNumber = assets?.max ? Number(assets?.max) : 5;
-            const minRatingNumber = assets?.min ? Number(assets?.min) : 1;
 
-            const ratingNumberPlaceholder = createRatingPlaceholder(minRatingNumber, maxRatingNumber, assets?.minPlaceholder, assets?.maxPlaceholder, assets?.extraOption);
+            const maxRatingNumber = assets?.max ? Number(assets?.max) : 10;
+            const minRatingNumber = assets?.min ? Number(assets?.min) : 0;
+
+            const ratingNumberPlaceholder = createRatingPlaceholder(
+                minRatingNumber,
+                maxRatingNumber,
+                assets?.minPlaceholder,
+                assets?.maxPlaceholder,
+                assets?.extraOption,
+                true,
+                order,
+                direction
+            );
+
+            /*
+            if (isPhone || direction === 'column') {
+                const topText = order === 'ltr' ? assets?.minPlaceholder : assets?.maxPlaceholder;
+                if (topText) {
+                    const topPlaceholderContainer = document.createElement('div');
+                    topPlaceholderContainer.style.display = 'flex';
+                    topPlaceholderContainer.style.flexDirection = 'column';
+                    topPlaceholderContainer.style.width = '100%';
+                    topPlaceholderContainer.style.alignItems = 'center';
+                    topPlaceholderContainer.style.justifyContent = 'center';
+                    topPlaceholderContainer.style.margin = '5px 0';
+
+                    const topPlaceholder = document.createElement('label');
+                    topPlaceholder.classList.add('magicfeedback-rating-number-top-placeholder');
+                    topPlaceholder.textContent = topText;
+                    topPlaceholder.style.textAlign = 'center';
+
+                    topPlaceholderContainer.appendChild(topPlaceholder);
+                    element.appendChild(topPlaceholderContainer);
+                }
+            }
+            */
 
             for (let i = minRatingNumber; i <= maxRatingNumber; i++) {
                 // Create a input button element for each value in the question's value array
                 const ratingOption = document.createElement('div');
                 ratingOption.classList.add('magicfeedback-rating-number-option');
+                ratingOption.classList.add(`magicfeedback-rating-number-option-${direction}`);
 
                 const containerLabel = document.createElement('label');
                 containerLabel.htmlFor = `rating-${ref}-${i}`;
                 containerLabel.classList.add('magicfeedback-rating-number-option-label-container');
 
+                let inputText = i.toString();
+
+                if ((isPhone || direction === 'column') && i === minRatingNumber && assets?.minPlaceholder) inputText += ` = ${assets?.minPlaceholder}`;
+                if ((isPhone || direction === 'column') && i === maxRatingNumber && assets?.maxPlaceholder) inputText += ` = ${assets?.maxPlaceholder}`;
+
                 const ratingLabel = document.createElement('label');
                 ratingLabel.htmlFor = `rating-${ref}-${i}`;
-                ratingLabel.textContent = i.toString();
+                ratingLabel.textContent = inputText;
+
 
                 const input = document.createElement("input");
                 input.id = `rating-${ref}-${i}`;
@@ -512,8 +567,30 @@ function renderContainer(
                 ratingNumberContainer.appendChild(extraOption);
             }
 
-            element.appendChild(ratingNumberPlaceholder);
+
+            if (!(isPhone || direction === 'column')) element.appendChild(ratingNumberPlaceholder);
             element.appendChild(ratingNumberContainer);
+            /*
+            if (isPhone || direction === 'column') {
+                const bottomText = order === 'ltr' ? assets?.maxPlaceholder : assets?.minPlaceholder;
+                if (bottomText) {
+                    const bottomPlaceholderContainer = document.createElement('div');
+                    bottomPlaceholderContainer.style.display = 'flex';
+                    bottomPlaceholderContainer.style.flexDirection = 'column';
+                    bottomPlaceholderContainer.style.width = '100%';
+                    bottomPlaceholderContainer.style.alignItems = 'center';
+                    bottomPlaceholderContainer.style.justifyContent = 'center';
+                    bottomPlaceholderContainer.style.margin = '5px 0';
+                    const bottomPlaceholder = document.createElement('label');
+                    bottomPlaceholder.classList.add('magicfeedback-rating-number-bottom-placeholder');
+                    bottomPlaceholder.textContent = bottomText;
+                    bottomPlaceholder.style.textAlign = 'center';
+
+                    bottomPlaceholderContainer.appendChild(bottomPlaceholder);
+                    element.appendChild(bottomPlaceholderContainer);
+                }
+            }
+            */
 
             break;
         case FEEDBACKAPPANSWERTYPE.RATING_STAR:
@@ -1351,13 +1428,18 @@ function createRatingPlaceholder(
     minPlaceholder: string,
     maxPlaceholder: string,
     extraOption: boolean,
-    mobile: boolean = true
+    mobile: boolean = true,
+    order = 'ltr',
+    direction = 'row'
 ) {
     const ratingPlaceholder = document.createElement('div');
     ratingPlaceholder.classList.add('magicfeedback-rating-placeholder');
     ratingPlaceholder.style.display = "flex";
+    ratingPlaceholder.style.flexDirection = direction;
+    ratingPlaceholder.style.alignItems = "center";
     ratingPlaceholder.style.justifyContent = "space-between";
     ratingPlaceholder.style.width = extraOption ? `calc(100% - (100% / ${max + 1}))` : "100%";
+
     ratingPlaceholder.style.marginRight = "auto";
 
     if (mobile && window.innerWidth < 600) ratingPlaceholder.style.flexDirection = "column";
@@ -1366,33 +1448,38 @@ function createRatingPlaceholder(
     ratingPlaceholderMin.textContent = minPlaceholder;
     ratingPlaceholderMin.classList.add('magicfeedback-rating-placeholder-value');
     ratingPlaceholderMin.style.fontSize = "15px";
-    ratingPlaceholderMin.style.textAlign = "left";
+    ratingPlaceholderMin.style.textAlign = order === 'ltr' ? "left" : "right";
     ratingPlaceholderMin.style.width = `50%`;
 
-    if (mobile && window.innerWidth < 600) {
-        ratingPlaceholderMin.textContent = `${min} ➜ ${minPlaceholder}`;
+    if (mobile && window.innerWidth < 600 || direction === 'column') {
+        ratingPlaceholderMin.textContent = `${min} = ${minPlaceholder}`;
         ratingPlaceholderMin.style.width = '100%'
         ratingPlaceholderMin.style.textAlign = "left";
         ratingPlaceholderMin.style.marginBottom = "5px";
     }
 
-    ratingPlaceholder.appendChild(ratingPlaceholderMin);
 
     const ratingPlaceholderMax = document.createElement('span');
     ratingPlaceholderMax.textContent = maxPlaceholder;
     ratingPlaceholderMax.classList.add('magicfeedback-rating-placeholder-value');
     ratingPlaceholderMax.style.fontSize = "15px";
-    ratingPlaceholderMax.style.textAlign = "right";
+    ratingPlaceholderMax.style.textAlign = order === 'ltr' ? "right" : "left";
     ratingPlaceholderMax.style.width = `50%`;
 
-    if (mobile && window.innerWidth < 600) {
-        ratingPlaceholderMax.textContent = `${max} ➜ ${maxPlaceholder}`;
+    if (mobile && window.innerWidth < 600 || direction === 'column') {
+        ratingPlaceholderMax.textContent = `${max} = ${maxPlaceholder}`;
         ratingPlaceholderMax.style.width = '100%'
         ratingPlaceholderMax.style.textAlign = "left";
         ratingPlaceholderMax.style.marginBottom = "5px";
     }
 
-    ratingPlaceholder.appendChild(ratingPlaceholderMax);
+    if (order === 'ltr') {
+        ratingPlaceholder.appendChild(ratingPlaceholderMin);
+        ratingPlaceholder.appendChild(ratingPlaceholderMax);
+    } else {
+        ratingPlaceholder.appendChild(ratingPlaceholderMax);
+        ratingPlaceholder.appendChild(ratingPlaceholderMin);
+    }
 
     return ratingPlaceholder
 }
