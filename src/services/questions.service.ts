@@ -48,7 +48,7 @@ export function renderQuestions(
         } else {
             // Create a container for each question
             const url = `${defaultUrl}${customIcons ? `/${id}` : ''}`;
-            const elementContainer = renderContainer(question, format, language, url, send);
+            const elementContainer = renderContainer(question, format, language, url, appQuestions.length === 1 ? send : undefined);
             questions.push(elementContainer);
         }
     });
@@ -222,6 +222,15 @@ function renderContainer(
                         if (checkboxes.length > assets?.maxOptions) {
                             (input as HTMLInputElement).checked = false;
                         }
+
+                        if (send && checkboxes.length === assets?.maxOptions) {
+                            send()
+                        }
+                    });
+                }
+                if (type === FEEDBACKAPPANSWERTYPE.RADIO && send) {
+                    input.addEventListener("change", () => {
+                        send()
                     });
                 }
 
@@ -412,6 +421,12 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
+                if (send) {
+                    input.addEventListener("change", () => {
+                        send();
+                    });
+                }
+
                 containerLabel.appendChild(input);
                 containerLabel.appendChild(ratingImage);
                 containerLabel.appendChild(ratingLabel);
@@ -445,6 +460,12 @@ function renderContainer(
                 input.value = '-';
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
+
+                if (send) {
+                    input.addEventListener("change", () => {
+                        send();
+                    });
+                }
 
                 containerLabel.appendChild(input);
                 containerLabel.appendChild(ratingImage);
@@ -535,6 +556,12 @@ function renderContainer(
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
 
+                if (send) {
+                    input.addEventListener("change", () => {
+                        send();
+                    });
+                }
+
                 containerLabel.appendChild(input);
                 containerLabel.appendChild(ratingLabel);
                 ratingOption.appendChild(containerLabel);
@@ -560,6 +587,12 @@ function renderContainer(
                 input.value = '-';
                 input.classList.add(elementTypeClass);
                 input.classList.add("magicfeedback-input");
+
+                if (send) {
+                    input.addEventListener("change", () => {
+                        send();
+                    });
+                }
 
                 containerLabel.appendChild(input);
                 containerLabel.appendChild(ratingLabel);
@@ -597,7 +630,7 @@ function renderContainer(
             element = document.createElement("div");
             elementTypeClass = 'magicfeedback-rating-star';
 
-            const ratingStarContainer = createStarRating(ref, assets?.minPlaceholder, assets?.maxPlaceholder);
+            const ratingStarContainer = createStarRating(ref, assets?.minPlaceholder, assets?.maxPlaceholder, send);
 
             element.appendChild(ratingStarContainer);
             break;
@@ -700,6 +733,15 @@ function renderContainer(
                 input.style.height = "0";
                 input.classList.add("magicfeedback-input");
 
+                console.log('send', send)
+                console.log('multiOptions', multiOptions)
+                if (!multiOptions && send){
+                    input.addEventListener("change", () => {
+                        console.log('send')
+                        send();
+                    });
+                }
+
                 // Add max size to the image
                 const image = document.createElement("img");
                 image.classList.add("magicfeedback-multiple-choice-image-image");
@@ -752,6 +794,12 @@ function renderContainer(
                 option.text = optionValue;
                 (element as HTMLSelectElement).appendChild(option);
             });
+
+            if (send) {
+                element.addEventListener("change", () => {
+                    send();
+                });
+            }
             break;
         case FEEDBACKAPPANSWERTYPE.DATE:
             // Create an input element with type "date" for DATE type
@@ -773,6 +821,12 @@ function renderContainer(
             (element as HTMLInputElement).required = require;
             element.classList.add("magicfeedback-consent");
             element.classList.add("magicfeedback-input");
+
+            if (send) {
+                element.addEventListener("change", () => {
+                    send();
+                });
+            }
             break;
         case FEEDBACKAPPANSWERTYPE.EMAIL:
             // Create an input element with type "email" for EMAIL type
@@ -1361,7 +1415,12 @@ export function renderActions(identity: string = '',
     return actionContainer;
 }
 
-function createStarRating(ref: string, minPlaceholder: string, maxPlaceholder: string) {
+function createStarRating(
+    ref: string,
+    minPlaceholder: string,
+    maxPlaceholder: string,
+    send: () => void = () => {}
+) {
     const size = 40;
     const selectedClass = "magicfeedback-rating-star-selected";
     const starFilled = "★";
@@ -1399,6 +1458,8 @@ function createStarRating(ref: string, minPlaceholder: string, maxPlaceholder: s
                     if (allStars[j].classList.contains(selectedClass)) allStars[j].classList.remove(selectedClass);
                 }
             }
+
+            if (send) send();
         });
 
         ratingOption.appendChild(ratingInput);
